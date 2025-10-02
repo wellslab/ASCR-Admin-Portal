@@ -87,17 +87,20 @@ jobs:
           table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1.5rem 0;
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-radius: 8px;
             overflow: hidden;
+            table-layout: fixed;
           }
           
           th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            width: 11.11%; /* Equal width for 9 columns */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
           }
           
           th {
@@ -199,17 +202,25 @@ jobs:
             letter-spacing: 0.5px;
           }
           
+          .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          
           @media (max-width: 768px) {
             body {
               padding: 1rem;
             }
             
             table {
-              font-size: 0.8rem;
+              font-size: 0.75rem;
+              min-width: 800px; /* Ensure table doesn't compress too much */
             }
             
             th, td {
-              padding: 8px;
+              padding: 6px;
             }
           }
           EOF
