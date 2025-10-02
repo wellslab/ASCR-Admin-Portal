@@ -328,9 +328,6 @@ def generate_markdown_documentation(models_file: str, output_file: str):
     doc_lines.extend([
         f"*Generated on {timestamp} from {models_file}*",
         "",
-        "> This document provides a business-friendly view of the ASCR database schema.",
-        "> Each table represents a different aspect of stem cell registry data.",
-        "",
     ])
     
     # Table of contents

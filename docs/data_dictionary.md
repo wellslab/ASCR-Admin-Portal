@@ -1,7 +1,4 @@
-*Generated on 2025-10-02 12:11:51 from data_dictionary.py*
-
-> This document provides a business-friendly view of the ASCR database schema.
-> Each table represents a different aspect of stem cell registry data.
+*Generated on 2025-10-02 13:06:52 from data_dictionary.py*
 
 # ASCR Data Dictionary
 
@@ -696,4 +693,4 @@
 ---
 
 *This documentation is automatically generated from the Pydantic models.*
-*Last updated: 2025-10-02 12:11:51*
+*Last updated: 2025-10-02 13:06:52*
