@@ -342,17 +342,6 @@ def generate_markdown_documentation(models_file: str, output_file: str):
     
     # Footer
     doc_lines.extend([
-        "## Legend",
-        "",
-        "- **✅ Yes**: Field is required and must have a value",
-        "- **❌ No**: Field is optional and can be empty",
-        "- **Primary Key**: Unique identifier for this table",
-        "- **Reference to [Table]**: Links to another table (click to navigate)",
-        "- **Ontology Controlled**: Values must come from a specific controlled vocabulary",
-        "- **Enum**: Field accepts only the listed values",
-        "",
-        "---",
-        "",
         "*This documentation is automatically generated from the Pydantic models.*",
         "*Last updated: " + timestamp + "*"
     ])

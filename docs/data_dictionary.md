@@ -1,4 +1,4 @@
-*Generated on 2025-10-02 13:06:52 from data_dictionary.py*
+*Generated on 2025-10-02 13:07:16 from data_dictionary.py*
 
 # ASCR Data Dictionary
 
@@ -681,16 +681,5 @@
 
 ---
 
-## Legend
-
-- **✅ Yes**: Field is required and must have a value
-- **❌ No**: Field is optional and can be empty
-- **Primary Key**: Unique identifier for this table
-- **Reference to [Table]**: Links to another table (click to navigate)
-- **Ontology Controlled**: Values must come from a specific controlled vocabulary
-- **Enum**: Field accepts only the listed values
-
----
-
 *This documentation is automatically generated from the Pydantic models.*
-*Last updated: 2025-10-02 13:06:52*
+*Last updated: 2025-10-02 13:07:16*
