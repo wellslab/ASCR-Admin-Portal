@@ -340,11 +340,7 @@ def generate_markdown_documentation(models_file: str, output_file: str):
     for model_name in sorted(models.keys()):
         doc_lines.append(generate_model_section(model_name, models[model_name]))
     
-    # Footer
-    doc_lines.extend([
-        "*This documentation is automatically generated from the Pydantic models.*",
-        "*Last updated: " + timestamp + "*"
-    ])
+    # No footer needed
     
     # Write to file
     with open(output_file, 'w') as f:

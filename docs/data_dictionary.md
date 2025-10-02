@@ -1,4 +1,4 @@
-*Generated on 2025-10-02 13:07:16 from data_dictionary.py*
+*Generated on 2025-10-02 13:07:56 from data_dictionary.py*
 
 # ASCR Data Dictionary
 
@@ -680,6 +680,3 @@
 | xref_url | VARCHAR | Yes | 250 |  | Full URL pointing to the external database entry for the cell line |  |  |  |
 
 ---
-
-*This documentation is automatically generated from the Pydantic models.*
-*Last updated: 2025-10-02 13:07:16*
