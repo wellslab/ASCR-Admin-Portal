@@ -330,9 +330,6 @@ def generate_markdown_documentation(models_file: str, output_file: str):
         "",
     ])
     
-    # Table of contents
-    doc_lines.append(generate_table_of_contents(models))
-    
     # Summary statistics
     doc_lines.append(generate_summary_stats(models))
     
