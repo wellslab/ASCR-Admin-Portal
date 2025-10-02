@@ -323,10 +323,10 @@ def generate_markdown_documentation(models_file: str, output_file: str):
     # Build the complete document
     doc_lines = []
     
-    # Header with generation info
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Header with publication info
+    timestamp = datetime.now().strftime("%B %d, %Y")
     doc_lines.extend([
-        f"*Generated on {timestamp} from {models_file}*",
+        f"Published: {timestamp}",
         "",
     ])
     

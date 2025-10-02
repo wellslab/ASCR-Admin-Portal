@@ -1,4 +1,4 @@
-*Generated on 2025-10-02 13:07:56 from data_dictionary.py*
+Published: October 02, 2025
 
 # ASCR Data Dictionary
 
