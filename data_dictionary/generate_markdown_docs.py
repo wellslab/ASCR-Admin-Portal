@@ -370,7 +370,7 @@ def generate_markdown_documentation(models_file: str, output_file: str):
 def main():
     """Main function"""
     models_file = "data_dictionary.py"
-    output_file = "data_dictionary.md"
+    output_file = "../docs/data_dictionary.md"
     
     try:
         generate_markdown_documentation(models_file, output_file)
