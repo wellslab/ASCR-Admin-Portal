@@ -97,10 +97,14 @@ jobs:
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-            width: 11.11%; /* Equal width for 9 columns */
+            width: 10%; /* Default width for most columns */
             word-wrap: break-word;
             overflow-wrap: break-word;
             hyphens: auto;
+          }
+          
+          th:nth-child(6), td:nth-child(6) {
+            width: 20%; /* Double width for Description column */
           }
           
           th {
