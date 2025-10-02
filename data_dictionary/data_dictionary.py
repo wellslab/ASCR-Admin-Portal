@@ -436,7 +436,7 @@ class Ethics(BaseModel):
     institutional_hrec: Optional[str] = None
 
 
-class Reguser(BaseModel):
+class RegUser(BaseModel):
     """
     RegUser model
     """
@@ -453,7 +453,7 @@ class RegistrationRequirements(BaseModel):
     """
     RegistrationRequirements model
     """
-    reg_user: Reguser = Field(description="user ID who registered the cell line")
+    reg_user: RegUser = Field(description="user ID who registered the cell line")
     ethics: Ethics = Field(description="ethics ID associated with the cell line")
     submitted_ethics_clearance: Literal["TRUE", "FALSE"] = Field(description="whether ethics clearance has been submitted")
 
@@ -498,13 +498,13 @@ class DonorSource(BaseModel):
     DonorSource model
     """
     donor_source_id: str = Field(description="Donor source ID", max_length=100, json_schema_extra={"primary_key": True})
-    age: Optional[str] = Field(description="Age of the donor", max_length=10)
+    age: Optional[Literal["EM", "FE", "NEO", "A1_4", "A5_9", "A10_14", "A15_19", "A20_24", "A25_29", "A30_34", "A35_39", "A40_44", "A45_49", "A50_54", "A55_59", "A60_64", "A65_69", "A70_74", "A75_79", "A80_84", "A85_89", "A89P"]] = Field(description="Age of the donor")
     sex: Literal["Male", "Female", "Unknown"] = Field(description="genetic sex of the dono")
     disease_phenotype: Optional[str] = Field(description="phenotype associated with the disease diagnosed for the donor", max_length=100, json_schema_extra={"ontology": True, "ontology_link": "http://purl.obolibrary.org/obo/mondo/mondo-international.owl"})
     polymorphism: Optional[str] = Field(description="polymorphism associated with the donor", max_length=250)
 
 
-class Donordisease(BaseModel):
+class DonorDisease(BaseModel):
     """
     DonorDisease model
     """
@@ -527,7 +527,7 @@ class Disease(BaseModel):
     icd11_url: Optional[str] = Field(description="ICD11 entry url", json_schema_extra={"ontology": True, "ontology_link": "https://icd.who.int/dev11/"})
 
 
-class Mediumcomponentitems(BaseModel):
+class MediumComponentItems(BaseModel):
     """
     MediumComponentItems model
     """
@@ -545,7 +545,7 @@ class CultureMediumItems(BaseModel):
     """
     culture_medium_items_id: int = Field(description="culture medium items id", json_schema_extra={"primary_key": True})
     culture_medium: CultureMedium = Field(description="id for culture medium")
-    medium_component_item: Mediumcomponentitems = Field(description="Id for medium commercial items")
+    medium_component_item: MediumComponentItems = Field(description="Id for medium commercial items")
 
 
 class CultureMedium(BaseModel):
@@ -642,7 +642,7 @@ class UndifferentiatedCharacterisationMarkerExpressionMethod(BaseModel):
     """
     undifferentiationcharacterisationmarkerexpressionmethod_id: int = Field(description="Undifferentiated Characterisation Marker Expression Method ID", json_schema_extra={"primary_key": True})
     undifferentiationcharacterisation_id: UndifferentiatedCharacterisation = Field(description="Undifferentiated Characterisation Marker Expression Methods")
-    marker: Optional[str] = Field(description="Marker used to assess undifferentiated state", max_length=25)
+    marker: Optional[Literal["Missing"]] = Field(description="Marker used to assess undifferentiated state")
     characterisation_method_id: Optional[str] = Field(description="Characterisation method", max_length=100, json_schema_extra={"primary_key": True})
     characterisation_method_file: Optional[str] = Field(description="File or URL containing result (image, data, etc.)", max_length=100)
 
@@ -662,8 +662,8 @@ class GenomicCharacterisation(BaseModel):
     """
     genomiccharacterisation_id: int = Field(description="Genomic Characterisation ID", json_schema_extra={"primary_key": True})
     passage_number: int = Field(description="Passage number")
-    karyotype: str = Field(description="Karyotype", max_length=100)
-    karyotype_method: str = Field(description="Karyotype method", max_length=100)
+    karyotype: Literal["Missing"] = Field(description="Karyotype")
+    karyotype_method: Literal["Ag-NOR banding", "C-banding", "G-banding", "R-banding", "Q-banding", "T-banding", "Spectral karyotyping", "Multiplex FISH", "CGH", "Array CGH", "Molecular karyotyping by SNP array", "KaryoLite BoBs", "Digital karyotyping", "Whole genome sequencing", "Exome sequencing", "Methylation profiling", "Other"] = Field(description="Karyotype method")
     other_method: Optional[str] = Field(description="Other Karyotype method", max_length=100)
     karyogram: Optional[str] = Field(description="Karyogram url file", max_length=100)
     data_url: Optional[str] = Field(description="Data url", max_length=100)
@@ -683,7 +683,7 @@ class AdditionalGenomicCharacterisation(BaseModel):
     str_analysis: Literal["TRUE", "FALSE"] = Field(description="STR analysis done")
 
 
-class Hlaresults(BaseModel):
+class HlaResults(BaseModel):
     """
     HlaResults model
     """
@@ -695,7 +695,7 @@ class Hlaresults(BaseModel):
     hlaallele_2: Optional[str] = Field(description="Second HLA Allele", max_length=100, json_schema_extra={"ontology": True})
 
 
-class Strorfingerprinting(BaseModel):
+class StrOrFingerprinting(BaseModel):
     """
     StrOrFingerprinting model
     """
@@ -712,7 +712,7 @@ class Loci(BaseModel):
     """
     loci_id: Optional[int] = Field(description="Loci ID", json_schema_extra={"primary_key": True})
     name: Optional[str] = Field(description="Loci name", max_length=25)
-    group: Optional[str] = Field(description="Loci group", max_length=25)
+    group: Optional[Literal["Missing"]] = Field(description="Loci group")
     ncbi_url: Optional[str] = Field(description="	Link to NCBI entry", max_length=250)
     ebi_url: Optional[str] = Field(description="Link to EBI/Ensembl entry", max_length=250)
     strbase_id: str = Field(description="STR Base ID", max_length=10, json_schema_extra={"reference_url": "https://strbase.nist.gov/Information/Type-18_Record"})
@@ -736,7 +736,7 @@ class VectorFreeReprogramming(BaseModel):
     kit_name: str = Field(description="Name of the commercial kit used for vector-free reprogramming", max_length=250)
 
 
-class Integratedvector(BaseModel):
+class IntegratedVector(BaseModel):
     """
     IntegratedVector model
     """
@@ -753,7 +753,7 @@ class Integratedvector(BaseModel):
     vector_silencing_notes: Optional[str] = Field(description="Free-text field for additional information on silencing", max_length=250)
 
 
-class Nonintegratedvector(BaseModel):
+class NonIntegratedVector(BaseModel):
     """
     NonIntegratedVector model
     """
@@ -775,8 +775,8 @@ class CellLineDerivationInducedPluripotent(BaseModel):
     i_source_cell_origin: str = Field(description="	Tissue or organ of origin of the source cell", max_length=100, json_schema_extra={"ontology": True, "ontology_link": "http://purl.obolibrary.org/obo/UBERON_0000467"})
     i_source_cell_type_additional_info: str = Field(description="Free-text entry for additional information about source cell type", max_length=250)
     i_reprogramming_vector_type: Literal["non-integrated", "intergrated", "none"] = Field(description="Type of vector used for reprogramming")
-    derivationipsintegratedvector_id: Integratedvector = Field(description="Integrated vector ID")
-    derivationipsnonintegratedvector_id: Nonintegratedvector = Field(description="Non-integrated vector ID")
+    derivationipsintegratedvector_id: IntegratedVector = Field(description="Integrated vector ID")
+    derivationipsnonintegratedvector_id: NonIntegratedVector = Field(description="Non-integrated vector ID")
     vector_map_file: str = Field(description="	Vector plasmid map ", max_length=25)
     method_used_immune_marker_staining: Literal["TRUE", "FALSE"] = Field(description="Indicates whether immunostaining of pluripotency markers is done ")
     method_used_pcr: Literal["TRUE", "FALSE"] = Field(description="Indicates whether PCR-based detection of reprogramming is done")
@@ -808,7 +808,7 @@ class CellLineDerivationEmbryonic(BaseModel):
     embryo_stage: Literal["Blastula with ICM and Trophoblast", "Cleavage (Mitosis)", "Compaction", "Morula", "Zygote"] = Field(description="Developmental stage of the embryo at the time of derivation")
     expansion_status: Literal["stage 1", "stage 2", "stage 3", "stage 4", "stage 5", "stage 6"] = Field(description="	Indicates whether the cell line has undergone expansion")
     icm_morphology: Literal["type A", "type B", "type C", "type D", "type E"] = Field(description="Morphological quality of the inner cell mass (ICM) used in derivation")
-    trophectoderm_morphology: Literal["type A", "type B", "type g"] = Field(description="Morphology of the trophectoderm layer at the time of derivation")
+    trophectoderm_morphology: Literal["type A", "type B", "type G"] = Field(description="Morphology of the trophectoderm layer at the time of derivation")
     zp_removal_technique: Literal["chemical", "enzymatic", "manual", "mechanical", "spontaneous", "other"] = Field(description="Technique used to remove the zona pellucida (ZP)")
     zp_removal_technique_other: str = Field(description="	Free-text entry for other techniques to remove ZP", max_length=250)
     cell_isolation: Literal["immunosurgery", "laser", "mechanical", "trophectoderm and icm isolated", "none", "other"] = Field(description="Method used to isolate ICM or other cells ")
@@ -838,7 +838,7 @@ class GenomicModification(BaseModel):
     cell_line_id: CellLine = Field(description="Aus stem cell registry ID")
 
 
-class Ipdgene(BaseModel):
+class IpdGene(BaseModel):
     """
     IPDGene model
     """
@@ -861,7 +861,7 @@ class VectorFreeReprogrammingGenes(BaseModel):
     allele_2: str = Field(description="Second allele observed at gene locus", max_length=100)
 
 
-class Smallmolecule(BaseModel):
+class SmallMolecule(BaseModel):
     """
     SmallMolecule model
     """

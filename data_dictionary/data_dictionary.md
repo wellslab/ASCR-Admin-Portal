@@ -1,4 +1,4 @@
-*Generated on 2025-10-01 18:18:21 from data_dictionary.py*
+*Generated on 2025-10-02 11:42:04 from data_dictionary.py*
 
 > This document provides a business-friendly view of the ASCR database schema.
 > Each table represents a different aspect of stem cell registry data.
@@ -19,8 +19,8 @@
 - [CultureMedium](#culturemedium)
 - [CultureMediumItems](#culturemediumitems)
 - [Disease](#disease)
+- [DonorDisease](#donordisease)
 - [DonorSource](#donorsource)
-- [Donordisease](#donordisease)
 - [Ethics](#ethics)
 - [ExternalCellLineSource](#externalcelllinesource)
 - [GenomicAlteration](#genomicalteration)
@@ -28,23 +28,23 @@
 - [GenomicModification](#genomicmodification)
 - [Group](#group)
 - [GroupInstitute](#groupinstitute)
-- [Hlaresults](#hlaresults)
+- [HlaResults](#hlaresults)
 - [HpscScorecard](#hpscscorecard)
 - [Institute](#institute)
-- [Integratedvector](#integratedvector)
-- [Ipdgene](#ipdgene)
+- [IntegratedVector](#integratedvector)
+- [IpdGene](#ipdgene)
 - [Loci](#loci)
-- [Mediumcomponentitems](#mediumcomponentitems)
+- [MediumComponentItems](#mediumcomponentitems)
 - [MicrobiologyVirologyScreening](#microbiologyvirologyscreening)
-- [Nonintegratedvector](#nonintegratedvector)
+- [NonIntegratedVector](#nonintegratedvector)
 - [Ontology](#ontology)
 - [OntologyParentChild](#ontologyparentchild)
 - [OntologySynonym](#ontologysynonym)
 - [Publication](#publication)
+- [RegUser](#reguser)
 - [RegistrationRequirements](#registrationrequirements)
-- [Reguser](#reguser)
-- [Smallmolecule](#smallmolecule)
-- [Strorfingerprinting](#strorfingerprinting)
+- [SmallMolecule](#smallmolecule)
+- [StrOrFingerprinting](#strorfingerprinting)
 - [Synonym](#synonym)
 - [UndifferentiatedCharacterisation](#undifferentiatedcharacterisation)
 - [UndifferentiatedCharacterisationMarkerExpressionMethod](#undifferentiatedcharacterisationmarkerexpressionmethod)
@@ -134,7 +134,7 @@
 | other_hesc_source_other | VARCHAR | Yes | 100 |  | Description of other source |  |  |  |
 | reason_no_derivation_year | VARCHAR | Yes | 250 |  | Explain if year is unknown |  |  |  |
 | separation_of_research_and_ivf_treat | BOOLEAN | Yes |  | TRUE, FALSE | Describes whether IVF treatment and research decision-making processes were clearly separated |  |  |  |
-| trophectoderm_morphology | ENUM | Yes |  | type A, type B, type g | Morphology of the trophectoderm layer at the time of derivation |  |  |  |
+| trophectoderm_morphology | ENUM | Yes |  | type A, type B, type G | Morphology of the trophectoderm layer at the time of derivation |  |  |  |
 | zp_removal_technique | ENUM | Yes |  | chemical, enzymatic, manual, mechanical, spontaneous, other | Technique used to remove the zona pellucida (ZP) |  |  |  |
 | zp_removal_technique_other | VARCHAR | Yes | 250 |  | 	Free-text entry for other techniques to remove ZP |  |  |  |
 
@@ -149,8 +149,8 @@
 | cell_line_id | REFERENCE | Yes |  |  | Aus stem cell registry ID | Foreign Key | [CellLine](#cellline) |  |
 | derivation_under_gmp | ENUM | Yes |  | TRUE, FALSE | Indicates whether derivation followed Good Manufacturing Practice |  |  |  |
 | derivation_year | ENUM | Yes |  | List of years | Year in which derivation of the hESC line was performed |  |  |  |
-| derivationipsintegratedvector_id | REFERENCE | Yes |  |  | Integrated vector ID | Foreign Key | [Integratedvector](#integratedvector) |  |
-| derivationipsnonintegratedvector_id | REFERENCE | Yes |  |  | Non-integrated vector ID | Foreign Key | [Nonintegratedvector](#nonintegratedvector) |  |
+| derivationipsintegratedvector_id | REFERENCE | Yes |  |  | Integrated vector ID | Foreign Key | [IntegratedVector](#integratedvector) |  |
+| derivationipsnonintegratedvector_id | REFERENCE | Yes |  |  | Non-integrated vector ID | Foreign Key | [NonIntegratedVector](#nonintegratedvector) |  |
 | derived_under_xeno_free_conditions | ENUM | Yes |  | TRUE, FALSE | Indicates whether the derivation was performed without animal products |  |  |  |
 | i_reprogramming_vector_type | ENUM | Yes |  | non-integrated, intergrated, none | Type of vector used for reprogramming |  |  |  |
 | i_source_cell_origin | VARCHAR | Yes | 100 |  | 	Tissue or organ of origin of the source cell |  |  | http://purl.obolibrary.org/obo/UBERON_0000467 |
@@ -248,7 +248,7 @@
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | culture_medium_items_id | INT | Yes |  |  | culture medium items id | Primary Key |  |  |
 | culture_medium | REFERENCE | Yes |  |  | id for culture medium | Foreign Key | [CultureMedium](#culturemedium) |  |
-| medium_component_item | REFERENCE | Yes |  |  | Id for medium commercial items | Foreign Key | [Mediumcomponentitems](#mediumcomponentitems) |  |
+| medium_component_item | REFERENCE | Yes |  |  | Id for medium commercial items | Foreign Key | [MediumComponentItems](#mediumcomponentitems) |  |
 
 ---
 
@@ -267,25 +267,25 @@
 
 ---
 
+## DonorDisease
+
+| Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
+|------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
+| donor_disease_id | INT | Yes |  |  | Donor disease ID | Primary Key |  |  |
+| disease_id | INT | Yes |  |  | Disease ID | Foreign Key | [Disease](#disease) |  |
+| donor_id | INT | Yes |  |  | Donor ID | Foreign Key | [DonorSource](#donorsource) |  |
+
+---
+
 ## DonorSource
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | donor_source_id | VARCHAR | Yes | 100 |  | Donor source ID | Primary Key |  |  |
 | sex | ENUM | Yes |  | Male, Female, Unknown | genetic sex of the dono |  |  |  |
-| age | ENUM | No | 10 |  | Age of the donor |  |  |  |
+| age | ENUM | No |  | EM, FE, NEO, A1_4, A5_9, A10_14, A15_19, A20_24, A25_29, A30_34, A35_39, A40_44, A45_49, A50_54, A55_59, A60_64, A65_69, A70_74, A75_79, A80_84, A85_89, A89P | Age of the donor |  |  |  |
 | disease_phenotype | ONTOLOGY | No | 100 |  | phenotype associated with the disease diagnosed for the donor |  |  | http://purl.obolibrary.org/obo/mondo/mondo-international.owl |
 | polymorphism | VARCHAR | No | 250 |  | polymorphism associated with the donor |  |  |  |
-
----
-
-## Donordisease
-
-| Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
-|------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
-| donor_disease_id | INT | Yes |  |  | Donor disease ID | Primary Key |  |  |
-| disease_id | REFERENCE | Yes |  |  | Disease ID | Foreign Key | [Disease](#disease) |  |
-| donor_id | REFERENCE | Yes |  |  | Donor ID | Foreign Key | [DonorSource](#donorsource) |  |
 
 ---
 
@@ -341,8 +341,8 @@
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | genomiccharacterisation_id | INT | Yes |  |  | Genomic Characterisation ID | Primary Key |  |  |
-| karyotype | ENUM | Yes | 100 |  | Karyotype |  |  |  |
-| karyotype_method | ENUM | Yes | 100 |  | Karyotype method |  |  |  |
+| karyotype | ENUM | Yes |  | Missing | Karyotype |  |  |  |
+| karyotype_method | ENUM | Yes |  | Ag-NOR banding, C-banding, G-banding, R-banding, Q-banding, T-banding, Spectral karyotyping, Multiplex FISH, CGH, Array CGH, Molecular karyotyping by SNP array, KaryoLite BoBs, Digital karyotyping, Whole genome sequencing, Exome sequencing, Methylation profiling, Other | Karyotype method |  |  |  |
 | passage_number | INT | Yes |  |  | Passage number |  |  |  |
 | data_file | URL | No | 100 |  | File url |  |  |  |
 | data_url | URL | No | 100 |  | Data url |  |  |  |
@@ -382,13 +382,13 @@
 
 ---
 
-## Hlaresults
+## HlaResults
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | hlaresults_id | INT | Yes |  |  | HLA Results ID | Primary Key |  |  |
-| additionalgenomiccharacterisation_id | REFERENCE | Yes |  |  | Addiitonal Genomic Characterisation ID | Foreign Key | [AdditionalGenomicCharacterisation](#additionalgenomiccharacterisation) |  |
-| loci_id | REFERENCE | Yes |  |  | Loci ID | Foreign Key | [Loci](#loci) |  |
+| additionalgenomiccharacterisation_id | INT | Yes |  |  | Addiitonal Genomic Characterisation ID | Foreign Key | [AdditionalGenomicCharacterisation](#additionalgenomiccharacterisation) |  |
+| loci_id | INT | Yes |  |  | Loci ID | Foreign Key | [Loci](#loci) |  |
 | group | ENUM | No |  | HLA Class I, HLA Class II, Non HLA Genes | HLA type |  |  |  |
 | hlaallele_1 | VARCHAR | No | 100 |  | First HLA Allele |  |  |  |
 | hlaallele_2 | VARCHAR | No | 100 |  | Second HLA Allele |  |  |  |
@@ -419,13 +419,13 @@
 
 ---
 
-## Integratedvector
+## IntegratedVector
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | derivationipsintegratedvector_id | INT | Yes |  |  | ID for record | Primary Key |  |  |
-| absence_of_reprogramming_vector | ENUM | Yes |  | TRUE, FALSE | Indicates whether the reprogramming vector is absent |  |  |  |
-| excisable | ENUM | Yes |  | TRUE, FALSE | Indicates whether the integrating vector is designed to be excisable |  |  |  |
+| absence_of_reprogramming_vector | BOOLEAN | Yes |  | TRUE, FALSE | Indicates whether the reprogramming vector is absent |  |  |  |
+| excisable | BOOLEAN | Yes |  | TRUE, FALSE | Indicates whether the integrating vector is designed to be excisable |  |  |  |
 | int_rep_trans_type | ENUM | No |  | PiggyBack transposon, Sleeping beauty, other | System used to deliver the vector |  |  |  |
 | int_rep_trans_type_other | VARCHAR | No | 250 |  | Free-text to capture other types of system used to deliver the vector |  |  |  |
 | int_rep_virus_type | ENUM | No |  | adenovirus, retrovirus, lentivirus, other | Specify virus type if the vector is viral |  |  |  |
@@ -437,7 +437,7 @@
 
 ---
 
-## Ipdgene
+## IpdGene
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
@@ -460,21 +460,21 @@
 | ebi_url | URL | No | 250 |  | Link to EBI/Ensembl entry |  |  |  |
 | end | INT | No |  |  | End position |  |  |  |
 | genome_version | VARCHAR | No | 100 |  | Genome version  |  |  |  |
-| group | ENUM | No | 25 |  | Loci group |  |  |  |
+| group | ENUM | No |  | Missing | Loci group |  |  |  |
 | name | VARCHAR | No | 25 |  | Loci name |  |  |  |
 | ncbi_url | URL | No | 250 |  | 	Link to NCBI entry |  |  |  |
 | start | INT | No |  |  | Start position |  |  |  |
 
 ---
 
-## Mediumcomponentitems
+## MediumComponentItems
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | medium_component_items | INT | Yes |  |  | Medium id | Primary Key |  |  |
 | name | VARCHAR | Yes | 100 |  | name of item |  |  |  |
 | amount | FLOAT | No |  |  | the number of the unit |  |  |  |
-| company | VARCHAR | No | 100 |  | name of company |  |  |  |
+| company | TEXT  | No | 100 |  | name of company |  |  |  |
 | type | ENUM | No |  | Base Medium, Main Protein, Supplement, Base Coat, Serum | type of medium commercial items |  |  |  |
 | unit | VARCHAR | No |  |  | Units for materials |  |  |  |
 
@@ -495,7 +495,7 @@
 
 ---
 
-## Nonintegratedvector
+## NonIntegratedVector
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
@@ -556,48 +556,48 @@
 
 ---
 
-## RegistrationRequirements
-
-| Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
-|------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
-| ethics | INT | Yes |  |  | ethics ID associated with the cell line | Foreign Key | [Ethics](#ethics) |  |
-| reg_user | INT | Yes |  |  | user ID who registered the cell line | Foreign Key | [Reguser](#reguser) |  |
-| submitted_ethics_clearance | BOOLEAN | Yes |  | TRUE, FALSE | whether ethics clearance has been submitted |  |  |  |
-
----
-
-## Reguser
+## RegUser
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | user_id | INT | Yes |  |  | user ID who registered the cell line | Primary Key |  |  |
 | email | VARCHAR | Yes | 250 |  | Email of the user |  |  |  |
-| first_name | VARCHAR | Yes | 20 |  | First name of the user |  |  |  |
-| group_id | REFERENCE | Yes |  |  | group ID from which the user belongs to | Foreign Key | [Group](#group) |  |
-| last_name | VARCHAR | Yes | 20 |  | Last name of the user |  |  |  |
+| first_name | CHAR | Yes | 20 |  | First name of the user |  |  |  |
+| group_id | INT | Yes |  |  | group ID from which the user belongs to | Foreign Key | [Group](#group) |  |
+| last_name | CHAR | Yes | 20 |  | Last name of the user |  |  |  |
 | orcid_id | INT | Yes |  |  | ORCID ID of the user |  |  |  |
 | password | VARCHAR | Yes | 25 |  | Hashed password of the user |  |  |  |
 
 ---
 
-## Smallmolecule
+## RegistrationRequirements
+
+| Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
+|------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
+| ethics | INT | Yes |  |  | ethics ID associated with the cell line | Foreign Key | [Ethics](#ethics) |  |
+| reg_user | INT | Yes |  |  | user ID who registered the cell line | Foreign Key | [RegUser](#reguser) |  |
+| submitted_ethics_clearance | BOOLEAN | Yes |  | TRUE, FALSE | whether ethics clearance has been submitted |  |  |  |
+
+---
+
+## SmallMolecule
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | smallmolecule_id | INT | Yes |  |  | Small molecule ID | Primary Key |  |  |
-| chembank_id | VARCHAR | Yes | 100 |  | Chembank database id for the small molecule |  |  |  |
+| chembank_id | URL | Yes | 100 |  | Chembank database id for the small molecule |  |  |  |
 | name | VARCHAR | Yes | 100 |  | Small molecule name |  |  |  |
-| vectorfreeprogramming_id | REFERENCE | Yes |  |  | Vector-free reprogramming ID | Foreign Key | [VectorFreeReprogramming](#vectorfreereprogramming) |  |
+| vectorfreeprogramming_id | INT | Yes |  |  | Vector-free reprogramming ID | Foreign Key | [VectorFreeReprogramming](#vectorfreereprogramming) |  |
 
 ---
 
-## Strorfingerprinting
+## StrOrFingerprinting
 
 | Field Name | Data Type | Required | Max Length | Accepted Values | Description | Key Type | Nested Model | External Links |
 |------------|-----------|----------|------------|-----------------|-------------|----------|--------------|----------------|
 | id | INT | Yes |  |  | StrOrFingerprinting ID | Primary Key |  |  |
 | Additonal_Genomic_Characterisation_ID | INT | Yes |  |  | additionalgenomiccharacterisation_id |  |  |  |
-| loci_id | REFERENCE | Yes |  |  | Loci ID | Foreign Key | [Loci](#loci) |  |
+| loci_id | INT | Yes |  |  | Loci ID | Foreign Key | [Loci](#loci) |  |
 | strallele_1 | VARCHAR | No | 100 |  | First STR allele at a given locus |  |  |  |
 | strallele_2 | VARCHAR | No | 100 |  | Second STR allele at a given locus |  |  |  |
 
@@ -640,7 +640,7 @@
 | characterisation_method_id | VARCHAR | No | 100 |  | Characterisation method | Primary Key |  |  |
 | undifferentiationcharacterisation_id | INT | Yes |  |  | Undifferentiated Characterisation Marker Expression Methods | Foreign Key | [UndifferentiatedCharacterisation](#undifferentiatedcharacterisation) |  |
 | characterisation_method_file | FILE | No | 100 |  | File or URL containing result (image, data, etc.) |  |  |  |
-| marker | ENUM | No | 25 |  | Marker used to assess undifferentiated state |  |  |  |
+| marker | ENUM | No |  | Missing | Marker used to assess undifferentiated state |  |  |  |
 
 ---
 
@@ -696,4 +696,4 @@
 ---
 
 *This documentation is automatically generated from the Pydantic models.*
-*Last updated: 2025-10-01 18:18:21*
+*Last updated: 2025-10-02 11:42:04*

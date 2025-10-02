@@ -294,23 +294,18 @@ CellLineDerivationEmbryonic,cell_line_id,Aus stem cell registry ID,FK,Yes,VARCHA
 CellLineDerivationEmbryonic,e_nhmrc_licence_number,NHMRC License number,None,Yes,TEXT,No,No,100,NA
 CellLineDerivationEmbryonic,e_supernumerary,Indicates whether the embryo used was a supernumerary embryo,None,Yes,BOOLEAN,No,No,25,"TRUE, FALSE"
 CellLineDerivationEmbryonic,separation_of_research_and_ivf_treat,Describes whether IVF treatment and research decision-making processes were clearly separated,None,Yes,BOOLEAN,No,No,25,"TRUE, FALSE"
-CellLineDerivationEmbryonic,other_hesc_source,Indicates if the hESC line was derived from a source other than supernumerary IVF embryos,None,Yes,ENUM,No,No,100,"[Somatic Cell Nuclear Transfer (SCNT),
-Pathogenesis, other]"
+CellLineDerivationEmbryonic,other_hesc_source,Indicates if the hESC line was derived from a source other than supernumerary IVF embryos,None,Yes,ENUM,No,No,100,"[Somatic Cell Nuclear Transfer (SCNT), Pathogenesis, other]"
 CellLineDerivationEmbryonic,other_hesc_source_other,Description of other source,None,Yes,TEXT,No,No,100,NA
 CellLineDerivationEmbryonic,e_preimplantation_genetic_diagnostic_embryo,Indicates whether the embryo was created as part of PGD (preimplantation genetic diagnosis),None,Yes,BOOLEAN,No,No,25,"TRUE, FALSE"
 CellLineDerivationEmbryonic,derivation_year,Year in which derivation of the hESC line was performed,None,Yes,INT,No,No,25,List of years
 CellLineDerivationEmbryonic,reason_no_derivation_year,Explain if year is unknown,None,Yes,TEXT,No,No,250,NA
-CellLineDerivationEmbryonic,embryo_stage,Developmental stage of the embryo at the time of derivation,None,Yes,ENUM,No,No,100,"[Blastula with ICM and Trophoblast,
-Cleavage (Mitosis), Compaction, Morula, Zygote]"
-CellLineDerivationEmbryonic,expansion_status,"	Indicates whether the cell line has undergone expansion",None,Yes,ENUM,No,No,100,"[stage 1, stage 2, stage 3, stage 4,
-stage 5, stage 6]"
+CellLineDerivationEmbryonic,embryo_stage,Developmental stage of the embryo at the time of derivation,None,Yes,ENUM,No,No,100,"[Blastula with ICM and Trophoblast, Cleavage (Mitosis), Compaction, Morula, Zygote]"
+CellLineDerivationEmbryonic,expansion_status,"	Indicates whether the cell line has undergone expansion",None,Yes,ENUM,No,No,100,"[stage 1, stage 2, stage 3, stage 4, stage 5, stage 6]"
 CellLineDerivationEmbryonic,icm_morphology,Morphological quality of the inner cell mass (ICM) used in derivation,None,Yes,ENUM,No,No,100," [type A, type B, type C, type D, type E]"
-CellLineDerivationEmbryonic,trophectoderm morphology,Morphology of the trophectoderm layer at the time of derivation,None,Yes,ENUM,No,No,100," [type A, type B, type g]"
-CellLineDerivationEmbryonic,zp_removal_technique,Technique used to remove the zona pellucida (ZP),None,Yes,ENUM,No,No,100,"[chemical, enzymatic, manual,
-mechanical, spontaneous, other]"
+CellLineDerivationEmbryonic,trophectoderm morphology,Morphology of the trophectoderm layer at the time of derivation,None,Yes,ENUM,No,No,100," [type A, type B, type ]"
+CellLineDerivationEmbryonic,zp_removal_technique,Technique used to remove the zona pellucida (ZP),None,Yes,ENUM,No,No,100,"[chemical, enzymatic, manual, mechanical, spontaneous, other]"
 CellLineDerivationEmbryonic,zp_removal_technique_other,"	Free-text entry for other techniques to remove ZP",None,Yes,TEXT,No,No,250,NA
-CellLineDerivationEmbryonic,cell_isolation,Method used to isolate ICM or other cells ,None,Yes,ENUM,No,No,100,"[immunosurgery, laser, mechanical,
-trophectoderm and icm isolated, none, other]"
+CellLineDerivationEmbryonic,cell_isolation,Method used to isolate ICM or other cells ,None,Yes,ENUM,No,No,100,"[immunosurgery, laser, mechanical, trophectoderm and icm isolated, none, other]"
 CellLineDerivationEmbryonic,cell_isolation_other,Free-text entry for other method used to isolate ICM or other cells ,None,Yes,TEXT,No,No,250,NA
 CellLineDerivationEmbryonic,cell_seeding,Technique used to plate cells post-isolation,None,Yes,ENUM,No,No,100,"[embryo, isolated icm, single cell, other]"
 CellLineDerivationEmbryonic,cell_seeding_other,Free-text entry for other technique used to plate cells post-isolation,None,Yes,TEXT,No,No,250,NA
