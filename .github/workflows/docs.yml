@@ -224,7 +224,7 @@ jobs:
             --table-of-contents \
             --toc-depth=2 \
             --html-q-tags \
-            --highlight-style=github \
+            --highlight-style=tango \
             -o _site/index.html
           
           # Create a simple landing page if needed
