@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code when working with the ASCR Admin Portal microservices architecture.
 
+## TODO Management
+
+When asked to create or update todos, use the `todo.md` file in the project root.
+This is the single source of truth for project task tracking.
 
 ## Claude Developer Mindset
 This section of instructions suggests the mindset that I want you to have when developing with me.
@@ -17,7 +21,13 @@ This section of instructions suggests the mindset that I want you to have when d
 - Do not be verbose or long winded.
 - However, when giving explanations, explain things clearly and naturally.
 
+### Git Commit Workflow
+- **Do NOT commit changes unless explicitly asked to do so.**
+- When committing, keep commit messages short and to the point.
+- Do NOT include authorship information (no `Co-Authored-By` lines).
+- Focus commit messages on what was changed, not why or how.
 
+Example: `"Add loading skeletons for instant page transitions"` not `"Added loading.tsx files to improve UX by showing skeletons during navigation transitions"`
 
 ## MCP Connection
 

@@ -10,6 +10,9 @@ from data_dictionaries.curation_models import CellLineCurationForm
 from tasks import curate_article_task, redis_client
 from config_manager import config_manager
 from task_progress import TaskProgressManager
+from ingestion_monitor import IngestionMonitor
+import asyncio
+from pathlib import Path
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +45,32 @@ def get_data_transport(
     return DataTransport(storage, version_control)
 
 app = FastAPI(title="ASCR Curation Service", version="1.0.0")
+
+# Background task for ingestion monitoring
+async def monitor_ingestion_log():
+    """Background task that checks ingestion log every 5 minutes"""
+    storage = get_storage()
+    version_control = get_version_control(storage)
+    data_transport = get_data_transport(storage, version_control)
+
+    log_path = Path("data/ingestion_log.csv")
+    monitor = IngestionMonitor(str(log_path), storage, data_transport)
+
+    while True:
+        try:
+            result = monitor.check_and_process_log()
+            if result.get("moved", 0) > 0:
+                logger.info(f"Ingestion monitor: moved {result['moved']} files to registered")
+        except Exception as e:
+            logger.error(f"Error in ingestion monitor: {e}")
+
+        await asyncio.sleep(300)  # Wait 5 minutes
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on app startup"""
+    asyncio.create_task(monitor_ingestion_log())
+    logger.info("Started ingestion monitor background task")
 
 # CORS middleware
 app.add_middleware(
@@ -113,20 +142,18 @@ async def start_ai_curation(request: StartAICurationRequest):
 async def get_stats(storage: StorageInterface = Depends(get_storage)):
     """
     Get statistics about cell lines across all directories.
-    Returns counts for total, working, queued, and ready cell lines.
+    Returns counts for total, working, ready, and registered cell lines.
     """
     try:
         working_files = storage.list_files("working")
         ready_files = storage.list_files("ready")
-
-        # For now, queued is 0 (can be updated when queue system is added)
-        queued_count = 0
+        registered_files = storage.list_files("registered")
 
         return {
-            "total_cell_lines": len(working_files) + len(ready_files),
+            "total_cell_lines": len(working_files) + len(ready_files) + len(registered_files),
             "working_count": len(working_files),
-            "queued_count": queued_count,
-            "registered_count": len(ready_files)
+            "ready_count": len(ready_files),
+            "registered_count": len(registered_files)
         }
     except Exception as e:
         logger.error(f"Error getting stats: {str(e)}")
@@ -135,12 +162,13 @@ async def get_stats(storage: StorageInterface = Depends(get_storage)):
 @app.get("/get-all-cell-lines")
 async def get_all_cell_lines(storage: StorageInterface = Depends(get_storage)):
     """
-    Get list of all cell line names from both working and ready directories.
+    Get list of all cell line names from working, ready, and registered directories.
     Returns deduplicated list with location info for quick search.
     """
     try:
         working_files = storage.list_files("working")
         ready_files = storage.list_files("ready")
+        registered_files = storage.list_files("registered")
 
         # Build list with location info
         all_cell_lines = []
@@ -154,6 +182,11 @@ async def get_all_cell_lines(storage: StorageInterface = Depends(get_storage)):
         for filename in ready_files:
             if filename not in seen:
                 all_cell_lines.append({"name": filename, "location": "ready"})
+                seen.add(filename)
+
+        for filename in registered_files:
+            if filename not in seen:
+                all_cell_lines.append({"name": filename, "location": "registered"})
                 seen.add(filename)
 
         return {"cell_lines": all_cell_lines}
@@ -172,7 +205,7 @@ async def get_working_files(storage: StorageInterface = Depends(get_storage)):
         logger.error(f"Error getting working files: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get working files: {str(e)}")
 
-@app.get("/ready/files") 
+@app.get("/ready/files")
 async def get_ready_files(storage: StorageInterface = Depends(get_storage)):
     """
     Get list of cell line files in the ready directory.
@@ -183,18 +216,32 @@ async def get_ready_files(storage: StorageInterface = Depends(get_storage)):
         logger.error(f"Error getting ready files: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get ready files: {str(e)}")
 
+@app.get("/registered/files")
+async def get_registered_files(storage: StorageInterface = Depends(get_storage)):
+    """
+    Get list of cell line files in the registered directory.
+    """
+    try:
+        return {"files": storage.list_files("registered")}
+    except Exception as e:
+        logger.error(f"Error getting registered files: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get registered files: {str(e)}")
+
 @app.get("/cell-line/{filename}")
 async def get_cell_line(filename: str, storage: StorageInterface = Depends(get_storage)):
     """
     Retrieve a specific cell line JSON file by filename.
+    Searches in order: working, ready, registered.
     """
     try:
-        # Try working directory first, then ready
+        # Try working directory first, then ready, then registered
         result = storage.get(filename, "working")
         if result is None:
             result = storage.get(filename, "ready")
         if result is None:
-            raise HTTPException(status_code=404, detail=f"Cell line file '{filename}' not found in working or ready directories")
+            result = storage.get(filename, "registered")
+        if result is None:
+            raise HTTPException(status_code=404, detail=f"Cell line file '{filename}' not found in any directory")
         return result
     except Exception as e:
         logger.error(f"Error getting cell line {filename}: {str(e)}")
@@ -203,16 +250,16 @@ async def get_cell_line(filename: str, storage: StorageInterface = Depends(get_s
 @app.post("/cell-line/{filename}/move-to-ready")
 async def move_cell_line_to_ready(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
     """
-    Move a cell line file from working to ready directory with automatic versioning.
-    Creates versioned files like TestCell001_v0, TestCell001_v1, etc.
+    Move a cell line file from working to ready directory.
+    File already has version assigned, so this is a simple status change.
     """
     try:
-        return data_transport.move_to_ready_with_versioning(filename)
+        return data_transport.move_to_ready(filename)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error moving {filename} to ready with versioning: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to move file with versioning: {str(e)}")
+        logger.error(f"Error moving {filename} to ready: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
 
 @app.post("/cell-line/{filename}/move-to-working")
 async def move_cell_line_to_working(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
@@ -231,17 +278,36 @@ async def move_cell_line_to_working(filename: str, data_transport: DataTransport
         raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
 
 @app.get("/cell-line/{base_name}/versions")
-async def get_cell_line_versions(base_name: str, version_control: VersionControl = Depends(get_version_control)):
+async def get_cell_line_versions(
+    base_name: str,
+    version_control: VersionControl = Depends(get_version_control),
+    storage: StorageInterface = Depends(get_storage)
+):
     """
-    Get all versions for a given cell line base name.
-    Returns versions from ready directory (e.g. TestCell001_v0, TestCell001_v1).
+    Get all versions for a given cell line base name across all directories.
+    Returns versions from working, ready, and registered directories with location info.
     """
     try:
-        versions = version_control.get_all_versions(base_name)
+        # Collect versions from all directories
+        all_versions = []
+
+        for location in ["working", "ready", "registered"]:
+            versions = storage.get_files_for_base_name(base_name, location)
+            for version_file in versions:
+                version_num = version_control.parse_version_from_filename(version_file)
+                all_versions.append({
+                    "filename": version_file,
+                    "version": version_num,
+                    "location": location
+                })
+
+        # Sort by version number
+        all_versions.sort(key=lambda x: x.get("version", -1))
+
         return {
             "base_name": base_name,
-            "versions": versions,
-            "count": len(versions)
+            "versions": all_versions,
+            "count": len(all_versions)
         }
     except Exception as e:
         logger.error(f"Error getting versions for {base_name}: {str(e)}")
@@ -262,48 +328,53 @@ async def get_latest_cell_line_version(base_name: str, version_control: VersionC
         raise HTTPException(status_code=500, detail=f"Failed to get latest version: {str(e)}")
 
 @app.post("/working/cell-line")
-async def create_cell_line(cell_line_data: dict, storage: StorageInterface = Depends(get_storage)):
+async def create_cell_line(cell_line_data: CellLineCurationForm, data_transport: DataTransport = Depends(get_data_transport)):
     """
-    Create a new cell line file in the working directory.
+    Create a new cell line file in the working directory with automatic versioning.
+    Handles duplicate names by auto-incrementing version numbers globally.
+
+    Validates all fields against CellLineCurationForm Pydantic model before saving.
+    Returns 422 with detailed validation errors if data is invalid.
     """
     try:
-        # Extract filename from data - try cell_line first, then basic_data for legacy
-        cell_line_list = cell_line_data.get("cell_line", []) or cell_line_data.get("basic_data", [])
-        hpscreg_name = cell_line_list[0].get("hpscreg_name") if cell_line_list else None
-        if not hpscreg_name:
-            raise ValueError("Cannot save file without hpscreg_name in cell_line")
-        
-        return storage.create(hpscreg_name, cell_line_data, "working")
+        # Convert Pydantic model to dict for storage
+        cell_line_dict = cell_line_data.model_dump()
+        return data_transport.save_with_auto_versioning(cell_line_dict)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except FileExistsError as e:
-        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating cell line: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create cell line file: {str(e)}")
 
 @app.put("/working/cell-line/{filename}")
-async def update_cell_line(filename: str, cell_line_data: dict, storage: StorageInterface = Depends(get_storage)):
+async def update_cell_line(
+    filename: str,
+    cell_line_data: CellLineCurationForm,
+    data_transport: DataTransport = Depends(get_data_transport),
+    storage: StorageInterface = Depends(get_storage)
+):
     """
-    Update an existing cell line file in the working directory, or create if it doesn't exist.
-    If hpscreg_name changes, the file is renamed to match the new name.
+    Save changes to a cell line file by creating a new version with auto-versioning.
+    This creates a new version in working directory instead of overwriting.
+
+    Validates all fields against CellLineCurationForm Pydantic model before saving.
+    Returns 422 with detailed validation errors if data is invalid.
     """
     try:
-        # Extract new hpscreg_name from data
-        cell_line_list = cell_line_data.get("cell_line", []) or cell_line_data.get("basic_data", [])
-        new_hpscreg_name = cell_line_list[0].get("hpscreg_name") if cell_line_list else None
-        if not new_hpscreg_name:
-            raise ValueError("Cannot save file without hpscreg_name in cell_line")
+        # Convert Pydantic model to dict for storage
+        cell_line_dict = cell_line_data.model_dump()
 
-        # If hpscreg_name changed, delete old file and create with new name
-        if new_hpscreg_name != filename:
-            # Delete old file if it exists
-            if storage.exists(filename, "working"):
-                storage.delete(filename, "working")
-            # Create/update with new filename
-            return storage.update(new_hpscreg_name, cell_line_data, "working")
+        # Create new version with auto-versioning
+        result = data_transport.save_with_auto_versioning(cell_line_dict)
 
-        return storage.update(filename, cell_line_data, "working")
+        # If the base name is different from the old filename's base name, delete old file
+        # (This handles the case where hpscreg_name was changed)
+        # But only if the old file still exists and is different
+        if storage.exists(filename, "working") and result["filename"] != filename:
+            storage.delete(filename, "working")
+            logger.info(f"Deleted old file {filename} after creating new version {result['filename']}")
+
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -419,6 +490,25 @@ async def delete_task(task_id: str):
     except Exception as e:
         logger.error(f"Error deleting task {task_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to delete task: {str(e)}")
+
+@app.post("/internal/check-ingestion-log")
+async def check_ingestion_log(
+    storage: StorageInterface = Depends(get_storage),
+    version_control: VersionControl = Depends(get_version_control),
+    data_transport: DataTransport = Depends(get_data_transport)
+):
+    """
+    Manual trigger to check ingestion log and process any pending registrations.
+    Useful for testing or immediate processing.
+    """
+    try:
+        log_path = Path("data/ingestion_log.csv")
+        monitor = IngestionMonitor(str(log_path), storage, data_transport)
+        result = monitor.check_and_process_log()
+        return result
+    except Exception as e:
+        logger.error(f"Error checking ingestion log: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to check ingestion log: {str(e)}")
 
 @app.get("/settings")
 async def get_settings():

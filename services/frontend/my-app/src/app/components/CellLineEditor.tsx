@@ -1,13 +1,13 @@
 'use client';
 
-import { Box, Typography, TextField, IconButton, Collapse, Button, Switch, FormControlLabel, Popover } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Collapse, Button, Switch, FormControlLabel, Popover, Select, MenuItem, Alert } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 // Convert snake_case to Title Case for display
 const formatFieldName = (name: string): string => {
@@ -29,11 +29,13 @@ interface FieldEditorProps {
   fieldName: string;
   value: any;
   inputName: string;
+  fieldSchema?: any;
 }
 
-const FieldEditor = ({ fieldName, value, inputName }: FieldEditorProps) => {
+const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorProps) => {
   const theme = useTheme();
   const defaultValue = value === null || value === undefined ? '' : String(value);
+  const fieldType = fieldSchema?.type || 'text';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1, py: 0.25 }}>
@@ -48,22 +50,110 @@ const FieldEditor = ({ fieldName, value, inputName }: FieldEditorProps) => {
       >
         {formatFieldName(fieldName)}
       </Typography>
-      <TextField
-        size="small"
-        name={inputName}
-        defaultValue={defaultValue}
-        fullWidth
-        sx={{
-          '& .MuiOutlinedInput-root': {
+      {fieldType === 'select' && fieldSchema?.choices ? (
+        <Select
+          size="small"
+          name={inputName}
+          defaultValue={defaultValue}
+          fullWidth
+          sx={{
             backgroundColor: theme.palette.background.paper,
             fontSize: '0.8rem',
-          },
-          '& .MuiOutlinedInput-input': {
-            py: 0.5,
-            px: 1,
-          },
-        }}
-      />
+            '& .MuiSelect-select': {
+              py: 0.5,
+              px: 1,
+            },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                maxHeight: 300,
+                '& .MuiMenuItem-root': {
+                  fontSize: '0.8rem',
+                  py: 0.5,
+                  px: 1.5,
+                  minHeight: 'unset',
+                },
+              },
+            },
+          }}
+        >
+          {fieldSchema.choices.map((choice: string) => (
+            <MenuItem key={choice} value={choice}>
+              {choice}
+            </MenuItem>
+          ))}
+        </Select>
+      ) : fieldType === 'boolean' ? (
+        <Select
+          size="small"
+          name={inputName}
+          defaultValue={value === true || value === 'true' ? 'true' : 'false'}
+          fullWidth
+          sx={{
+            backgroundColor: theme.palette.background.paper,
+            fontSize: '0.8rem',
+            '& .MuiSelect-select': {
+              py: 0.5,
+              px: 1,
+            },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                maxHeight: 300,
+                '& .MuiMenuItem-root': {
+                  fontSize: '0.8rem',
+                  py: 0.5,
+                  px: 1.5,
+                  minHeight: 'unset',
+                },
+              },
+            },
+          }}
+        >
+          <MenuItem value="true">True</MenuItem>
+          <MenuItem value="false">False</MenuItem>
+        </Select>
+      ) : fieldType === 'number' ? (
+        <TextField
+          size="small"
+          name={inputName}
+          type="number"
+          defaultValue={defaultValue}
+          inputProps={{
+            step: fieldSchema?.number_type === 'float' ? 'any' : '1',
+          }}
+          fullWidth
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: theme.palette.background.paper,
+              fontSize: '0.8rem',
+            },
+            '& .MuiOutlinedInput-input': {
+              py: 0.5,
+              px: 1,
+            },
+          }}
+        />
+      ) : (
+        <TextField
+          size="small"
+          name={inputName}
+          defaultValue={defaultValue}
+          fullWidth
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: theme.palette.background.paper,
+              fontSize: '0.8rem',
+            },
+            '& .MuiOutlinedInput-input': {
+              py: 0.5,
+              px: 1,
+            },
+          }}
+        />
+      )}
     </Box>
   );
 };
@@ -72,10 +162,12 @@ interface InstanceEditorProps {
   instance: Record<string, any>;
   instanceIndex: number;
   sectionName: string;
+  sectionSchema?: any;
 }
 
-const InstanceEditor = ({ instance, instanceIndex, sectionName }: InstanceEditorProps) => {
+const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema }: InstanceEditorProps) => {
   const theme = useTheme();
+  const fieldsSchema = sectionSchema?.fields || {};
 
   return (
     <Box
@@ -96,6 +188,7 @@ const InstanceEditor = ({ instance, instanceIndex, sectionName }: InstanceEditor
           fieldName={fieldName}
           value={value}
           inputName={`${sectionName}.${instanceIndex}.${fieldName}`}
+          fieldSchema={fieldsSchema[fieldName]}
         />
       ))}
     </Box>
@@ -106,9 +199,10 @@ interface SectionProps {
   sectionName: string;
   sectionId: string;
   instances: any[];
+  sectionSchema?: any;
 }
 
-const Section = ({ sectionName, sectionId, instances }: SectionProps) => {
+const Section = ({ sectionName, sectionId, instances, sectionSchema }: SectionProps) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(true);
 
@@ -155,6 +249,7 @@ const Section = ({ sectionName, sectionId, instances }: SectionProps) => {
                 instance={instance}
                 instanceIndex={index}
                 sectionName={sectionName}
+                sectionSchema={sectionSchema}
               />
             ))
           ) : (
@@ -230,9 +325,11 @@ interface CellLineEditorProps {
   onSave: (data: Record<string, any[]>) => void;
   onCreate: (name: string) => void;
   onDiscard: () => void;
+  validationErrors?: string[];
+  onClearErrors?: () => void;
 }
 
-const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, onCreate, onDiscard }: CellLineEditorProps) => {
+const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, onCreate, onDiscard, validationErrors = [], onClearErrors }: CellLineEditorProps) => {
   const theme = useTheme();
   const formRef = useRef<HTMLFormElement>(null);
   const [isQueued, setIsQueued] = useState(false);
@@ -240,10 +337,28 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
   const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
   const [discardAnchor, setDiscardAnchor] = useState<HTMLButtonElement | null>(null);
   const newNameInputRef = useRef<HTMLInputElement>(null);
+  const [schema, setSchema] = useState<any>(null);
+
+  // Fetch schema on mount
+  useEffect(() => {
+    const fetchSchema = async () => {
+      try {
+        const response = await fetch('http://localhost:8001/cellline-schema');
+        if (response.ok) {
+          const schemaData = await response.json();
+          setSchema(schemaData);
+        }
+      } catch (error) {
+        console.error('Error fetching schema:', error);
+      }
+    };
+    fetchSchema();
+  }, []);
 
   const handleSave = () => {
     if (!formRef.current) return;
 
+    if (onClearErrors) onClearErrors(); // Clear previous errors
     const formData = new FormData(formRef.current);
     const newData: Record<string, any[]> = JSON.parse(JSON.stringify(data)); // Deep clone original
 
@@ -253,7 +368,18 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
       const index = parseInt(indexStr, 10);
 
       if (newData[sectionName] && newData[sectionName][index]) {
-        newData[sectionName][index][fieldName] = value || null;
+        // Get field schema to determine type
+        const fieldSchema = schema?.sections?.[sectionName]?.fields?.[fieldName];
+
+        // Convert values based on field type
+        if (fieldSchema?.type === 'number') {
+          newData[sectionName][index][fieldName] = value ? parseFloat(value as string) : null;
+        } else if (fieldSchema?.type === 'boolean') {
+          // For boolean dropdowns, value will be 'true' or 'false' string
+          newData[sectionName][index][fieldName] = value === 'true';
+        } else {
+          newData[sectionName][index][fieldName] = value || null;
+        }
       }
     }
 
@@ -281,6 +407,19 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+      {/* Validation errors */}
+      {validationErrors && validationErrors.length > 0 && (
+        <Alert severity="error" onClose={onClearErrors} sx={{ m: 2, mb: 0 }}>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Validation Errors:
+          </Typography>
+          {validationErrors.map((error, index) => (
+            <Typography key={index} variant="body2" sx={{ fontSize: '0.85rem' }}>
+              • {error}
+            </Typography>
+          ))}
+        </Alert>
+      )}
       {/* Header section */}
       <Box
         sx={{
@@ -476,6 +615,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
             sectionName={sectionName}
             sectionId={`section-${sectionName}`}
             instances={instances as any[]}
+            sectionSchema={schema?.sections?.[sectionName]}
           />
         ))}
       </Box>

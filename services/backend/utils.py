@@ -14,47 +14,84 @@ logger = logging.getLogger(__name__)
 
 
 def get_frontend_schema(model_class: BaseModel) -> Dict[str, Any]:
+    """
+    Generate a frontend-friendly schema from a Pydantic model.
+    Extracts nested model field information for proper rendering in the editor.
+    """
     try:
-        # Get the JSON schema from the Pydantic model
-        schema = model_class.model_json_schema()
-        
-        # Transform to editor-compatible format
-        editor_schema = {}
-        properties = schema.get("properties", {})
-        required_fields = schema.get("required", [])
-        
-        for prop_name, prop_def in properties.items():
-            field_schema = {
-                "type": "JSONField",  # Default for complex objects
-                "required": prop_name in required_fields,
-                "help_text": prop_def.get("description", "")
-            }
-            
-            # Map Pydantic types to frontend field types
-            if prop_def.get("type") == "string":
-                field_schema["type"] = "CharField"
-                if "maxLength" in prop_def:
-                    field_schema["max_length"] = prop_def["maxLength"]
-                if "enum" in prop_def:
-                    field_schema["choices"] = prop_def["enum"]
-            elif prop_def.get("type") == "integer":
-                field_schema["type"] = "IntegerField"
-            elif prop_def.get("type") == "boolean":
-                field_schema["type"] = "BooleanField"
-            elif prop_def.get("type") == "array":
-                field_schema["type"] = "JSONField"
-                field_schema["json_schema"] = prop_def
-            
-            editor_schema[prop_name] = field_schema
-        
+        # Get the full JSON schema from Pydantic
+        full_schema = model_class.model_json_schema()
+        definitions = full_schema.get("$defs", {})
+
+        # Build schema for each section (top-level array fields)
+        sections_schema = {}
+        properties = full_schema.get("properties", {})
+
+        for section_name, section_def in properties.items():
+            # Each section is an array of a nested model
+            if section_def.get("type") == "array":
+                items_def = section_def.get("items", {})
+
+                # Get the reference to the nested model definition
+                if "$ref" in items_def:
+                    # Extract model name from reference (e.g., "#/$defs/CellLine" -> "CellLine")
+                    model_ref = items_def["$ref"].split("/")[-1]
+                    nested_model_def = definitions.get(model_ref, {})
+
+                    # Extract fields from the nested model
+                    fields_schema = {}
+                    nested_properties = nested_model_def.get("properties", {})
+                    nested_required = nested_model_def.get("required", [])
+
+                    for field_name, field_def in nested_properties.items():
+                        field_schema = {
+                            "required": field_name in nested_required,
+                            "description": field_def.get("description", "")
+                        }
+
+                        # Determine field type and options
+                        field_type = field_def.get("type")
+
+                        # Handle Optional fields (anyOf with null)
+                        if "anyOf" in field_def:
+                            # Extract non-null type from anyOf
+                            non_null_types = [t for t in field_def["anyOf"] if t.get("type") != "null"]
+                            if non_null_types:
+                                field_def = non_null_types[0]
+                                field_type = field_def.get("type")
+
+                        # Check for enum (Literal types)
+                        if "enum" in field_def:
+                            field_schema["type"] = "select"
+                            field_schema["choices"] = field_def["enum"]
+                        elif field_type == "string":
+                            field_schema["type"] = "text"
+                            if "maxLength" in field_def:
+                                field_schema["max_length"] = field_def["maxLength"]
+                        elif field_type == "integer":
+                            field_schema["type"] = "number"
+                            field_schema["number_type"] = "integer"
+                        elif field_type == "number":
+                            field_schema["type"] = "number"
+                            field_schema["number_type"] = "float"
+                        elif field_type == "boolean":
+                            field_schema["type"] = "boolean"
+                        else:
+                            field_schema["type"] = "text"
+
+                        fields_schema[field_name] = field_schema
+
+                    sections_schema[section_name] = {
+                        "fields": fields_schema,
+                        "model_name": model_ref
+                    }
+
         return {
-            "schema": {
-                "fields": editor_schema
-            },
+            "sections": sections_schema,
             "model_name": model_class.__name__,
             "description": f"Schema for {model_class.__name__} model"
         }
-        
+
     except Exception as e:
         logger.error(f"Error generating frontend schema for {model_class.__name__}: {str(e)}")
         raise Exception(f"Schema generation failed: {str(e)}")

@@ -226,10 +226,12 @@ export default function CurationNewPage() {
   const [lastModified, setLastModified] = useState<string | null>(null);
   const [isLoadingCellLine, setIsLoadingCellLine] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
   const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(null);
   const [filterWorking, setFilterWorking] = useState(true);
   const [filterReady, setFilterReady] = useState(true);
+  const [filterRegistered, setFilterRegistered] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedForDownload, setSelectedForDownload] = useState<Set<string>>(new Set());
   const newNameInputRef = useRef<HTMLInputElement>(null);
@@ -287,6 +289,7 @@ export default function CurationNewPage() {
     if (!selectedCellLine) return;
 
     try {
+      setValidationErrors([]); // Clear previous errors
       const response = await fetch(`http://localhost:8001/working/cell-line/${selectedCellLine}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -304,12 +307,34 @@ export default function CurationNewPage() {
           setSelectedCellLine(result.filename);
           fetchAllCellLines(); // Refresh the file list
         }
+      } else if (response.status === 422) {
+        // Validation error - parse and display
+        const errorData = await response.json();
+        const errors = parseValidationErrors(errorData);
+        setValidationErrors(errors);
+        console.error('Validation errors:', errors);
       } else {
         console.error('Failed to save cell line:', response.statusText);
+        setValidationErrors([`Failed to save: ${response.statusText}`]);
       }
     } catch (error) {
       console.error('Error saving cell line:', error);
+      setValidationErrors(['An unexpected error occurred while saving']);
     }
+  };
+
+  // Parse Pydantic validation errors into user-friendly messages
+  const parseValidationErrors = (errorData: any): string[] => {
+    if (!errorData.detail || !Array.isArray(errorData.detail)) {
+      return ['Validation failed'];
+    }
+
+    return errorData.detail.map((error: any) => {
+      const location = error.loc?.slice(1).join(' → ') || 'Unknown field';
+      const message = error.msg || 'Invalid value';
+      const input = error.input !== undefined ? ` (got: "${error.input}")` : '';
+      return `${location}: ${message}${input}`;
+    });
   };
 
   // Create new cell line with initial name
@@ -945,7 +970,10 @@ export default function CurationNewPage() {
             onDiscard={async () => {
               await fetchCellLineData(selectedCellLine);
               setEditorKey(k => k + 1);
+              setValidationErrors([]);
             }}
+            validationErrors={validationErrors}
+            onClearErrors={() => setValidationErrors([])}
           />
         ) : (
           <Box sx={{ p: 2, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1092,6 +1120,16 @@ export default function CurationNewPage() {
                   }
                   label="Ready"
                 />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={filterRegistered}
+                      onChange={(e) => setFilterRegistered(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="Registered"
+                />
               </Box>
             </Popover>
           </Box>
@@ -1101,7 +1139,8 @@ export default function CurationNewPage() {
               const filteredCellLines = cellLines.filter(cl => {
                 // Filter by location
                 const locationMatch = (filterWorking && cl.location === 'working') ||
-                                     (filterReady && cl.location === 'ready');
+                                     (filterReady && cl.location === 'ready') ||
+                                     (filterRegistered && cl.location === 'registered');
                 // Filter by search query
                 const searchMatch = cl.name.toLowerCase().includes(searchQuery.toLowerCase());
                 return locationMatch && searchMatch;
