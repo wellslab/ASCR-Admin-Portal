@@ -195,51 +195,104 @@ class VersionControl:
         
         return latest_filename
     
-    def get_all_versions(self, base_name: str) -> List[str]:
-        """Get all versions for a base name (delegates to storage).
-        
+    def get_all_versions(self, base_name: str, location: str = "ready") -> List[str]:
+        """Get all versions for a base name in specified location.
+
         Retrieves all version files associated with a specific cell line base name from
-        the ready directory. This method delegates to the storage interface for file retrieval.
-        
+        the specified directory. This method delegates to the storage interface for file retrieval.
+
         Args:
             base_name (str): Base name to search for (e.g., 'TestCell001').
                 This should be the clean base name without any suffixes.
-            
+            location (str, optional): Directory location to search ("working", "ready", or "registered").
+                Defaults to "ready".
+
         Returns:
             List[str]: List of version filenames for the specified base name.
                 Filenames will follow the format '{base_name}_v{number}'.
                 Returns empty list if no versions found.
-                
+
         Example:
             >>> vc = VersionControl(storage)
-            >>> versions = vc.get_all_versions("TestCell001")
+            >>> versions = vc.get_all_versions("TestCell001", "ready")
             >>> print(versions)
             ['TestCell001_v0', 'TestCell001_v1', 'TestCell001_v2']
         """
-        return self.storage.get_files_for_base_name(base_name, "ready")
+        return self.storage.get_files_for_base_name(base_name, location)
     
+    def get_max_version_across_all_directories(self, base_name: str) -> int:
+        """Find maximum version number for a base name across all directories.
+
+        Searches working, ready, and registered directories for all versions of a cell line
+        and returns the highest version number found. This is used for global versioning
+        where version numbers increment across all directories.
+
+        Args:
+            base_name (str): Base name to search for (e.g., 'TestCell001').
+
+        Returns:
+            int: Maximum version number found across all directories, or -1 if no versions exist.
+
+        Example:
+            >>> vc = VersionControl(storage)
+            >>> max_ver = vc.get_max_version_across_all_directories("TestCell001")
+            >>> print(max_ver)  # Returns 2 if v0, v1, v2 exist across directories
+            2
+        """
+        all_version_numbers = []
+
+        for location in ["working", "ready", "registered"]:
+            files = self.storage.get_files_for_base_name(base_name, location)
+            for filename in files:
+                version = self.parse_version_from_filename(filename)
+                if version is not None:
+                    all_version_numbers.append(version)
+
+        return max(all_version_numbers) if all_version_numbers else -1
+
+    def get_next_global_version(self, base_name: str) -> int:
+        """Get next version number for a base name using global versioning.
+
+        Calculates the next version number by finding the maximum version across
+        all directories (working, ready, registered) and incrementing by 1.
+
+        Args:
+            base_name (str): Base name to get next version for.
+
+        Returns:
+            int: Next version number (0 if no versions exist, otherwise max + 1).
+
+        Example:
+            >>> vc = VersionControl(storage)
+            >>> next_ver = vc.get_next_global_version("TestCell001")
+            >>> print(next_ver)  # Returns 3 if highest existing version is 2
+            3
+        """
+        max_version = self.get_max_version_across_all_directories(base_name)
+        return max_version + 1
+
     def get_latest_version_data(self, base_name: str) -> Dict[str, Any]:
         """Get data for the latest version of a cell line.
-        
+
         Retrieves the complete data for the most recent version of a cell line, including
         both the metadata and the actual cell line data. This is a high-level convenience
         method that combines version lookup with data retrieval.
-        
+
         Args:
             base_name (str): Base name to get latest version for (e.g., 'TestCell001').
                 This should be the clean base name without any suffixes.
-            
+
         Returns:
             Dict[str, Any]: Dictionary containing complete version information:
                 - base_name (str): The original base name provided
                 - latest_version (int): Version number of the latest version
                 - filename (str): Filename of the latest version file
                 - data (Dict[str, Any]): The actual cell line data from the file
-                
+
         Raises:
             FileNotFoundError: If no versions found for the specified base name,
                 or if the latest version file cannot be read from storage.
-                
+
         Example:
             >>> vc = VersionControl(storage)
             >>> latest_data = vc.get_latest_version_data("TestCell001")
@@ -248,23 +301,23 @@ class VersionControl:
         """
         # Get all versions from storage
         existing_files = self.get_all_versions(base_name)
-        
+
         if not existing_files:
             raise FileNotFoundError(f"No versions found for cell line '{base_name}'")
-        
+
         # Find latest version
         latest_filename = self.get_latest_version(existing_files)
         if not latest_filename:
             raise FileNotFoundError(f"No valid versions found for cell line '{base_name}'")
-        
+
         # Parse version number
         latest_version_num = self.parse_version_from_filename(latest_filename)
-        
+
         # Get data from storage
         cell_line_data = self.storage.get(latest_filename, "ready")
         if not cell_line_data:
             raise FileNotFoundError(f"Latest version file '{latest_filename}' not found")
-        
+
         return {
             "base_name": base_name,
             "latest_version": latest_version_num,

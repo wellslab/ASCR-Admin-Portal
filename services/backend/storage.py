@@ -37,19 +37,19 @@ class StorageInterface(ABC):
     @abstractmethod
     def create(self, filename: str, data: Dict[str, Any], location: str = "working") -> Dict[str, Any]:
         """Create a new file in the specified location.
-        
+
         Args:
             filename (str): Name of the file to create (without extension).
             data (Dict[str, Any]): Cell line data dictionary containing required fields.
-            location (str, optional): Directory location, either "working" or "ready".
+            location (str, optional): Directory location: "working", "ready", or "registered".
                 Defaults to "working".
-            
+
         Returns:
             Dict[str, Any]: Response dictionary containing:
                 - status (str): "success" if operation completed successfully
                 - filename (str): Name of the created file
                 - message (str): Human-readable success message
-                
+
         Raises:
             ValueError: If data is invalid or missing required fields like hpscreg_name.
             FileExistsError: If file already exists in the specified location.
@@ -59,12 +59,12 @@ class StorageInterface(ABC):
     @abstractmethod
     def get(self, filename: str, location: str = "working") -> Optional[Dict]:
         """Retrieve a file from the specified location.
-        
+
         Args:
             filename (str): Name of the file to retrieve (without extension).
-            location (str, optional): Directory location, either "working" or "ready".
+            location (str, optional): Directory location: "working", "ready", or "registered".
                 Defaults to "working".
-            
+
         Returns:
             Optional[Dict]: File data dictionary if found, None otherwise. When found, contains:
                 - data (Dict[str, Any]): The actual cell line data
@@ -76,13 +76,13 @@ class StorageInterface(ABC):
     @abstractmethod
     def update(self, filename: str, data: Dict[str, Any], location: str = "working") -> Dict[str, Any]:
         """Update an existing file or create a new one in the specified location.
-        
+
         Args:
             filename (str): Name of the file to update (without extension).
             data (Dict[str, Any]): Updated cell line data dictionary.
-            location (str, optional): Directory location, either "working" or "ready".
+            location (str, optional): Directory location: "working", "ready", or "registered".
                 Defaults to "working".
-            
+
         Returns:
             Dict[str, Any]: Response dictionary containing:
                 - status (str): "success" if operation completed successfully
@@ -95,18 +95,18 @@ class StorageInterface(ABC):
     @abstractmethod
     def delete(self, filename: str, location: str = "working") -> Dict[str, Any]:
         """Delete a file from the specified location.
-        
+
         Args:
             filename (str): Name of the file to delete (without extension).
-            location (str, optional): Directory location, either "working" or "ready".
+            location (str, optional): Directory location: "working", "ready", or "registered".
                 Defaults to "working".
-            
+
         Returns:
             Dict[str, Any]: Response dictionary containing:
                 - status (str): "success" if operation completed successfully
                 - filename (str): Name of the deleted file
                 - message (str): Human-readable success message
-                
+
         Raises:
             FileNotFoundError: If the specified file doesn't exist in the location.
         """
@@ -116,10 +116,10 @@ class StorageInterface(ABC):
     def list_files(self, location: str = "working") -> List[str]:
         """
         List all files in specified location.
-        
+
         Args:
-            location: Directory location ("working" or "ready")
-            
+            location: Directory location ("working", "ready", or "registered")
+
         Returns:
             List of filenames
         """
@@ -129,11 +129,11 @@ class StorageInterface(ABC):
     def exists(self, filename: str, location: str = "working") -> bool:
         """
         Check if file exists in specified location.
-        
+
         Args:
             filename: Name of the file to check
-            location: Directory location ("working" or "ready")
-            
+            location: Directory location ("working", "ready", or "registered")
+
         Returns:
             True if file exists, False otherwise
         """
@@ -144,11 +144,11 @@ class StorageInterface(ABC):
         """
         Get all files matching a base name in specified location.
         Used by VersionControl to find existing versions.
-        
+
         Args:
             base_name: Base name to search for (e.g. "TestCell001")
-            location: Directory location ("working" or "ready")
-            
+            location: Directory location ("working", "ready", or "registered")
+
         Returns:
             List of filenames that match the base name
         """

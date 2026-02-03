@@ -6,15 +6,15 @@ logger = logging.getLogger(__name__)
 
 class DataTransport:
     """Orchestrates changing the state of cell line records between working, queued and registered states.
-        
+
     """
-    
+
     def __init__(self, storage, version_control):
         """Initialize DataTransport with storage and version control dependencies.
-        
+
         Sets up the orchestration layer by injecting the required storage and version control
         dependencies. This follows the Dependency Injection pattern for loose coupling.
-        
+
         Args:
             storage: StorageInterface implementation for file operations. Must implement
                 all required CRUD operations and file management methods.
@@ -23,7 +23,159 @@ class DataTransport:
         """
         self.storage = storage
         self.version_control = version_control
+
+    def _extract_hpscreg_name(self, data: Dict[str, Any]) -> str:
+        """Extract hpscreg_name from cell line data"""
+        cell_line_data = data.get("cell_line", []) or data.get("basic_data", [])
+        if not cell_line_data or not cell_line_data[0].get("hpscreg_name"):
+            raise ValueError("Cannot save file without hpscreg_name")
+        return cell_line_data[0]["hpscreg_name"]
+
+    def save_with_auto_versioning(self, cell_line_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Save cell line data with automatic global versioning.
+
+        Creates a new version of the cell line in the working directory. Version numbers
+        are calculated globally across all directories (working, ready, registered) to ensure
+        unique versioning even when duplicate names are used.
+
+        Args:
+            cell_line_data (Dict[str, Any]): Cell line data to save. Must contain hpscreg_name.
+
+        Returns:
+            Dict[str, Any]: Operation result containing:
+                - status (str): "success" if operation completed
+                - filename (str): Created filename with version suffix
+                - version (int): Version number assigned
+                - message (str): Human-readable success message
+
+        Raises:
+            ValueError: If hpscreg_name is missing from data
+            Exception: For any storage operation failures
+
+        Example:
+            >>> dt = DataTransport(storage, version_control)
+            >>> result = dt.save_with_auto_versioning({"cell_line": [{"hpscreg_name": "TEST001"}]})
+            >>> print(result['filename'])  # Returns "TEST001_v0" or next version
+            'TEST001_v0'
+        """
+        # Extract hpscreg_name as base name
+        base_name = self._extract_hpscreg_name(cell_line_data)
+
+        # Get next global version number
+        next_version = self.version_control.get_next_global_version(base_name)
+
+        # Create versioned filename
+        versioned_filename = self.version_control.create_versioned_filename(base_name, next_version)
+
+        try:
+            # Save to working directory
+            self.storage.create(versioned_filename, cell_line_data, "working")
+
+            logger.info(f"Created new version {versioned_filename} in working directory")
+
+            return {
+                "status": "success",
+                "filename": versioned_filename,
+                "version": next_version,
+                "message": f"Cell line saved as version {next_version}"
+            }
+
+        except Exception as e:
+            logger.error(f"Error saving with auto-versioning: {e}")
+            raise
     
+    def move_to_ready(self, filename: str) -> Dict[str, Any]:
+        """Move file from working to ready directory without creating new version.
+
+        The file already has a version number assigned, so this is a simple move operation
+        from working to ready status. The version number remains unchanged.
+
+        Args:
+            filename (str): Name of the file in working directory to move.
+
+        Returns:
+            Dict[str, Any]: Operation result containing:
+                - status (str): "success" if operation completed
+                - filename (str): Filename (unchanged)
+                - message (str): Human-readable success message
+
+        Raises:
+            FileNotFoundError: If file doesn't exist in working directory
+            Exception: For any storage operation failures
+        """
+        if not self.storage.exists(filename, "working"):
+            raise FileNotFoundError(f"File '{filename}' not found in working directory")
+
+        try:
+            # Get data from working
+            cell_line_data = self.storage.get(filename, "working")
+            if not cell_line_data:
+                raise FileNotFoundError(f"Could not read data from {filename}")
+
+            # Create in ready
+            self.storage.create(filename, cell_line_data["data"], "ready")
+
+            # Delete from working
+            self.storage.delete(filename, "working")
+
+            logger.info(f"Moved {filename} from working to ready")
+
+            return {
+                "status": "success",
+                "filename": filename,
+                "message": f"Cell line moved to ready status"
+            }
+
+        except Exception as e:
+            logger.error(f"Error moving {filename} to ready: {e}")
+            raise
+
+    def move_to_registered(self, filename: str) -> Dict[str, Any]:
+        """Move file from ready to registered directory.
+
+        This is typically called automatically by the ingestion monitor when a file
+        has been successfully ingested into the external database.
+
+        Args:
+            filename (str): Name of the file in ready directory to move.
+
+        Returns:
+            Dict[str, Any]: Operation result containing:
+                - status (str): "success" if operation completed
+                - filename (str): Filename (unchanged)
+                - message (str): Human-readable success message
+
+        Raises:
+            FileNotFoundError: If file doesn't exist in ready directory
+            Exception: For any storage operation failures
+        """
+        if not self.storage.exists(filename, "ready"):
+            raise FileNotFoundError(f"File '{filename}' not found in ready directory")
+
+        try:
+            # Get data from ready
+            cell_line_data = self.storage.get(filename, "ready")
+            if not cell_line_data:
+                raise FileNotFoundError(f"Could not read data from {filename}")
+
+            # Create in registered
+            self.storage.create(filename, cell_line_data["data"], "registered")
+
+            # Delete from ready
+            self.storage.delete(filename, "ready")
+
+            logger.info(f"Moved {filename} from ready to registered")
+
+            return {
+                "status": "success",
+                "filename": filename,
+                "message": f"Cell line moved to registered status"
+            }
+
+        except Exception as e:
+            logger.error(f"Error moving {filename} to registered: {e}")
+            raise
+
     def move_to_ready_with_versioning(self, working_filename: str) -> Dict[str, Any]:
         """Move file from working to ready with automatic versioning.
         
