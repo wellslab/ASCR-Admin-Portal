@@ -58,6 +58,9 @@ nav:
     - Production Deployment: prod_deployment_guide.md
   - Features:
     - Settings Page: features/settings-page.md
+  - Tests:
+    - Overview: tests/index.md
+    - Validation: tests/validation.md
   - Modules:
     - Storage: modules/storage.md
     - Version control: modules/version_control.md
