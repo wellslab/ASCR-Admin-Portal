@@ -1,16 +1,5 @@
-"""
-Tests for cell line data validation functionality.
-
-Tests validation at the API endpoint level, ensuring that invalid data
-is rejected with proper error messages and valid data passes through.
-
-Note: These tests run against the live backend service at localhost:8001.
-Make sure the service is running before executing these tests.
-"""
-
 import pytest
 import requests
-
 
 BASE_URL = "http://localhost:8001"
 
@@ -19,7 +8,13 @@ class TestCellLineValidation:
     """Test cell line creation and update validation"""
 
     def test_valid_cell_line_passes_validation(self, valid_cell_line_data):
-        """Test that valid cell line data passes validation"""
+        """
+        Test that valid cell line data passes validation.
+
+        - Given: valid cell line data
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 200 with `status: "success"`, `filename`, and `version`
+        """
         response = requests.post(f"{BASE_URL}/working/cell-line", json=valid_cell_line_data)
 
         assert response.status_code == 200
@@ -29,7 +24,13 @@ class TestCellLineValidation:
         assert "version" in result
 
     def test_invalid_cell_type_rejected(self, valid_cell_line_data):
-        """Test that invalid cell_type enum value is rejected"""
+        """
+        Test that invalid cell_type enum value is rejected.
+
+        - Given: cell line data with `cell_type` set to "invalid_cell_type"
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422 with error detail mentioning "cell_type"
+        """
         # Modify valid data to have invalid cell_type
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
@@ -44,7 +45,13 @@ class TestCellLineValidation:
         assert any("cell_type" in str(error).lower() for error in error_detail)
 
     def test_invalid_status_enum_rejected(self, valid_cell_line_data):
-        """Test that invalid status enum value is rejected"""
+        """
+        Test that invalid status enum value is rejected.
+
+        - Given: cell line data with `status` set to "InvalidStatus"
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422 with error detail mentioning "status"
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         invalid_data["cell_line"][0]["status"] = "InvalidStatus"
@@ -56,7 +63,13 @@ class TestCellLineValidation:
         assert any("status" in str(error).lower() for error in error_detail)
 
     def test_invalid_genotype_enum_rejected(self, valid_cell_line_data):
-        """Test that invalid genotype enum value is rejected"""
+        """
+        Test that invalid genotype enum value is rejected.
+
+        - Given: cell line data with `genotype` set to "InvalidGenotype"
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         invalid_data["cell_line"][0]["genotype"] = "InvalidGenotype"
@@ -66,7 +79,13 @@ class TestCellLineValidation:
         assert response.status_code == 422
 
     def test_missing_required_cell_type_rejected(self, valid_cell_line_data):
-        """Test that missing required field cell_type is rejected"""
+        """
+        Test that missing required field cell_type is rejected.
+
+        - Given: cell line data with `cell_type` field removed
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422 with error detail mentioning "cell_type"
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         del invalid_data["cell_line"][0]["cell_type"]
@@ -78,7 +97,13 @@ class TestCellLineValidation:
         assert any("cell_type" in str(error).lower() for error in error_detail)
 
     def test_invalid_float_field_rejected(self, valid_cell_line_data):
-        """Test that non-numeric value for float field is rejected"""
+        """
+        Test that non-numeric value for float field is rejected.
+
+        - Given: culture medium data with `co2_concentration` set to "not_a_number"
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422 with error detail mentioning "co2_concentration"
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         invalid_data["culture_medium"] = [{
@@ -96,7 +121,13 @@ class TestCellLineValidation:
         assert any("co2_concentration" in str(error).lower() for error in error_detail)
 
     def test_invalid_boolean_field_rejected(self, valid_cell_line_data):
-        """Test that non-boolean value for boolean field is rejected"""
+        """
+        Test that non-boolean value for boolean field is rejected.
+
+        - Given: cell line data with `frozen` set to "not_a_boolean"
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         invalid_data["cell_line"][0]["frozen"] = "not_a_boolean"  # Should be bool
@@ -106,7 +137,13 @@ class TestCellLineValidation:
         assert response.status_code == 422
 
     def test_max_length_violation_rejected(self, valid_cell_line_data):
-        """Test that string exceeding max_length is rejected"""
+        """
+        Test that string exceeding max_length is rejected.
+
+        - Given: cell line data with `hpscreg_name` set to 101 characters (exceeds max_length=100)
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         # hpscreg_name has max_length=100
@@ -117,7 +154,13 @@ class TestCellLineValidation:
         assert response.status_code == 422
 
     def test_update_endpoint_validates_data(self, valid_cell_line_data):
-        """Test that PUT endpoint also validates data"""
+        """
+        Test that PUT endpoint also validates data.
+
+        - Given: an existing cell line created with valid data
+        - When: attempting to update it via PUT with invalid `cell_type`
+        - Then: returns HTTP 422
+        """
         # First create a valid cell line
         create_response = requests.post(f"{BASE_URL}/working/cell-line", json=valid_cell_line_data)
         assert create_response.status_code == 200
@@ -133,7 +176,13 @@ class TestCellLineValidation:
         assert update_response.status_code == 422
 
     def test_multiple_validation_errors_returned(self, valid_cell_line_data):
-        """Test that multiple validation errors are returned together"""
+        """
+        Test that multiple validation errors are returned together.
+
+        - Given: cell line data with three invalid fields: `cell_type`, `status`, and `genotype`
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422 with at least 3 error messages in the detail array
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         invalid_data["cell_line"][0]["cell_type"] = "invalid_type"
@@ -148,7 +197,13 @@ class TestCellLineValidation:
         assert len(error_detail) >= 3
 
     def test_optional_fields_can_be_null(self, valid_cell_line_data):
-        """Test that optional fields can be null or omitted"""
+        """
+        Test that optional fields can be null or omitted.
+
+        - Given: cell line data with optional field `cell_line_alt_name` set to `null`
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 200 with successful creation
+        """
         import copy
         data = copy.deepcopy(valid_cell_line_data)
         # cell_line_alt_name is optional
@@ -159,7 +214,13 @@ class TestCellLineValidation:
         assert response.status_code == 200
 
     def test_date_field_validation(self, valid_cell_line_data):
-        """Test that invalid date format is rejected"""
+        """
+        Test that invalid date format is rejected.
+
+        - Given: cell line data with `embargo_date` set to "not-a-date"
+        - When: submitted to POST `/working/cell-line`
+        - Then: returns HTTP 422
+        """
         import copy
         invalid_data = copy.deepcopy(valid_cell_line_data)
         invalid_data["cell_line"][0]["embargo_date"] = "not-a-date"
@@ -173,7 +234,10 @@ class TestCellLineValidation:
 def valid_cell_line_data():
     """
     Fixture providing a valid cell line data structure.
-    Conforms to all Pydantic model validation rules.
+
+    Provides a baseline valid cell line data structure with all required fields
+    properly set and empty arrays for optional sections. Tests modify copies of
+    this fixture to introduce specific validation failures.
     """
     return {
         "cell_line": [{

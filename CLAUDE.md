@@ -213,6 +213,23 @@ cd services/frontend/my-app/
 npm test
 ```
 
+### Test Documentation Style
+
+When writing tests, document them using Given-When-Then format in docstrings:
+
+```python
+def test_example(self, fixture_data):
+    """
+    Brief description of what the test does.
+
+    - Given: initial condition or setup
+    - When: action being tested
+    - Then: expected outcome
+    """
+```
+
+These docstrings are automatically rendered in the mkdocs documentation. Keep test documentation in the code, not in separate markdown files. Use `./serve-docs.sh` to view the auto-generated test documentation.
+
 ## Performance Considerations
 
 - **File Storage**: No database overhead, simple JSON persistence
@@ -223,11 +240,79 @@ npm test
 
 ## Development Workflow
 
+### TDD-Based Feature Development
+
+When developing new features or functionality, follow this test-driven development workflow:
+
+1. **Requirements Gathering**
+   - Have an intelligent conversation about the feature requirements
+   - Clarify scope, constraints, and acceptance criteria
+   - **Always consider only the minimal implementation** based on requirements
+
+2. **Feature Specification**
+   - Create a spec sheet in `documentation/docs/features/`
+   - Document the minimal feature design that satisfies requirements
+   - Keep it simple - avoid overengineering at all costs
+
+3. **Test Coverage Planning**
+   - Establish comprehensive test coverage for the spec
+   - Define test cases using Given-When-Then format
+   - Ensure tests cover all acceptance criteria
+
+4. **Write Tests First**
+   - Implement tests based on the coverage plan
+   - Tests should fail initially (red state)
+   - Document tests with Given-When-Then docstrings
+
+5. **Implementation Phase**
+   - Implement the minimal solution to pass tests
+   - Work iteratively to green light all test coverage
+   - Refactor only when necessary and tests are green
+
+**Design Philosophy**: Keep it simple. Overengineering should be avoided at all costs. If there's a simpler way to achieve the requirement, choose that path.
+
+### Bug Fixing Workflow
+
+When addressing bugs, focus on root cause analysis and systemic issues:
+
+1. **Bug Investigation**
+   - Reproduce the bug reliably
+   - Understand the expected vs actual behavior
+   - Gather relevant logs, error messages, and context
+
+2. **Root Cause Analysis**
+   - Identify the immediate cause of the bug
+   - Look for underlying system design flaws contributing to the issue
+   - Consider whether the bug indicates a broader architectural problem
+
+3. **Solution Design**
+   - Determine the minimal fix that addresses the root cause
+   - If system design flaws exist, discuss whether they should be addressed now or separately
+   - Avoid band-aid solutions that hide deeper problems
+
+4. **Write Regression Test**
+   - Create a test that reproduces the bug (should fail before fix)
+   - Document with Given-When-Then format
+   - Ensure the test will catch this bug if it reappears
+
+5. **Fix Implementation**
+   - Implement the minimal fix to pass the regression test
+   - Address any identified system design issues if appropriate
+   - Verify the fix doesn't break existing functionality
+
+6. **Verification**
+   - All tests pass (including the new regression test)
+   - Bug is resolved in the actual system
+   - No new issues introduced
+
+### Day-to-Day Development
+
 1. **Start Services**: Use `./start.sh` for full stack development
 2. **Service Development**: Individual services can be run locally for faster iteration
 3. **API Testing**: Use FastAPI auto-generated docs at `/docs` endpoints
 4. **Frontend Development**: Hot reload available via Next.js dev server
 5. **Background Tasks**: Monitor Celery worker for long-running operations
+6. **Documentation**: Use `./serve-docs.sh` to view mkdocs documentation
 
 ## Important Notes
 
