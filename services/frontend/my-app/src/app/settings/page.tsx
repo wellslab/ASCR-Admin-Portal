@@ -1,8 +1,9 @@
 'use client';
 
-import { Typography, Box, TextField, Button, Alert, Divider, IconButton, InputAdornment } from '@mui/material';
+import { Typography, Box, TextField, Button, Alert, Divider, IconButton, InputAdornment, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/lib/api-config';
 import SaveIcon from '@mui/icons-material/Save';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -16,12 +17,14 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [apiKeySource, setApiKeySource] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
 
   // Fetch current settings
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('http://localhost:8001/settings');
+        const response = await fetch(getApiUrl('/settings'));
         if (response.ok) {
           const data = await response.json();
           const settings = data.settings;
@@ -31,6 +34,12 @@ export default function SettingsPage() {
             setApiKey(settings.OPENAI_API_KEY);
           }
           setApiKeySource(settings.OPENAI_API_KEY_SOURCE || null);
+          if (Array.isArray(settings.AVAILABLE_MODELS)) {
+            setAvailableModels(settings.AVAILABLE_MODELS);
+          }
+          if (settings.SELECTED_MODEL) {
+            setSelectedModel(settings.SELECTED_MODEL);
+          }
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -48,11 +57,12 @@ export default function SettingsPage() {
     setSaveError(null);
 
     try {
-      const response = await fetch('http://localhost:8001/settings', {
+      const response = await fetch(getApiUrl('/settings'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           OPENAI_API_KEY: apiKey || undefined,
+          SELECTED_MODEL: selectedModel || undefined,
         }),
       });
 
@@ -81,7 +91,7 @@ export default function SettingsPage() {
         flexDirection: 'column',
         alignItems: 'center',
         gap: 2,
-        minHeight: '92vh',
+        minHeight: 'calc(92vh - 24px)',
         backgroundColor: 'background.primary',
         p: 3,
       }}
@@ -175,6 +185,30 @@ export default function SettingsPage() {
                 }}
               />
             </Box>
+
+            {availableModels.length > 0 && (
+              <Box>
+                <Typography variant="body1" fontWeight={500} sx={{ mb: 0.5 }}>
+                  Curation Model
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                  The model used for all AI curation agents. Models are configured in <code>config.json</code>.
+                </Typography>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Model</InputLabel>
+                  <Select
+                    value={selectedModel}
+                    label="Model"
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    disabled={isLoading}
+                  >
+                    {availableModels.map((model) => (
+                      <MenuItem key={model} value={model}>{model}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
               <Button

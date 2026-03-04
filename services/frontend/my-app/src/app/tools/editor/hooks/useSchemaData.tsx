@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getApiUrl } from '@/lib/api-config';
 import { FieldSchema } from '../types/editor';
 
 export function useSchemaData() {
@@ -13,7 +14,7 @@ export function useSchemaData() {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8001/cellline-schema');
+      const response = await fetch(getApiUrl('/cellline-schema'));
       if (!response.ok) {
         throw new Error(`Failed to fetch schema: ${response.statusText}`);
       }

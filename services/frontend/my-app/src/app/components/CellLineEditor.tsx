@@ -1,13 +1,16 @@
 'use client';
 
-import { Box, Typography, TextField, IconButton, Collapse, Button, Switch, FormControlLabel, Popover, Select, MenuItem, Alert } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Collapse, Button, ButtonGroup, Switch, FormControlLabel, Popover, Select, MenuItem, Alert, Dialog, DialogTitle, DialogContent, List, ListItemButton, ListItemText, InputAdornment } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useTheme } from '@mui/material/styles';
+import { getApiUrl } from '@/lib/api-config';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 
 // Convert snake_case to Title Case for display
 const formatFieldName = (name: string): string => {
@@ -23,6 +26,97 @@ const formatSectionName = (name: string): string => {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+};
+
+const isObjectArray = (val: any): val is Record<string, any>[] =>
+  Array.isArray(val) && val.length > 0 && typeof val[0] === 'object' && val[0] !== null;
+
+const isPlainObject = (val: any): val is Record<string, any> =>
+  val !== null && typeof val === 'object' && !Array.isArray(val);
+
+// Recursively set a value at an arbitrary dot-path within a nested object/array structure.
+// Number-like parts are treated as array indices; strings are object keys.
+// Preserves array types: if the current value is a primitive array, parses rawValue as CSV.
+const setNestedValue = (obj: any, parts: string[], rawValue: string): void => {
+  if (parts.length === 1) {
+    const currentVal = obj[parts[0]];
+    if (Array.isArray(currentVal) && !isObjectArray(currentVal)) {
+      obj[parts[0]] = rawValue ? rawValue.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    } else {
+      obj[parts[0]] = rawValue || null;
+    }
+    return;
+  }
+  const [head, ...tail] = parts;
+  if (!isNaN(parseInt(tail[0]))) {
+    if (!Array.isArray(obj[head])) obj[head] = [];
+    const idx = parseInt(tail[0]);
+    if (!obj[head][idx]) obj[head][idx] = {};
+    setNestedValue(obj[head][idx], tail.slice(1), rawValue);
+  } else {
+    if (!isPlainObject(obj[head])) obj[head] = {};
+    setNestedValue(obj[head], tail, rawValue);
+  }
+};
+
+// Convert a dot-separated inputPrefix like "general.0.hla_results.2" into a typed path array.
+const pathFromPrefix = (prefix: string): (string | number)[] =>
+  prefix.split('.').map(p => /^\d+$/.test(p) ? parseInt(p) : p);
+
+interface ListInfo {
+  label: string;
+  path: (string | number)[];
+  id: string;
+}
+
+// Collect all addable lists: top-level sections that are real arrays, plus nested array-of-object fields.
+const buildAvailableLists = (
+  normalizedData: Record<string, any[]>,
+  originalData: Record<string, any[] | Record<string, any>>
+): ListInfo[] => {
+  const lists: ListInfo[] = [];
+
+  // Top-level sections that were originally arrays (not wrapped single objects)
+  for (const [sectionName, instances] of Object.entries(normalizedData)) {
+    if (Array.isArray(originalData[sectionName])) {
+      lists.push({
+        label: sectionName,
+        path: [sectionName],
+        id: `section-${sectionName}`,
+      });
+    }
+  }
+
+  // Nested array-of-objects fields within instances
+  const traverse = (obj: any, path: (string | number)[], labelParts: string[]) => {
+    if (!obj || typeof obj !== 'object') return;
+    for (const [key, val] of Object.entries(obj)) {
+      const nextPath = [...path, key];
+      const nextLabel = [...labelParts, key];
+      if (isObjectArray(val)) {
+        lists.push({ label: nextLabel.join('.'), path: nextPath, id: `list-${nextPath.join('-')}` });
+        traverse(val[0], [...nextPath, 0], nextLabel);
+      } else if (isPlainObject(val)) {
+        traverse(val, nextPath, nextLabel);
+      }
+    }
+  };
+
+  for (const [sectionName, instances] of Object.entries(normalizedData)) {
+    if (instances.length > 0) traverse(instances[0], [sectionName, 0], [sectionName]);
+  }
+  return lists;
+};
+
+// Build an empty item using the first existing item as a structural template.
+const createEmptyItem = (template: Record<string, any>): Record<string, any> => {
+  const empty: Record<string, any> = {};
+  for (const [key, val] of Object.entries(template)) {
+    if (isObjectArray(val)) empty[key] = [];
+    else if (isPlainObject(val)) empty[key] = createEmptyItem(val);
+    else empty[key] = null;
+  }
+  return empty;
 };
 
 interface FieldEditorProps {
@@ -158,16 +252,182 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
   );
 };
 
+// Nested single object — rendered as an indented sub-heading with its fields
+interface SubObjectEditorProps {
+  fieldName: string;
+  obj: Record<string, any>;
+  inputPrefix: string;
+  onDeleteItem?: (path: (string | number)[]) => void;
+}
+
+const SubObjectEditor = ({ fieldName, obj, inputPrefix, onDeleteItem }: SubObjectEditorProps) => {
+  const theme = useTheme();
+  return (
+    <Box sx={{ mt: 0.5, mb: 0.5 }}>
+      <Typography
+        variant="caption"
+        sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '0.75rem', display: 'block', mb: 0.25 }}
+      >
+        {formatFieldName(fieldName)}
+      </Typography>
+      <Box sx={{ pl: 2, borderLeft: `2px solid ${theme.palette.grey[200]}` }}>
+        {Object.entries(obj).map(([subKey, subVal]) => {
+          const subPrefix = `${inputPrefix}.${subKey}`;
+          if (isObjectArray(subVal)) return <SubArrayEditor key={subKey} fieldName={subKey} arr={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
+          if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
+          return <FieldEditor key={subKey} fieldName={subKey} value={subVal} inputName={subPrefix} />;
+        })}
+      </Box>
+    </Box>
+  );
+};
+
+// One item inside a SubArrayEditor — collapsible, labelled by its first field value
+interface SubArrayItemProps {
+  item: Record<string, any>;
+  inputPrefix: string;
+  index: number;
+  onDeleteItem?: (path: (string | number)[]) => void;
+}
+
+const SubArrayItem = ({ item, inputPrefix, index, onDeleteItem }: SubArrayItemProps) => {
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(true);
+  const [deleteAnchor, setDeleteAnchor] = useState<HTMLButtonElement | null>(null);
+  const entries = Object.entries(item);
+  const label = `Entry ${index + 1}`;
+
+  return (
+    <Box sx={{ mb: 0.5, border: `1px solid ${theme.palette.grey[200]}`, borderRadius: 1, overflow: 'hidden' }}>
+      <Box
+        onClick={() => setExpanded(!expanded)}
+        sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          px: 1, py: 0.5, cursor: 'pointer', backgroundColor: theme.palette.grey[50],
+          '&:hover': { backgroundColor: theme.palette.grey[100] },
+        }}
+      >
+        <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+          {label}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {onDeleteItem && (
+            <>
+              <IconButton
+                size="small"
+                sx={{ p: 0.25, color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+                onClick={(e) => { e.stopPropagation(); setDeleteAnchor(e.currentTarget); }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+              <Popover
+                open={Boolean(deleteAnchor)}
+                anchorEl={deleteAnchor}
+                onClose={() => setDeleteAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, minWidth: 180 }}>
+                  <Typography variant="body2" fontWeight={500}>Delete {label}?</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    <Button size="small" onClick={() => setDeleteAnchor(null)}>No</Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      color="error"
+                      onClick={() => { setDeleteAnchor(null); onDeleteItem(pathFromPrefix(inputPrefix)); }}
+                    >
+                      Yes
+                    </Button>
+                  </Box>
+                </Box>
+              </Popover>
+            </>
+          )}
+          <IconButton size="small" sx={{ p: 0.25 }}>
+            {expanded ? <ExpandLessIcon sx={{ fontSize: 14 }} /> : <ExpandMoreIcon sx={{ fontSize: 14 }} />}
+          </IconButton>
+        </Box>
+      </Box>
+      <Collapse in={expanded}>
+        <Box sx={{ p: 1 }}>
+          {entries.map(([subKey, subVal]) => {
+            const subPrefix = `${inputPrefix}.${subKey}`;
+            if (isObjectArray(subVal)) return <SubArrayEditor key={subKey} fieldName={subKey} arr={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
+            if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
+            return <FieldEditor key={subKey} fieldName={subKey} value={subVal} inputName={subPrefix} />;
+          })}
+        </Box>
+      </Collapse>
+    </Box>
+  );
+};
+
+// Array of objects — collapsible list
+interface SubArrayEditorProps {
+  fieldName: string;
+  arr: Record<string, any>[];
+  inputPrefix: string;
+  onDeleteItem?: (path: (string | number)[]) => void;
+}
+
+const SubArrayEditor = ({ fieldName, arr, inputPrefix, onDeleteItem }: SubArrayEditorProps) => {
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <Box id={`list-${inputPrefix.replace(/\./g, '-')}`} sx={{ mt: 0.5, mb: 0.5 }}>
+      <Box
+        onClick={() => setExpanded(!expanded)}
+        sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          cursor: 'pointer', py: 0.25,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '0.75rem' }}>
+            {formatFieldName(fieldName)}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+            ({arr.length})
+          </Typography>
+        </Box>
+        <IconButton size="small" sx={{ p: 0.25 }}>
+          {expanded ? <ExpandLessIcon sx={{ fontSize: 14 }} /> : <ExpandMoreIcon sx={{ fontSize: 14 }} />}
+        </IconButton>
+      </Box>
+      <Collapse in={expanded}>
+        <Box sx={{ pl: 2, borderLeft: `2px solid ${theme.palette.grey[200]}` }}>
+          {arr.map((item, i) => (
+            <SubArrayItem
+              key={i}
+              item={item}
+              inputPrefix={`${inputPrefix}.${i}`}
+              index={i}
+              onDeleteItem={onDeleteItem}
+            />
+          ))}
+        </Box>
+      </Collapse>
+    </Box>
+  );
+};
+
 interface InstanceEditorProps {
   instance: Record<string, any>;
   instanceIndex: number;
   sectionName: string;
   sectionSchema?: any;
+  deletable?: boolean;
+  onDeleteItem?: (path: (string | number)[]) => void;
 }
 
-const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema }: InstanceEditorProps) => {
+const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema, deletable, onDeleteItem }: InstanceEditorProps) => {
   const theme = useTheme();
+  const [deleteAnchor, setDeleteAnchor] = useState<HTMLButtonElement | null>(null);
   const fieldsSchema = sectionSchema?.fields || {};
+  const label = `Instance ${instanceIndex + 1}`;
 
   return (
     <Box
@@ -179,18 +439,62 @@ const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema }:
         border: `1px solid ${theme.palette.grey[200]}`,
       }}
     >
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block', fontSize: '0.7rem' }}>
-        Instance {instanceIndex + 1}
-      </Typography>
-      {Object.entries(instance).map(([fieldName, value]) => (
-        <FieldEditor
-          key={fieldName}
-          fieldName={fieldName}
-          value={value}
-          inputName={`${sectionName}.${instanceIndex}.${fieldName}`}
-          fieldSchema={fieldsSchema[fieldName]}
-        />
-      ))}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+          {label}
+        </Typography>
+        {deletable && onDeleteItem && (
+          <>
+            <IconButton
+              size="small"
+              sx={{ p: 0.25, color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+              onClick={(e) => setDeleteAnchor(e.currentTarget)}
+            >
+              <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+            <Popover
+              open={Boolean(deleteAnchor)}
+              anchorEl={deleteAnchor}
+              onClose={() => setDeleteAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, minWidth: 180 }}>
+                <Typography variant="body2" fontWeight={500}>Delete {label}?</Typography>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                  <Button size="small" onClick={() => setDeleteAnchor(null)}>No</Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="error"
+                    onClick={() => { setDeleteAnchor(null); onDeleteItem([sectionName, instanceIndex]); }}
+                  >
+                    Yes
+                  </Button>
+                </Box>
+              </Box>
+            </Popover>
+          </>
+        )}
+      </Box>
+      {Object.entries(instance).map(([fieldName, value]) => {
+        const inputPrefix = `${sectionName}.${instanceIndex}.${fieldName}`;
+        if (isObjectArray(value)) {
+          return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
+        }
+        if (isPlainObject(value)) {
+          return <SubObjectEditor key={fieldName} fieldName={fieldName} obj={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
+        }
+        return (
+          <FieldEditor
+            key={fieldName}
+            fieldName={fieldName}
+            value={value}
+            inputName={inputPrefix}
+            fieldSchema={fieldsSchema[fieldName]}
+          />
+        );
+      })}
     </Box>
   );
 };
@@ -200,9 +504,11 @@ interface SectionProps {
   sectionId: string;
   instances: any[];
   sectionSchema?: any;
+  sectionIsArray?: boolean;
+  onDeleteItem?: (path: (string | number)[]) => void;
 }
 
-const Section = ({ sectionName, sectionId, instances, sectionSchema }: SectionProps) => {
+const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsArray, onDeleteItem }: SectionProps) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(true);
 
@@ -250,6 +556,8 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema }: SectionPr
                 instanceIndex={index}
                 sectionName={sectionName}
                 sectionSchema={sectionSchema}
+                deletable={sectionIsArray}
+                onDeleteItem={onDeleteItem}
               />
             ))
           ) : (
@@ -318,11 +626,11 @@ const TableOfContents = ({ sections, onSectionClick }: TableOfContentsProps) => 
 };
 
 interface CellLineEditorProps {
-  data: Record<string, any[]>;
+  data: Record<string, any[] | Record<string, any>>;
   cellLineName: string;
   filename: string;
   lastModified: string | null;
-  onSave: (data: Record<string, any[]>) => void;
+  onSave: (data: Record<string, any[] | Record<string, any>>) => void;
   onCreate: (name: string) => void;
   onDiscard: () => void;
   validationErrors?: string[];
@@ -338,12 +646,15 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
   const [discardAnchor, setDiscardAnchor] = useState<HTMLButtonElement | null>(null);
   const newNameInputRef = useRef<HTMLInputElement>(null);
   const [schema, setSchema] = useState<any>(null);
+  const [addItemOpen, setAddItemOpen] = useState(false);
+  const [addItemSearch, setAddItemSearch] = useState('');
+  const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
   // Fetch schema on mount
   useEffect(() => {
     const fetchSchema = async () => {
       try {
-        const response = await fetch('http://localhost:8001/cellline-schema');
+        const response = await fetch(getApiUrl('/cellline-schema'));
         if (response.ok) {
           const schemaData = await response.json();
           setSchema(schemaData);
@@ -355,36 +666,103 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
     fetchSchema();
   }, []);
 
-  const handleSave = () => {
-    if (!formRef.current) return;
+  // Normalize: convert single objects to arrays for consistent internal rendering
+  const normalizedData: Record<string, any[]> = Object.fromEntries(
+    Object.entries(data || {}).map(([key, val]) => [
+      key,
+      Array.isArray(val) ? val : (val && typeof val === 'object' ? [val] : []),
+    ])
+  );
 
-    if (onClearErrors) onClearErrors(); // Clear previous errors
+  const availableLists = useMemo(() => buildAvailableLists(normalizedData, data), [normalizedData]);
+  const filteredLists = useMemo(
+    () => availableLists.filter(l => l.label.toLowerCase().includes(addItemSearch.toLowerCase())),
+    [availableLists, addItemSearch]
+  );
+
+  const collectNormalizedFormData = (): Record<string, any[]> => {
+    const newData: Record<string, any[]> = JSON.parse(JSON.stringify(normalizedData));
+    if (!formRef.current) return newData;
     const formData = new FormData(formRef.current);
-    const newData: Record<string, any[]> = JSON.parse(JSON.stringify(data)); // Deep clone original
-
-    // Parse form data back into nested structure
     for (const [key, value] of formData.entries()) {
-      const [sectionName, indexStr, fieldName] = key.split('.');
+      const parts = key.split('.');
+      const [sectionName, indexStr, fieldName, ...rest] = parts;
       const index = parseInt(indexStr, 10);
-
-      if (newData[sectionName] && newData[sectionName][index]) {
-        // Get field schema to determine type
+      if (!newData[sectionName]?.[index]) continue;
+      if (rest.length === 0) {
+        const originalVal = newData[sectionName][index][fieldName];
         const fieldSchema = schema?.sections?.[sectionName]?.fields?.[fieldName];
-
-        // Convert values based on field type
-        if (fieldSchema?.type === 'number') {
+        if (Array.isArray(originalVal) && !isObjectArray(originalVal)) {
+          // Preserve array type: parse CSV string back to array (or keep as empty array)
+          newData[sectionName][index][fieldName] = (value as string)
+            ? (value as string).split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+        } else if (fieldSchema?.type === 'number') {
           newData[sectionName][index][fieldName] = value ? parseFloat(value as string) : null;
         } else if (fieldSchema?.type === 'boolean') {
-          // For boolean dropdowns, value will be 'true' or 'false' string
           newData[sectionName][index][fieldName] = value === 'true';
         } else {
           newData[sectionName][index][fieldName] = value || null;
         }
+      } else {
+        setNestedValue(newData[sectionName][index], [fieldName, ...rest], value as string);
       }
     }
-
-    onSave(newData);
+    return newData;
   };
+
+  const denormalize = (newData: Record<string, any[]>): Record<string, any[] | Record<string, any>> => {
+    const outputData: Record<string, any[] | Record<string, any>> = {};
+    for (const [sectionName, instances] of Object.entries(newData)) {
+      const wasArray = Array.isArray(data[sectionName]);
+      outputData[sectionName] = wasArray ? instances : (instances[0] ?? null);
+    }
+    return outputData;
+  };
+
+  const handleSave = () => {
+    if (onClearErrors) onClearErrors();
+    onSave(denormalize(collectNormalizedFormData()));
+  };
+
+  const handleDeleteItem = (path: (string | number)[]) => {
+    const newData = collectNormalizedFormData();
+    let parent: any = newData;
+    for (let i = 0; i < path.length - 1; i++) {
+      parent = parent[path[i]];
+      if (parent == null) return;
+    }
+    const lastIdx = path[path.length - 1];
+    if (Array.isArray(parent) && typeof lastIdx === 'number') {
+      parent.splice(lastIdx, 1);
+    }
+    onSave(denormalize(newData));
+  };
+
+  const handleAddItem = (list: ListInfo) => {
+    const newData = collectNormalizedFormData();
+    // Navigate to the target list via its path
+    let target: any = newData;
+    for (const part of list.path) {
+      if (!target) break;
+      target = target[part];
+    }
+    if (Array.isArray(target)) {
+      target.push(target.length > 0 ? createEmptyItem(target[0]) : {});
+    }
+    setAddItemOpen(false);
+    setAddItemSearch('');
+    setScrollTarget(list.id);
+    onSave(denormalize(newData));
+  };
+
+  // Scroll to newly added list after data updates
+  useEffect(() => {
+    if (!scrollTarget) return;
+    const el = document.getElementById(scrollTarget);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setScrollTarget(null);
+  }, [data, scrollTarget]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -403,7 +781,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
     );
   }
 
-  const sectionNames = Object.keys(data);
+  const sectionNames = Object.keys(normalizedData);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
@@ -439,7 +817,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
             Last Edited: {lastModified ? new Date(lastModified).toLocaleString() : '—'}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
           <FormControlLabel
             control={
               <Switch
@@ -450,39 +828,55 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
             }
             label={isQueued ? 'Queued' : 'Working'}
             labelPlacement="start"
-            sx={{ mr: 1 }}
+            sx={{ mr: 0 }}
           />
-          <Button
-            variant="contained"
+          <ButtonGroup
             size="small"
-            startIcon={<SaveIcon />}
-            onClick={handleSave}
-            disabled={isSaving}
-            sx={{
-              backgroundColor: theme.palette.secondary.dark,
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.main,
-              },
-            }}
-          >
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
-          <Button
             variant="outlined"
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={(e) => setCreateAnchor(e.currentTarget)}
             sx={{
-              borderColor: theme.palette.secondary.dark,
-              color: theme.palette.secondary.dark,
-              '&:hover': {
-                borderColor: theme.palette.secondary.main,
-                backgroundColor: theme.palette.action.hover,
+              '& .MuiButton-root': {
+                fontSize: '0.75rem',
+                px: 1.25,
+                py: 0.5,
+                whiteSpace: 'nowrap',
+                minWidth: 'unset',
+                lineHeight: 1.5,
+                borderColor: theme.palette.secondary.dark,
+                color: theme.palette.secondary.dark,
+                '&:hover': {
+                  borderColor: theme.palette.secondary.main,
+                  backgroundColor: theme.palette.action.hover,
+                },
               },
+              '& .MuiButton-startIcon': { mr: 0.5 },
+              '& .MuiButton-startIcon svg': { fontSize: '0.9rem !important' },
             }}
           >
-            New
-          </Button>
+            <Button
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              disabled={isSaving}
+              sx={{
+                backgroundColor: `${theme.palette.secondary.dark} !important`,
+                color: 'white !important',
+                '&:hover': { backgroundColor: `${theme.palette.secondary.main} !important` },
+                '&:disabled': { backgroundColor: `${theme.palette.grey[300]} !important`, color: `${theme.palette.grey[500]} !important` },
+              }}
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </Button>
+            <Button startIcon={<AddIcon />} onClick={(e) => setCreateAnchor(e.currentTarget)}>
+              New
+            </Button>
+            <Button startIcon={<AddIcon />} onClick={() => setAddItemOpen(true)}>
+              Add Entry
+            </Button>
+            <Button startIcon={<RefreshIcon />} onClick={(e) => setDiscardAnchor(e.currentTarget)}>
+              Reset
+            </Button>
+          </ButtonGroup>
+
+          {/* New cell line popover */}
           <Popover
             open={Boolean(createAnchor)}
             anchorEl={createAnchor}
@@ -502,10 +896,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const value = newNameInputRef.current?.value.trim();
-                    if (value) {
-                      onCreate(value);
-                      setCreateAnchor(null);
-                    }
+                    if (value) { onCreate(value); setCreateAnchor(null); }
                   }
                 }}
               />
@@ -514,38 +905,16 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
                 size="small"
                 onClick={() => {
                   const value = newNameInputRef.current?.value.trim();
-                  if (value) {
-                    onCreate(value);
-                    setCreateAnchor(null);
-                  }
+                  if (value) { onCreate(value); setCreateAnchor(null); }
                 }}
-                sx={{
-                  backgroundColor: theme.palette.secondary.dark,
-                  '&:hover': {
-                    backgroundColor: theme.palette.secondary.main,
-                  },
-                }}
+                sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
               >
                 Create
               </Button>
             </Box>
           </Popover>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<RefreshIcon />}
-            onClick={(e) => setDiscardAnchor(e.currentTarget)}
-            sx={{
-              borderColor: theme.palette.secondary.dark,
-              color: theme.palette.secondary.dark,
-              '&:hover': {
-                borderColor: theme.palette.secondary.main,
-                backgroundColor: theme.palette.action.hover,
-              },
-            }}
-          >
-            Reset
-          </Button>
+
+          {/* Reset confirmation popover */}
           <Popover
             open={Boolean(discardAnchor)}
             anchorEl={discardAnchor}
@@ -558,25 +927,12 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
                 Are you sure you want to reset changes?
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                <Button
-                  size="small"
-                  onClick={() => setDiscardAnchor(null)}
-                >
-                  No
-                </Button>
+                <Button size="small" onClick={() => setDiscardAnchor(null)}>No</Button>
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={() => {
-                    setDiscardAnchor(null);
-                    onDiscard();
-                  }}
-                  sx={{
-                    backgroundColor: theme.palette.secondary.dark,
-                    '&:hover': {
-                      backgroundColor: theme.palette.secondary.main,
-                    },
-                  }}
+                  onClick={() => { setDiscardAnchor(null); onDiscard(); }}
+                  sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
                 >
                   Yes
                 </Button>
@@ -609,13 +965,15 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
           },
         }}
       >
-        {Object.entries(data).map(([sectionName, instances]) => (
+        {Object.entries(normalizedData).map(([sectionName, instances]) => (
           <Section
             key={sectionName}
             sectionName={sectionName}
             sectionId={`section-${sectionName}`}
-            instances={instances as any[]}
+            instances={instances}
             sectionSchema={schema?.sections?.[sectionName]}
+            sectionIsArray={Array.isArray(data[sectionName])}
+            onDeleteItem={handleDeleteItem}
           />
         ))}
       </Box>
@@ -623,6 +981,50 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
       {/* Table of Contents */}
       <TableOfContents sections={sectionNames} onSectionClick={scrollToSection} />
       </Box>
+
+      {/* Add Entry Dialog */}
+      <Dialog open={addItemOpen} onClose={() => { setAddItemOpen(false); setAddItemSearch(''); }} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography component="span" variant="h6" fontWeight={600} display="block">Add Entry</Typography>
+          <Typography component="span" variant="body2" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+            Select a list to add an entry to
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            placeholder="Search lists..."
+            value={addItemSearch}
+            onChange={(e) => setAddItemSearch(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 1 }}
+          />
+          {filteredLists.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
+              No lists found
+            </Typography>
+          ) : (
+            <List dense disablePadding>
+              {filteredLists.map((list) => (
+                <ListItemButton key={list.id} onClick={() => handleAddItem(list)} sx={{ borderRadius: 1 }}>
+                  <ListItemText
+                    primary={list.label}
+                    primaryTypographyProps={{ fontSize: '0.8rem', fontFamily: 'monospace' }}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

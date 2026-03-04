@@ -1,6 +1,6 @@
 'use client';
 
-import { Typography, Box, List, ListItem, ListItemIcon, ListItemText, IconButton, LinearProgress, Skeleton, Popover, TextField, Checkbox, FormControlLabel, InputAdornment, Collapse, Tooltip } from '@mui/material';
+import { Typography, Box, List, ListItem, ListItemIcon, ListItemText, IconButton, LinearProgress, Skeleton, Popover, TextField, Checkbox, FormControlLabel, InputAdornment, Collapse, Tooltip, Alert } from '@mui/material';
 import { Button } from '@mui/material';
 import BlurOnOutlinedIcon from '@mui/icons-material/BlurOnOutlined';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
@@ -9,6 +9,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -18,6 +19,7 @@ import { useSearchParams } from 'next/navigation';
 import AddIcon from '@mui/icons-material/Add';
 import Card from '@/app/components/Card';
 import CellLineEditor from '@/app/components/CellLineEditor';
+import { getApiUrl } from '@/lib/api-config';
 
 // Utility function to convert File to Base64
 const fileToBase64 = (file: File): Promise<string> => {
@@ -222,10 +224,12 @@ export default function CurationNewPage() {
   }>>([]);
   const [cellLines, setCellLines] = useState<Array<{ name: string; location: string }>>([]);
   const [selectedCellLine, setSelectedCellLine] = useState<string | null>(null);
-  const [editedMetadata, setEditedMetadata] = useState<Record<string, any[]>>({});
+  const [editedMetadata, setEditedMetadata] = useState<Record<string, any[] | Record<string, any>>>({});
   const [lastModified, setLastModified] = useState<string | null>(null);
   const [isLoadingCellLine, setIsLoadingCellLine] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isNewCellLine, setIsNewCellLine] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
   const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(null);
@@ -234,13 +238,15 @@ export default function CurationNewPage() {
   const [filterRegistered, setFilterRegistered] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedForDownload, setSelectedForDownload] = useState<Set<string>>(new Set());
+  const [deleteAnchorEl, setDeleteAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [pendingDeleteName, setPendingDeleteName] = useState<string | null>(null);
   const newNameInputRef = useRef<HTMLInputElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Fetch task history from backend
   const fetchTaskHistory = async () => {
     try {
-      const response = await fetch('http://localhost:8001/tasks?limit=50');
+      const response = await fetch(getApiUrl('/tasks?limit=50'));
       if (response.ok) {
         const data = await response.json();
         setActiveTasks(data.tasks || []);
@@ -253,7 +259,7 @@ export default function CurationNewPage() {
   // Fetch all cell lines from backend (both working and ready)
   const fetchAllCellLines = async () => {
     try {
-      const response = await fetch('http://localhost:8001/get-all-cell-lines');
+      const response = await fetch(getApiUrl('/get-all-cell-lines'));
       if (response.ok) {
         const data = await response.json();
         setCellLines(data.cell_lines || []);
@@ -266,59 +272,70 @@ export default function CurationNewPage() {
   // Fetch specific cell line data
   const fetchCellLineData = async (filename: string) => {
     setIsLoadingCellLine(true);
+    setFetchError(null);
     try {
-      const response = await fetch(`http://localhost:8001/cell-line/${filename}`);
+      const response = await fetch(getApiUrl(`/cell-line/${filename}`));
       if (response.ok) {
         const result = await response.json();
         // Backend returns { data: {...}, location: "...", filename: "...", last_modified: "..." }
         setEditedMetadata(result.data);
         setSelectedCellLine(filename);
+        setIsNewCellLine(false);
         setLastModified(result.last_modified || null);
+        setEditorKey(k => k + 1); // Force remount so uncontrolled inputs reset to new defaultValues
+      } else if (response.status === 404) {
+        setFetchError(`Cell line "${filename.replace('.json', '')}" was not found. It may have been deleted or moved.`);
       } else {
-        console.error('Failed to fetch cell line:', response.statusText);
+        setFetchError(`Failed to load cell line: ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Error fetching cell line data:', error);
+      setFetchError('Network error — could not reach the backend.');
     } finally {
       setIsLoadingCellLine(false);
     }
   };
 
   // Save cell line data to backend
-  const saveCellLine = async (data: Record<string, any[]>) => {
+  const saveCellLine = async (data: Record<string, any[] | Record<string, any>>) => {
     if (!selectedCellLine) return;
 
     try {
-      setValidationErrors([]); // Clear previous errors
-      const response = await fetch(`http://localhost:8001/working/cell-line/${selectedCellLine}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      setValidationErrors([]);
+
+      const response = isNewCellLine
+        ? await fetch(getApiUrl('/working/cell-line'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          })
+        : await fetch(getApiUrl(`/working/cell-line/${selectedCellLine}`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Cell line saved successfully');
         setEditedMetadata(data);
         setLastModified(new Date().toISOString());
 
-        // If filename changed (hpscreg_name was updated), update selected cell line
-        if (result.filename && result.filename !== selectedCellLine) {
+        if (isNewCellLine) {
+          // First save: update to the versioned filename assigned by the backend
+          setIsNewCellLine(false);
           setSelectedCellLine(result.filename);
-          fetchAllCellLines(); // Refresh the file list
+          fetchAllCellLines();
         }
+      } else if (response.status === 409) {
+        const error = await response.json();
+        setValidationErrors([error.detail || 'Cannot save: conflict with existing cell line']);
       } else if (response.status === 422) {
-        // Validation error - parse and display
         const errorData = await response.json();
         const errors = parseValidationErrors(errorData);
         setValidationErrors(errors);
-        console.error('Validation errors:', errors);
       } else {
-        console.error('Failed to save cell line:', response.statusText);
         setValidationErrors([`Failed to save: ${response.statusText}`]);
       }
     } catch (error) {
-      console.error('Error saving cell line:', error);
       setValidationErrors(['An unexpected error occurred while saving']);
     }
   };
@@ -339,21 +356,39 @@ export default function CurationNewPage() {
 
   // Create new cell line with initial name
   const createNewCellLine = async (name: string) => {
+    // Check for conflicts against the already-loaded cell line list
+    const extractBase = (fn: string) => fn.includes('_v') ? fn.split('_v')[0] : fn;
+    const workingConflict = cellLines.find(cl => extractBase(cl.name) === name && cl.location === 'working');
+    const readyConflict = cellLines.find(cl => extractBase(cl.name) === name && cl.location === 'ready');
+
+    if (workingConflict) {
+      setFetchError(`A working copy of "${name}" already exists. Select it from the list to edit it.`);
+      return;
+    }
+    if (readyConflict) {
+      setFetchError(`Cannot create "${name}": a ready copy exists. Finalise this cell line before creating a new version.`);
+      return;
+    }
+
+    setIsNewCellLine(true);
     setIsLoadingCellLine(true);
-    setSelectedCellLine(name); // Set immediately so skeleton shows
+    setSelectedCellLine(name); // Set so skeleton shows while loading
     try {
-      // Fetch empty form structure from backend with hpscreg_name
-      const response = await fetch(`http://localhost:8001/get-empty-form?hpscreg_name=${encodeURIComponent(name)}`);
+      const response = await fetch(getApiUrl(`/get-empty-form?hpscreg_name=${encodeURIComponent(name)}`));
       if (!response.ok) {
-        console.error('Failed to fetch empty form structure');
+        setFetchError('Failed to fetch empty form structure');
+        setSelectedCellLine(null);
+        setIsNewCellLine(false);
         return;
       }
       const emptyData = await response.json();
       setEditedMetadata(emptyData);
       setLastModified(null);
-      setEditorKey(k => k + 1); // Force re-mount to reset uncontrolled inputs
+      setEditorKey(k => k + 1);
     } catch (error) {
-      console.error('Error creating new cell line:', error);
+      setFetchError('Error creating new cell line');
+      setSelectedCellLine(null);
+      setIsNewCellLine(false);
     } finally {
       setIsLoadingCellLine(false);
     }
@@ -363,7 +398,7 @@ export default function CurationNewPage() {
   const downloadCellLine = async (filename: string, e?: React.MouseEvent) => {
     e?.stopPropagation(); // Prevent selecting the cell line
     try {
-      const response = await fetch(`http://localhost:8001/cell-line/${filename}`);
+      const response = await fetch(getApiUrl(`/cell-line/${filename}`));
       if (response.ok) {
         const result = await response.json();
         const dataStr = JSON.stringify(result.data, null, 2);
@@ -381,6 +416,30 @@ export default function CurationNewPage() {
       }
     } catch (error) {
       console.error('Error downloading cell line:', error);
+    }
+  };
+
+  // Delete a working cell line
+  const deleteCellLine = async (filename: string) => {
+    try {
+      const response = await fetch(getApiUrl('/working/cell-line'), {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename }),
+      });
+      if (response.ok) {
+        setCellLines(prev => prev.filter(cl => cl.name !== filename));
+        if (selectedCellLine === filename) {
+          setSelectedCellLine(null);
+          setEditedMetadata({});
+        }
+        setSelectedForDownload(prev => { const next = new Set(prev); next.delete(filename); return next; });
+      } else {
+        const err = await response.json();
+        console.error('Failed to delete cell line:', err.detail);
+      }
+    } catch (error) {
+      console.error('Error deleting cell line:', error);
     }
   };
 
@@ -411,7 +470,7 @@ export default function CurationNewPage() {
   // Retry a failed task
   const retryTask = async (taskId: string) => {
     try {
-      const response = await fetch(`http://localhost:8001/tasks/${taskId}/retry`, {
+      const response = await fetch(getApiUrl(`/tasks/${taskId}/retry`), {
         method: 'POST',
       });
 
@@ -441,7 +500,7 @@ export default function CurationNewPage() {
   // Clear a task from the list and backend
   const clearTask = async (taskId: string) => {
     try {
-      const response = await fetch(`http://localhost:8001/tasks/${taskId}`, {
+      const response = await fetch(getApiUrl(`/tasks/${taskId}`), {
         method: 'DELETE',
       });
 
@@ -662,7 +721,7 @@ export default function CurationNewPage() {
         display: 'flex',
         flexDirection: 'row',
         gap: 2,
-        height: '92vh',
+        height: 'calc(92vh - 24px)',
         backgroundColor: 'background.primary',
         borderRadius: 3,
         boxShadow: '0 1px 2px rgba(15, 23, 42, 0.06)',
@@ -831,7 +890,7 @@ export default function CurationNewPage() {
                   );
 
                   // Call the API
-                  const response = await fetch('http://localhost:8001/start-ai-curation', {
+                  const response = await fetch(getApiUrl('/start-ai-curation'), {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -932,6 +991,11 @@ export default function CurationNewPage() {
 
       {/* Middle half (two quarters merged) */}
       <Card flex={2} header='Cell Line Editor'>
+        {fetchError && (
+          <Alert severity="warning" onClose={() => setFetchError(null)} sx={{ mx: 2, mt: 1 }}>
+            {fetchError}
+          </Alert>
+        )}
         {isLoadingCellLine ? (
           <Box sx={{ display: 'flex', height: '100%', '& .MuiSkeleton-wave::after': { animationDuration: '0.7s' } }}>
             <Box sx={{ flex: 1, p: 2 }}>
@@ -976,7 +1040,8 @@ export default function CurationNewPage() {
             onClearErrors={() => setValidationErrors([])}
           />
         ) : (
-          <Box sx={{ p: 2, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="body2" color="text.secondary">
               Select a cell line from the right panel, or create a new one.
             </Typography>
@@ -1043,6 +1108,7 @@ export default function CurationNewPage() {
                 </Button>
               </Box>
             </Popover>
+            </Box>
           </Box>
         )}
       </Card>
@@ -1184,18 +1250,25 @@ export default function CurationNewPage() {
                           component="div"
                           onClick={() => fetchCellLineData(cellLine.name)}
                           secondaryAction={
-                            <IconButton
-                              edge="end"
-                              size="small"
-                              onClick={(e) => downloadCellLine(cellLine.name, e)}
-                              sx={{
-                                '&:hover': {
-                                  backgroundColor: theme.palette.action.hover,
-                                }
-                              }}
-                            >
-                              <DownloadIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              {cellLine.location === 'working' && (
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => { e.stopPropagation(); setPendingDeleteName(cellLine.name); setDeleteAnchorEl(e.currentTarget); }}
+                                  sx={{ '&:hover': { color: 'error.main' } }}
+                                >
+                                  <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                              )}
+                              <IconButton
+                                edge="end"
+                                size="small"
+                                onClick={(e) => downloadCellLine(cellLine.name, e)}
+                                sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
+                              >
+                                <DownloadIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </Box>
                           }
                           sx={{
                             cursor: 'pointer',
@@ -1228,6 +1301,37 @@ export default function CurationNewPage() {
               );
             })()}
           </Box>
+
+          {/* Delete confirmation popover */}
+          <Popover
+            open={Boolean(deleteAnchorEl)}
+            anchorEl={deleteAnchorEl}
+            onClose={() => { setDeleteAnchorEl(null); setPendingDeleteName(null); }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, minWidth: 200 }}>
+              <Typography variant="body2" fontWeight={500}>
+                Delete {pendingDeleteName?.replace('.json', '')}?
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                This cannot be undone.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Button size="small" onClick={() => { setDeleteAnchorEl(null); setPendingDeleteName(null); }}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="error"
+                  onClick={() => { if (pendingDeleteName) deleteCellLine(pendingDeleteName); setDeleteAnchorEl(null); setPendingDeleteName(null); }}
+                >
+                  Delete
+                </Button>
+              </Box>
+            </Box>
+          </Popover>
 
           {/* Download Button at bottom */}
           <Button

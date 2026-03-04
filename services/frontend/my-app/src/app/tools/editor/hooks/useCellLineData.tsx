@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getApiUrl } from '@/lib/api-config';
 import { CellLineData, CellLineTemplate } from '../types/editor';
 import { API_ENDPOINTS } from '../../../../lib/api';
 
@@ -109,18 +110,19 @@ export function useCellLineData() {
     }
   }, []);
 
-  // Create a new empty template (simplified)
-  const getNewTemplate = useCallback(async () => {
-    const emptyTemplate = {
-      id: 'new',
-      basic_data: [{ hpscreg_name: '', cell_type: '', frozen: 'False' }],
-      contact: [{ first_name: '', last_name: '', e_mail: '' }],
-      publications: [{ title: '', journal: '', year: '' }],
-      donor: [{ age: '', sex: '', disease_name: '' }],
-      // ... other empty sections
-    };
-    setSelectedCellLine(emptyTemplate);
-    return emptyTemplate;
+  // Create a new empty template by fetching from backend
+  const getNewTemplate = useCallback(async (hpscreg_name?: string) => {
+    try {
+      const url = getApiUrl(`/get-empty-form${hpscreg_name ? `?hpscreg_name=${encodeURIComponent(hpscreg_name)}` : ''}`);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch empty form');
+      const emptyTemplate = await response.json();
+      setSelectedCellLine(emptyTemplate);
+      return emptyTemplate;
+    } catch (err) {
+      console.error('Error fetching empty template:', err);
+      return null;
+    }
   }, []);
 
   useEffect(() => {

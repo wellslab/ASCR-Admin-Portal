@@ -1,0 +1,311 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "UOWi009-A",
+    "hpscreg_synonym": [
+      "MC_6-3"
+    ],
+    "cell_line_alt_name": [
+      "S290C",
+      "MC6-3"
+    ],
+    "curation_status": "Flagged for further review",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "False",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [
+      "PSEN1"
+    ],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [
+      "unspecified_reference_PSEN1:p.Ser290Cys",
+      "APOE \u025b3/\u025b3"
+    ],
+    "subclone_of": null,
+    "parent_of": []
+  },
+  "generator": {
+    "institute": "University of Wollongong",
+    "institute_ror": null,
+    "group_name": "University of Wollongong",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "University of Wollongong",
+      "institute_ror": null,
+      "group_name": "Dottori",
+      "company_name": null,
+      "contact_first_name": "Mirella",
+      "contact_last_name": "Dottori",
+      "contact_initials": null,
+      "email": " mdottori@uow.edu.au",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "Holding Entry-UOWi009-A",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "University of Wollongong Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_WT98"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q98134332"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/UOWi009-A"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "https://doi.org/10.3389/fncel.2024.1406970",
+      "pmid": "39444394.0",
+      "first_author": "Simon Maksour",
+      "last_author": "Lezanne Ooi",
+      "journal": "Frontiers in Cellular Neuroscience",
+      "title": "Alzheimer\u2019s disease induced neurons bearing PSEN1 mutations exhibit reduced excitability.",
+      "year": "2024"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": null,
+      "karyotyped": "YES",
+      "karyotype": "46,XY",
+      "karyotype_method": "G-banding",
+      "karyotype_method_other": null,
+      "summary": "Karyotyping occurred at a resolution of 400 bphs.",
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": null,
+  "screening": null,
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "fibroblast",
+    "i_source_cell_type_ontology": "CL:0000057",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": "dermis",
+    "i_source_cell_origin_ontology": "UBERON:0002067",
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "False",
+    "derived_under_gmp": "False",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": "Manual selection.",
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": {
+      "genes": [],
+      "kit_details": {
+        "name": "[kit] Stemgent mRNA Reprogramming Kit and Stemgene microRNA Booster Kit",
+        "supplier": null,
+        "cat_no": null,
+        "file": null,
+        "notes": null,
+        "gene": []
+      },
+      "small_molecule_flag": "False",
+      "small_molecule_reprogramming": []
+    }
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "mTeSR1",
+        "amount": null,
+        "unit": null,
+        "company": null,
+        "type": "Base Medium"
+      },
+      {
+        "name": "Matrigel",
+        "amount": null,
+        "unit": null,
+        "company": null,
+        "type": "Base Coat"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "RT-PCR",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": {
+      "s_card_diff_protocol": "UN",
+      "diff_scorecard": {
+        "self_renewal": "False",
+        "endoderm": "True",
+        "mesoderm": "True",
+        "ectoderm": "True",
+        "scorecard_file": null
+      }
+    },
+    "diff_germlayer": [],
+    "diff_other": []
+  },
+  "donor": {
+    "age": "40-44",
+    "sex": "Male",
+    "genomic_characterisation": [],
+    "diseases": [
+      {
+        "name": "alzheimer disease",
+        "free_text": "nan",
+        "omim_url": "nan",
+        "omim_id": "nan",
+        "icd11_url": "nan",
+        "icd11_id": "nan",
+        "ontology_id": "MONDO:0004975"
+      }
+    ],
+    "disease_phenotypes": [],
+    "non_disease_phenotypes": [],
+    "dcv_carrier": null,
+    "dcv_affected": null,
+    "variants": [],
+    "xrefs": []
+  },
+  "external_cell_line_source": null,
+  "biopsy_location_ontology_id": "FMA:7163"
+}

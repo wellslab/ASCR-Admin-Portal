@@ -1,0 +1,564 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "GENEAe012-A",
+    "hpscreg_synonym": [
+      "SIVF13",
+      "GENEA013"
+    ],
+    "cell_line_alt_name": [
+      "GENEA013",
+      "SIVF13",
+      "SIV013"
+    ],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": "9999-12-31",
+    "cell_type": "human embryonic stem cell (hESC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": null,
+    "parent_of": []
+  },
+  "generator": {
+    "institute": "Genea",
+    "institute_ror": null,
+    "group_name": "Genea",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "Genea",
+      "institute_ror": null,
+      "group_name": "Schmidt",
+      "company_name": null,
+      "contact_first_name": "Uli",
+      "contact_last_name": "Schmidt",
+      "contact_initials": null,
+      "email": " info@geneabiocells.com",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "Holding Entry-GENEAe012-A",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "Sydney IVF Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "BioSamples",
+      "db_url": "https://www.ebi.ac.uk/biosamples/",
+      "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA104012422"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_9022"
+    },
+    {
+      "xref_id": null,
+      "db_name": "CLO",
+      "db_url": "https://www.ebi.ac.uk/ols4/ontologies/clo",
+      "xref_url": "http://purl.obolibrary.org/obo/CLO_0100336"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q54835575"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/GENEAe012-A"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1089/clo.2007.0062",
+      "pmid": "18386991",
+      "first_author": "Peura T",
+      "last_author": "Stojanov T",
+      "journal": "Cloning and stem cells",
+      "title": "Karyotypically normal and abnormal human embryonic stem cell lines derived from PGD-analyzed embryos",
+      "year": "2008"
+    },
+    {
+      "doi": "https://doi.org/10.1089/clo.2007.0062",
+      "pmid": "18386991.0",
+      "first_author": "Teija Peura",
+      "last_author": "Tomas Stojanov",
+      "journal": "Cloning and Stem Cells",
+      "title": "Karyotypically normal and abnormal human embryonic stem cell lines derived from PGD-analyzed embryos.",
+      "year": "2008"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": "8",
+      "karyotyped": "YES",
+      "karyotype": "46,XY",
+      "karyotype_method": "G-banding",
+      "karyotype_method_other": null,
+      "summary": null,
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": {
+    "hla_typing_flag": "False",
+    "hla_results": [],
+    "str_analysis_flag": "False",
+    "str_results": [],
+    "fingerprinting_analysis_flag": "False",
+    "fingerprinting_analysis_results": [],
+    "genome_wide_or_functional_data": "False",
+    "summary": null
+  },
+  "screening": null,
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": null,
+    "i_source_cell_type_ontology": null,
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": null,
+    "i_source_cell_origin_ontology": null,
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "False",
+    "derived_under_gmp": "False",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": {
+    "e_nhmrc_licence_number": null,
+    "pgd_embryo": "False",
+    "supernumerary": "True",
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "separation_of_research_and_ivf": "False",
+    "other_hesc_source": "Somatic Cell Nuclear Transfer (SCNT)",
+    "other_hesc_source_other": null,
+    "embryo_stage": "Blastula with ICM and Trophoblast",
+    "expansion_status": "Stage 1",
+    "icm_morphology": "Type A",
+    "trophectoderm_morphology": "Type A",
+    "zp_removal_technique": "Manual",
+    "zp_removal_technique_other": null,
+    "cell_isolation": "Immunosurgery",
+    "cell_isolation_other": null,
+    "cell_seeding": "Isolated ICM",
+    "cell_seeding_other": null,
+    "derived_under_gmp": "False",
+    "derived_under_xeno_free": "False",
+    "available_as_clinical_grade": "False",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null
+  },
+  "culture_conditions": {
+    "co2_concentration": null,
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Mechanically",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "KnockOut DMEM",
+        "amount": null,
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Base Medium"
+      },
+      {
+        "name": "Glutamine",
+        "amount": "2",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Supplement"
+      },
+      {
+        "name": "Penicillin",
+        "amount": "50",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Supplement"
+      },
+      {
+        "name": "Streptomycin",
+        "amount": "50",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Supplement"
+      },
+      {
+        "name": "MEM Amino Acid Solution",
+        "amount": "1X",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Supplement"
+      },
+      {
+        "name": "2-mercaptoethanol",
+        "amount": "0.1",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Supplement"
+      },
+      {
+        "name": "KnockOut Serum Replacement",
+        "amount": "20",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Serum"
+      },
+      {
+        "name": "basic fibroblast growth factor",
+        "amount": "4",
+        "unit": null,
+        "company": "Gibco BRL",
+        "type": "Main Protein"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "RT-PCR",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "Alkaline Phosphatase",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-1",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA 1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "Alkaline Phosphatase",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA-1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": null,
+    "diff_germlayer": [
+      {
+        "gl_diff_protocol": "IVT",
+        "germ_layer": "Endoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "nan",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "nan",
+            "free_text": null
+          }
+        ]
+      },
+      {
+        "gl_diff_protocol": "IVT",
+        "germ_layer": "Mesoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "nan",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "nan",
+            "free_text": null
+          }
+        ]
+      },
+      {
+        "gl_diff_protocol": "IVT",
+        "germ_layer": "Ectoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "nan",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "nan",
+            "free_text": null
+          }
+        ]
+      }
+    ],
+    "diff_other": []
+  },
+  "donor": {
+    "age": "Embryo",
+    "sex": "Male",
+    "genomic_characterisation": [],
+    "diseases": [],
+    "disease_phenotypes": [],
+    "non_disease_phenotypes": [],
+    "dcv_carrier": null,
+    "dcv_affected": null,
+    "variants": [],
+    "xrefs": [
+      {
+        "xref_id": "SAMEA104012421",
+        "db_name": null,
+        "db_url": null,
+        "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA104012421"
+      }
+    ]
+  },
+  "external_cell_line_source": null,
+  "biopsy_location_ontology_id": "FMA:83041"
+}

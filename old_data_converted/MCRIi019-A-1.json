@@ -1,0 +1,475 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "MCRIi019-A-1",
+    "hpscreg_synonym": [
+      "1502-miR26b knockout"
+    ],
+    "cell_line_alt_name": [
+      "1502.3 miR-26b KO",
+      "1502-miR26b knockout"
+    ],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [
+      "MIR26B"
+    ],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [
+      "Homozygous deletion of miR-26b stem-loop"
+    ],
+    "subclone_of": "MCRIi019-A",
+    "parent_of": []
+  },
+  "generator": {
+    "institute": "Murdoch Children's Research Institute",
+    "institute_ror": null,
+    "group_name": "Murdoch Children's Research Institute",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "Murdoch Children's Research Institute",
+      "institute_ror": null,
+      "group_name": "Bateman",
+      "company_name": null,
+      "contact_first_name": "John",
+      "contact_last_name": "Bateman",
+      "contact_initials": null,
+      "email": " john.bateman@mcri.edu.au",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "33118",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "Royal Children's Hospital Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_A4WY"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q107116159"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/MCRIi019-A-1"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1016/j.scr.2020.102118",
+      "pmid": "33316599",
+      "first_author": "Kung LHW",
+      "last_author": "Bateman JF",
+      "journal": "Stem cell research",
+      "title": "Generation of a miR-26b stem-loop knockout human iPSC line, MCRIi019-A-1, using CRISPR/Cas9 editing",
+      "year": "2020"
+    }
+  ],
+  "genomic_alteration": [
+    {
+      "alteration_type": "GKO",
+      "isogenic_purpose": null,
+      "summary": "Homozygous deletion of MIR26B stem-loop region removing the sequences containing miR-26b-5p and miR-26b-3p in both alleles (allele 1: 121 bp deletion; allele 2: 132 bp deletion).",
+      "delivery_method": "CRISPR/Cas9",
+      "variation_details": {
+        "zygosity": null,
+        "gene": {
+          "name": "MIR26B",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": "https://www.ncbi.nlm.nih.gov/gene/407017",
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "cytoband": "2q.35",
+        "genotype": "Homozygous deletion of miR-26b stem-loop",
+        "genomic_coord": null,
+        "coding_coord": null,
+        "rna_coord": null,
+        "protein_coord": null,
+        "summary": null,
+        "xrefs": [],
+        "disease": []
+      }
+    }
+  ],
+  "genomic_characterisation": [
+    {
+      "passage_number": "21.0",
+      "karyotyped": "YES",
+      "karyotype": "arr(1-22,X)x2",
+      "karyotype_method": "Molecular karyotyping by SNP array",
+      "karyotype_method_other": null,
+      "summary": "Molecular karyotyping by SNP array (Illumina Infinium GSA-24 v1.0; resolution 0.5 Mb). SNPduo comparison to parental cell (>99.9% identity).",
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": null,
+  "screening": {
+    "performed": "True",
+    "hiv1": "Not Done",
+    "hiv2": "Not Done",
+    "hep_b": "Not Done",
+    "hep_c": "Not Done",
+    "mycoplasma": "Negative",
+    "other": null,
+    "other_result": "Not Done"
+  },
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": null,
+    "i_source_cell_type_ontology": null,
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": null,
+    "i_source_cell_origin_ontology": null,
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": null,
+    "derived_under_gmp": null,
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": null,
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "Matrigel",
+        "amount": null,
+        "unit": null,
+        "company": "Corning",
+        "type": "Base Coat"
+      },
+      {
+        "name": "Essential 8 Medium",
+        "amount": null,
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Base Medium"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "Flow cytometry",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "OCT3/4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA-1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": null,
+    "diff_germlayer": [
+      {
+        "gl_diff_protocol": "IVD",
+        "germ_layer": "Endoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "SOX17",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ]
+      },
+      {
+        "gl_diff_protocol": "IVD",
+        "germ_layer": "Mesoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "COL2A1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "FOXC2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "MEOX1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "SOX9",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          }
+        ]
+      },
+      {
+        "gl_diff_protocol": "IVD",
+        "germ_layer": "Ectoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "NES",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "PAX6",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ]
+      }
+    ],
+    "diff_other": []
+  },
+  "donor": null,
+  "external_cell_line_source": null,
+  "biopsy_location_ontology_id": "FMA:7163"
+}

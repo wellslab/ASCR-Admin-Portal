@@ -6,7 +6,7 @@ from storage import StorageInterface, FileStorage
 from version_control import VersionControl
 from data_transport import DataTransport
 from models import StartAICurationRequest, TaskCompletionNotification
-from data_dictionaries.curation_models import CellLineCurationForm
+from data_dictionaries.models import JSONOutputSchema
 from tasks import curate_article_task, redis_client
 from config_manager import config_manager
 from task_progress import TaskProgressManager
@@ -94,7 +94,7 @@ async def get_cellline_schema():
     This schema is used by the frontend editor component.
     """
     try:
-        return utils.get_frontend_schema(CellLineCurationForm)
+        return utils.get_frontend_schema(JSONOutputSchema)
     except Exception as e:
         logger.error(f"Error generating schema: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Schema generation failed: {str(e)}")
@@ -102,11 +102,11 @@ async def get_cellline_schema():
 @app.get("/get-empty-form")
 async def get_empty_cellline_form(hpscreg_name: str = ""):
     """
-    Return an empty form structure based on CellLineCurationForm model.
+    Return an empty form structure based on JSONOutputSchema model.
     Each section has one instance with placeholder values ("..." for strings).
     """
     try:
-        return utils.generate_empty_form(CellLineCurationForm, hpscreg_name)
+        return utils.generate_empty_form(JSONOutputSchema, hpscreg_name)
     except Exception as e:
         logger.error(f"Error generating empty form: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Empty form generation failed: {str(e)}")
@@ -233,19 +233,14 @@ async def get_cell_line(filename: str, storage: StorageInterface = Depends(get_s
     Retrieve a specific cell line JSON file by filename.
     Searches in order: working, ready, registered.
     """
-    try:
-        # Try working directory first, then ready, then registered
-        result = storage.get(filename, "working")
-        if result is None:
-            result = storage.get(filename, "ready")
-        if result is None:
-            result = storage.get(filename, "registered")
-        if result is None:
-            raise HTTPException(status_code=404, detail=f"Cell line file '{filename}' not found in any directory")
-        return result
-    except Exception as e:
-        logger.error(f"Error getting cell line {filename}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get cell line: {str(e)}")
+    result = storage.get(filename, "working")
+    if result is None:
+        result = storage.get(filename, "ready")
+    if result is None:
+        result = storage.get(filename, "registered")
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Cell line file '{filename}' not found in any directory")
+    return result
 
 @app.post("/cell-line/{filename}/move-to-ready")
 async def move_cell_line_to_ready(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
@@ -328,20 +323,17 @@ async def get_latest_cell_line_version(base_name: str, version_control: VersionC
         raise HTTPException(status_code=500, detail=f"Failed to get latest version: {str(e)}")
 
 @app.post("/working/cell-line")
-async def create_cell_line(cell_line_data: CellLineCurationForm, data_transport: DataTransport = Depends(get_data_transport)):
+async def create_cell_line(cell_line_data: JSONOutputSchema, data_transport: DataTransport = Depends(get_data_transport)):
     """
-    Create a new cell line file in the working directory with automatic versioning.
-    Handles duplicate names by auto-incrementing version numbers globally.
-
-    Validates all fields against CellLineCurationForm Pydantic model before saving.
-    Returns 422 with detailed validation errors if data is invalid.
+    Create a new cell line file in the working directory.
+    Version number is based on the number of previously registered copies.
+    Returns 409 if a working or ready copy with the same hpscreg_name already exists.
     """
     try:
-        # Convert Pydantic model to dict for storage
         cell_line_dict = cell_line_data.model_dump()
         return data_transport.save_with_auto_versioning(cell_line_dict)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating cell line: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create cell line file: {str(e)}")
@@ -349,34 +341,20 @@ async def create_cell_line(cell_line_data: CellLineCurationForm, data_transport:
 @app.put("/working/cell-line/{filename}")
 async def update_cell_line(
     filename: str,
-    cell_line_data: CellLineCurationForm,
-    data_transport: DataTransport = Depends(get_data_transport),
+    cell_line_data: JSONOutputSchema,
     storage: StorageInterface = Depends(get_storage)
 ):
     """
-    Save changes to a cell line file by creating a new version with auto-versioning.
-    This creates a new version in working directory instead of overwriting.
-
-    Validates all fields against CellLineCurationForm Pydantic model before saving.
-    Returns 422 with detailed validation errors if data is invalid.
+    Update an existing working cell line in place. Does not change version number.
+    Returns 404 if the file does not exist in the working directory.
     """
+    if not storage.exists(filename, "working"):
+        raise HTTPException(status_code=404, detail=f"Cell line '{filename}' not found in working directory")
     try:
-        # Convert Pydantic model to dict for storage
         cell_line_dict = cell_line_data.model_dump()
-
-        # Create new version with auto-versioning
-        result = data_transport.save_with_auto_versioning(cell_line_dict)
-
-        # If the base name is different from the old filename's base name, delete old file
-        # (This handles the case where hpscreg_name was changed)
-        # But only if the old file still exists and is different
-        if storage.exists(filename, "working") and result["filename"] != filename:
-            storage.delete(filename, "working")
-            logger.info(f"Deleted old file {filename} after creating new version {result['filename']}")
-
+        result = storage.update(filename, cell_line_dict, "working")
+        result["filename"] = filename
         return result
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error updating cell line {filename}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update cell line file: {str(e)}")

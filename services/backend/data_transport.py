@@ -25,61 +25,52 @@ class DataTransport:
         self.version_control = version_control
 
     def _extract_hpscreg_name(self, data: Dict[str, Any]) -> str:
-        """Extract hpscreg_name from cell line data"""
-        cell_line_data = data.get("cell_line", []) or data.get("basic_data", [])
-        if not cell_line_data or not cell_line_data[0].get("hpscreg_name"):
-            raise ValueError("Cannot save file without hpscreg_name")
-        return cell_line_data[0]["hpscreg_name"]
+        """Extract hpscreg_name from cell line data (reads from general section)"""
+        general = data.get("general") or {}
+        name = general.get("hpscreg_name") or general.get("aushpscreg_name")
+        if not name:
+            raise ValueError("Cannot save file without hpscreg_name or aushpscreg_name in general")
+        return name
 
     def save_with_auto_versioning(self, cell_line_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Save cell line data with automatic global versioning.
+        """Create a new working cell line with version number based on registered history.
 
-        Creates a new version of the cell line in the working directory. Version numbers
-        are calculated globally across all directories (working, ready, registered) to ensure
-        unique versioning even when duplicate names are used.
-
-        Args:
-            cell_line_data (Dict[str, Any]): Cell line data to save. Must contain hpscreg_name.
-
-        Returns:
-            Dict[str, Any]: Operation result containing:
-                - status (str): "success" if operation completed
-                - filename (str): Created filename with version suffix
-                - version (int): Version number assigned
-                - message (str): Human-readable success message
-
-        Raises:
-            ValueError: If hpscreg_name is missing from data
-            Exception: For any storage operation failures
-
-        Example:
-            >>> dt = DataTransport(storage, version_control)
-            >>> result = dt.save_with_auto_versioning({"cell_line": [{"hpscreg_name": "TEST001"}]})
-            >>> print(result['filename'])  # Returns "TEST001_v0" or next version
-            'TEST001_v0'
+        Version number = number of previously registered copies of this hpscreg_name.
+        Raises ValueError if a working or ready copy already exists (conflict).
         """
-        # Extract hpscreg_name as base name
         base_name = self._extract_hpscreg_name(cell_line_data)
 
-        # Get next global version number
-        next_version = self.version_control.get_next_global_version(base_name)
+        # Conflict: working copy already exists
+        working_files = self.storage.get_files_for_base_name(base_name, "working")
+        if working_files:
+            raise ValueError(
+                f"A working copy of '{base_name}' already exists ({working_files[0]}). "
+                "Edit the existing copy instead."
+            )
 
-        # Create versioned filename
+        # Conflict: ready copy already exists
+        ready_files = self.storage.get_files_for_base_name(base_name, "ready")
+        if ready_files:
+            raise ValueError(
+                f"A ready copy of '{base_name}' exists. "
+                "Finalise this cell line before creating a new version."
+            )
+
+        # Version number = next after highest registered version
+        registered_files = self.storage.get_files_for_base_name(base_name, "registered")
+        next_version = self.version_control.get_next_version(base_name, registered_files)
+
         versioned_filename = self.version_control.create_versioned_filename(base_name, next_version)
 
         try:
-            # Save to working directory
             self.storage.create(versioned_filename, cell_line_data, "working")
-
-            logger.info(f"Created new version {versioned_filename} in working directory")
-
+            logger.info(f"Created new working cell line {versioned_filename}")
             return {
                 "status": "success",
                 "filename": versioned_filename,
                 "version": next_version,
                 "message": f"Cell line saved as version {next_version}"
             }
-
         except Exception as e:
             logger.error(f"Error saving with auto-versioning: {e}")
             raise

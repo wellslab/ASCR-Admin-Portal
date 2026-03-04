@@ -23,6 +23,7 @@ from openpyxl import load_workbook
 COLS = {
     'django_class_name': 0,
     'django_field_name': 1,
+    'db_schema_table_name': 2,
     'description': 4,
     'key': 5,
     'data_type': 6,
@@ -52,18 +53,23 @@ def parse_xlsx(xlsx_path: Path) -> dict:
     wb = load_workbook(xlsx_path)
     ws = wb['data_dictionary']
 
-    models = defaultdict(lambda: {'fields': {}})
+    models = defaultdict(lambda: {'fields': {}, 'table_name': None})
 
     for row in ws.iter_rows(min_row=2, values_only=True):
         class_name = row[COLS['django_class_name']]
         field_name = row[COLS['django_field_name']]
         key = row[COLS['key']]
+        table_name = row[COLS['db_schema_table_name']]
 
         # Skip if no class name, no field name, or is PK/FK
         if not class_name or not field_name:
             continue
         if key and key.upper() in ('PK', 'FK'):
             continue
+
+        # Capture table name for this model (same for all rows of this class)
+        if table_name and not models[class_name]['table_name']:
+            models[class_name]['table_name'] = table_name
 
         # Parse valid_values_long into list if present
         valid_values = row[COLS['valid_values_long']]
@@ -152,6 +158,12 @@ def generate_pydantic_models(models: dict, output_path: Path, source_file: str) 
     # Generate individual models
     for model_name, model_def in models.items():
         lines.append(f'class {model_name}(BaseModel):')
+
+        # Add table name class variable
+        table_name = model_def.get('table_name')
+        if table_name:
+            lines.append(f'    __table_name__ = "{table_name}"')
+            lines.append('')
 
         fields = model_def.get('fields', {})
         if not fields:

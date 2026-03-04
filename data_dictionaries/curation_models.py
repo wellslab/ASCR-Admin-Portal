@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 
 
 class CellLine(BaseModel):
+    __table_name__ = "stem_cell_cellline"
+
     hpscreg_name: Optional[str] = Field(default=None, max_length=100, description="Cell line name in hPSCreg.")
     cell_line_alt_name: Optional[str] = Field(default=None, max_length=100, description="Alternative name/s for the cell line.")
     cell_type: Literal["human embryonic stem cell (hESC)", "human induced pluripotent stem cell (hiPSC)"] = Field(description="Type of cell line.")
@@ -32,6 +34,8 @@ class CellLine(BaseModel):
 
 
 class ExternalCellLineSource(BaseModel):
+    __table_name__ = "stem_cell_externalcelllinesource"
+
     name: str = Field(max_length=100, description="Name of the external cell line which served as the source cell.")
     xref_url: str = Field(description="URL to source cell line pages in relevant external databases.")
     xref_id: str = Field(max_length=100, description="Identifier for source cell line in relevant external databases.")
@@ -43,6 +47,8 @@ class ExternalCellLineSource(BaseModel):
 
 
 class Contact(BaseModel):
+    __table_name__ = "stakeholders_contact"
+
     first_name: str = Field(max_length=255, description="First name of contact.")
     last_name: str = Field(max_length=255, description="Last name of contact.")
     name_initials: Optional[str] = Field(default=None, max_length=4, description="Initial of contact's middle name.")
@@ -51,6 +57,8 @@ class Contact(BaseModel):
 
 
 class Institute(BaseModel):
+    __table_name__ = "stakeholders_institute"
+
     name: str = Field(max_length=100, description="Name of institution.")
     acronym: Optional[str] = Field(default=None, max_length=8, description="Institute acronym.")
     city: str = Field(max_length=100, description="City of institution.")
@@ -60,6 +68,8 @@ class Institute(BaseModel):
 
 
 class Group(BaseModel):
+    __table_name__ = "stakeholders_group"
+
     name: str = Field(max_length=100, description="Name of the group.")
     is_research_group: bool = Field(description="Describes whether the group is a research group.")
     institutes: str = Field(description="Django ManyToManyField linking to stakeholders_institute via stakeholders_group_institutes")
@@ -67,6 +77,8 @@ class Group(BaseModel):
 
 
 class Ethics(BaseModel):
+    __table_name__ = "stem_cell_ethics"
+
     ethics_number: str = Field(max_length=100, description="Ethics approval number associated with the cell line.")
     approval_date: Optional[date] = Field(default=None, description="Date of ethics approval.")
     consent_form: Optional[str] = Field(default=None, description="Template of donor consent form.")
@@ -77,16 +89,22 @@ class Ethics(BaseModel):
 
 
 class RegistrationRequirements(BaseModel):
+    __table_name__ = "stem_cell_registrationrequirements"
+
     submitted_ethics_clearance: Literal["Yes", "No", "Unknown"] = Field(description="Describes whether the cell line has HREC approval")
 
 
 class xRef(BaseModel):
+    __table_name__ = "stem_cell_xref"
+
     db_url: Optional[str] = Field(default=None, description="URL to the home page of the external database the cell line is referenced in.")
     xref_url: str = Field(description="Full URL to the external database entry for the cell line.")
     db_name: str = Field(max_length=100, description="Name of the external database the cell line is referenced in.")
 
 
 class Publication(BaseModel):
+    __table_name__ = "stem_cell_publication"
+
     doi: str = Field(description="Digital Object Identifier of the publication.")
     pmid: Optional[str] = Field(default=None, max_length=100, description="PubMed ID of the publication.")
     first_author: str = Field(max_length=100, description="Name of first author of the publication.")
@@ -97,6 +115,8 @@ class Publication(BaseModel):
 
 
 class DonorSource(BaseModel):
+    __table_name__ = "stem_cell_donorsource"
+
     age: Literal["Unknown", "Embryo", "Fetal", "Neonate", "1-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "89+"] = Field(description="Age range of the donor.")
     sex: Literal["Male", "Female", "Other", "Unknown"] = Field(description="Genetic sex of the donor.")
     polymorphism: Optional[str] = Field(default=None, max_length=500, description="Polymorphism associated with the donor.")
@@ -105,6 +125,8 @@ class DonorSource(BaseModel):
 
 
 class Disease(BaseModel):
+    __table_name__ = "stem_cell_disease"
+
     name: str = Field(max_length=100, description="Disease name as reported unless an ontological label applies.")
     description: str = Field(max_length=1250, description="Disease description.")
     omim_url: str = Field(description="URL for disease entry in OMIM.")
@@ -114,6 +136,8 @@ class Disease(BaseModel):
 
 
 class MediumComponentItems(BaseModel):
+    __table_name__ = "stem_cell_mediumcomponentitems"
+
     name: str = Field(max_length=100, description="Name of media component.")
     amount: Optional[str] = Field(default=None, max_length=20, description="Number of unit/s of component used.")
     unit: Optional[Literal["Percent", "Milliliter", "Microliter", "Millimolar", "Micromolar", "Milligram per milliliter", "Microgram per milliliter", "Nanogram per milliliter", "Nanomolar", "Unit per milliliter", "Unit"]] = Field(default=None, description="Units for media component amount.")
@@ -122,6 +146,8 @@ class MediumComponentItems(BaseModel):
 
 
 class CultureMedium(BaseModel):
+    __table_name__ = "stem_cell_culturemedium"
+
     co2_concentration: Optional[float] = Field(default=None, description="CO2 concentration.")
     o2_concentration: Optional[float] = Field(default=None, description="O2 Concentration.")
     rho_kinase_sed: Optional[bool] = Field(default=None, description="Whether Rho Kinase been used at cryo, passage or thaw. ")
@@ -131,6 +157,8 @@ class CultureMedium(BaseModel):
 
 
 class MicrobiologyVirologyScreening(BaseModel):
+    __table_name__ = "stem_cell_microbiologyvirologyscreening"
+
     performed: bool = Field(description="Describes whether any microbiology or virology screening was performed.")
     hiv1: Literal["Positive", "Negative", "Not Done"] = Field(description="HIV1 test result if/ whether available.")
     hiv2: Literal["Positive", "Negative", "Not Done"] = Field(description="HIV2 test result if/ whether available.")
@@ -142,6 +170,8 @@ class MicrobiologyVirologyScreening(BaseModel):
 
 
 class GenomicAlteration(BaseModel):
+    __table_name__ = "stem_cell_genomicalteration"
+
     mutation_type: Literal["Variant", "Transgene Expression", "Gene Knock-out", "Gene Knock-in", "Isogenic modification"] = Field(description="Type of genomic alteration.")
     cytoband: str = Field(max_length=100, description="Chromosome/cytoband location of genomic alteration.")
     delivery_method: str = Field(max_length=500, description="Delivery method of genomic alteration.")
@@ -150,6 +180,8 @@ class GenomicAlteration(BaseModel):
 
 
 class CharacterisationProtocolResult(BaseModel):
+    __table_name__ = "stem_cell_characterisationprotocolresult"
+
     cell_type: Literal["Endoderm", "Ectoderm", "Mesoderm", "Trophectoderm"] = Field(description="Type of germ layer into which the stem cell line was differentiated.")
     show_potency: Optional[bool] = Field(default=None, description="Indicates whether the stem cell was shown to differentiate into the germ layer indicated by cell_type.")
     marker_list: Optional[str] = Field(default=None, max_length=100, description="List of markers used to demonstrate differentiation into germ layer.")
@@ -159,6 +191,8 @@ class CharacterisationProtocolResult(BaseModel):
 
 
 class UndifferentiatedCharacterisation(BaseModel):
+    __table_name__ = "stem_cell_undifferentiatedcharacterisation"
+
     epi_pluri_test: Optional[bool] = Field(default=None, description="Describes whether EpiPluri Test results are available for undifferentiated cells.")
     epi_pluri_score: Optional[float] = Field(default=None, description="EpiPluri Test Score (for undifferentiated cells).")
     epi_pluri_mcpg: bool = Field(description="EpiPluri mCpG result (undifferentiated cells).")
@@ -172,6 +206,8 @@ class UndifferentiatedCharacterisation(BaseModel):
 
 
 class HpscScorecard(BaseModel):
+    __table_name__ = "stem_cell_hpscscorecard"
+
     self_renewal: bool = Field(description="hPSC score card self-renewal result (TRUE indicates positive result).")
     endoderm: bool = Field(description="hPSC scorecard endoderm result (TRUE indicates positive result).")
     mesoderm: bool = Field(description="hPSC scorecard mesoderm result (TRUE indicates positive result).")
@@ -180,16 +216,22 @@ class HpscScorecard(BaseModel):
 
 
 class UnDiffCharacterisationExpressionMarkerMethod(BaseModel):
+    __table_name__ = "stem_cell_undiffcharacterisationexpressionmarkermethod"
+
     marker: str = Field(max_length=100, description="Marker used to assess undifferentiated state.")
     method_file: Optional[str] = Field(default=None, description="File containing method or protocol related information (image, data, etc.).")
 
 
 class CharacterisationMethod(BaseModel):
+    __table_name__ = "stem_cell_characterisationmethod"
+
     description: str = Field(description="Characterisation method description.")
     name: str = Field(max_length=100, description="Characterisation method name.")
 
 
 class GenomicCharacterisation(BaseModel):
+    __table_name__ = "stem_cell_genomiccharacterisation"
+
     passage_number: Optional[str] = Field(default=None, max_length=10, description="Passage number at which characterisation occurred.")
     karyotyped: Literal["YES", "NO", "UNKNOWN"] = Field(description="Describes whether the line has been karyotyped.")
     karyotype: str = Field(max_length=100, description="Karyotype of the line.")
@@ -202,6 +244,8 @@ class GenomicCharacterisation(BaseModel):
 
 
 class AdditionalGenomicCharacterisation(BaseModel):
+    __table_name__ = "stem_cell_additionalgenomiccharacterisation"
+
     hla_typing: bool = Field(description="Describes whether HLA typing was done.")
     str_analysis: bool = Field(description="Describes whether STR analysis was done.")
     fingerprinting_analysis: bool = Field(description="Describes whether fingerprint analysis was done.")
@@ -209,17 +253,23 @@ class AdditionalGenomicCharacterisation(BaseModel):
 
 
 class HlaResult(BaseModel):
+    __table_name__ = "stem_cell_hlaresult"
+
     loci_group: Literal["HLA Class I", "HLA Class II", "Non HLA Genes"] = Field(description="HLA type.")
     allele_1: Optional[str] = Field(default=None, max_length=100, description="First HLA Allele.")
     allele_2: Optional[str] = Field(default=None, max_length=100, description="Second HLA Allele.")
 
 
 class StrOrFingerprinting(BaseModel):
+    __table_name__ = "stem_cell_strorfingerprinting"
+
     allele_1: Optional[str] = Field(default=None, max_length=100, description="First STR allele at a given locus.")
     allele_2: Optional[str] = Field(default=None, max_length=100, description="Second STR allele at a given locus.")
 
 
 class Loci(BaseModel):
+    __table_name__ = "stem_cell_loci"
+
     name: str = Field(max_length=100, description="Loci name.")
     chromosome: Optional[str] = Field(default=None, max_length=100, description="Chromome location.")
     start: Optional[int] = Field(default=None, description="Start position.")
@@ -230,6 +280,8 @@ class Loci(BaseModel):
 
 
 class VectorFreeReprogram(BaseModel):
+    __table_name__ = "stem_cell_vectorfreereprogram"
+
     kit_name: Optional[str] = Field(default=None, max_length=500, description="Name of the commercial kit used for vector-free reprogramming.")
     mrna: bool = Field(description="Indicates whether mRNA was used to induce reprogramming.")
     protein: bool = Field(description="Indicates whether protein was used to induce reprogramming.")
@@ -238,6 +290,8 @@ class VectorFreeReprogram(BaseModel):
 
 
 class IntegratedVector(BaseModel):
+    __table_name__ = "stem_cell_integratedvector"
+
     int_vector_name: str = Field(max_length=100, description="Name of integrating vector.")
     int_rep_vector: Literal["Virus", "Plasmid", "Transposon", "Other"] = Field(description="Type of integrating reprogramming vector.")
     int_rep_vector_other: Optional[str] = Field(default=None, max_length=100, description="Free-text to capture other type of integrating reprogramming vector.")
@@ -252,6 +306,8 @@ class IntegratedVector(BaseModel):
 
 
 class NonIntegratedVector(BaseModel):
+    __table_name__ = "stem_cell_nonintegratedvector"
+
     non_int_vector_name: str = Field(max_length=500, description="Name of non-integrating vector.")
     non_int_vector: Literal["Episomal", "Sendai Virus", "AAV", "Other"] = Field(description="Type of non-integrating vector.")
     non_int_other_vector: Optional[str] = Field(default=None, max_length=500, description="Free-text to capture other type of non-integrating vector.")
@@ -260,6 +316,8 @@ class NonIntegratedVector(BaseModel):
 
 
 class CellLineDerivationInducedPluripotent(BaseModel):
+    __table_name__ = "stem_cell_celllinederivationinducedpluripotent"
+
     passage_number: Optional[str] = Field(default=None, max_length=10, description="Passage number at which reprogramming occurred.")
     i_source_cell_type_additional_info: Optional[str] = Field(default=None, max_length=500, description="Free-text entry for additional information about source cell type.")
     i_reprogramming_vector_type: Literal["Not integrated", "Integrated", "None", "Vector free"] = Field(description="Type of vector used for reprogramming.")
@@ -279,6 +337,8 @@ class CellLineDerivationInducedPluripotent(BaseModel):
 
 
 class CellLineDerivationEmbryonic(BaseModel):
+    __table_name__ = "stem_cell_celllinederivationembryonic"
+
     e_nhmrc_licence_number: Optional[str] = Field(default=None, max_length=100, description="NHMRC License number.")
     e_preimplant_genetic_diagnosis: bool = Field(description="Indicates whether the cell line was derived from a preimplantation genetic diagnostic embryo.")
     e_supernumerary: bool = Field(description="Indicates whether the embryo used was a supernumerary embryo from IVF treatment.")
@@ -303,26 +363,36 @@ class CellLineDerivationEmbryonic(BaseModel):
 
 
 class Synonym(BaseModel):
+    __table_name__ = "stem_cell_synonym"
+
     synonym: str = Field(max_length=100, description="Cell line synonym.")
 
 
 class IdpGene(BaseModel):
+    __table_name__ = "stem_cell_idpgene"
+
     allele_1: Optional[str] = Field(default=None, max_length=100, description="First allele observed at gene locus.")
     allele_2: Optional[str] = Field(default=None, max_length=100, description="Second allele observed at gene locus.")
 
 
 class VectorFreeReprogrammingGenes(BaseModel):
+    __table_name__ = "stem_cell_vectorfreereprogramminggenes"
+
     nv_type: Literal["mRNA", "Protein"] = Field(description="Type of genomic feature.")
     allele_1: Optional[str] = Field(default=None, max_length=100, description="First allele observed at gene locus.")
     allele_2: Optional[str] = Field(default=None, max_length=100, description="Second allele observed at gene locus.")
 
 
 class SmallMolecule(BaseModel):
+    __table_name__ = "stem_cell_smallmolecule"
+
     name: str = Field(description="Small molecule name")
     chembank_id: Optional[str] = Field(default=None, description="Chembank database id for the small molecule")
 
 
 class Ontology(BaseModel):
+    __table_name__ = "ontologies_ontology"
+
     label: str = Field(max_length=1000, description="Text label for ontology_identifier.")
     definition: Optional[str] = Field(default=None, description="Definition of ontology term (label).")
     ontology_db_name: str = Field(max_length=100, description="Name of ontology database.")
@@ -331,6 +401,8 @@ class Ontology(BaseModel):
 
 
 class Synonyms(BaseModel):
+    __table_name__ = "ontologies_synonyms"
+
     synonym: str = Field(max_length=1000, description="Synonyms of ontology label.")
 
 

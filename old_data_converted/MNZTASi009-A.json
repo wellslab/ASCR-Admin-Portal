@@ -1,0 +1,191 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "MNZTASi009-A",
+    "hpscreg_synonym": [
+      "MS_0009.1"
+    ],
+    "cell_line_alt_name": [
+      "MS_0009.1",
+      "MS9.1"
+    ],
+    "curation_status": "Reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": null,
+    "parent_of": []
+  },
+  "generator": {
+    "institute": "Menzies Institute for Medical Research",
+    "institute_ror": null,
+    "group_name": "Menzies Institute for Medical Research",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": null,
+      "institute_ror": null,
+      "group_name": "Young",
+      "company_name": null,
+      "contact_first_name": "Kaylene",
+      "contact_last_name": "Young",
+      "contact_initials": null,
+      "email": " Kaylene.young@utas.edu.au",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "H0016915",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "University of Tasmania Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_D0IT"
+    },
+    {
+      "xref_id": null,
+      "db_name": "BioSamples",
+      "db_url": "https://www.ebi.ac.uk/biosamples/",
+      "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA114639786"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q123033084"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/MNZTASi009-A"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "https://doi.org/10.1101/2025.07.15.25331537",
+      "pmid": null,
+      "first_author": "Alistair J Fortune",
+      "last_author": "Kaylene M Young",
+      "journal": "medRxiv",
+      "title": "Multiple sclerosis iPSC derived-pericytes contract poorly but respond robustly to lesion-relevant environmental stimuli.",
+      "year": "2026"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": null,
+      "karyotyped": "YES",
+      "karyotype": "46,XX",
+      "karyotype_method": "G-banding",
+      "karyotype_method_other": null,
+      "summary": null,
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": null,
+  "screening": null,
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "peripheral blood mononuclear cell",
+    "i_source_cell_type_ontology": "CL:2000001",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": "blood",
+    "i_source_cell_origin_ontology": "UBERON:0000178",
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": null,
+    "derived_under_gmp": null,
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": null,
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": null,
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Not specified",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "mTeSR1 Plus",
+        "amount": null,
+        "unit": null,
+        "company": "STEMCELL Technologies",
+        "type": "Base Medium"
+      },
+      {
+        "name": "Matrigel",
+        "amount": null,
+        "unit": null,
+        "company": "Corning",
+        "type": "Base Coat"
+      }
+    ]
+  },
+  "undiff_characterisation": null,
+  "differentiated_cell_analysis": null,
+  "donor": {
+    "age": "65-69",
+    "sex": "Female",
+    "genomic_characterisation": [],
+    "diseases": [],
+    "disease_phenotypes": [],
+    "non_disease_phenotypes": [],
+    "dcv_carrier": null,
+    "dcv_affected": null,
+    "variants": [],
+    "xrefs": []
+  },
+  "external_cell_line_source": null,
+  "biopsy_location_ontology_id": "FMA:9670"
+}

@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Tuple, get_args, get_origin
+from typing import Dict, Any, List, Tuple, Union, get_args, get_origin
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from fastapi import WebSocket
@@ -28,63 +28,69 @@ def get_frontend_schema(model_class: BaseModel) -> Dict[str, Any]:
         properties = full_schema.get("properties", {})
 
         for section_name, section_def in properties.items():
-            # Each section is an array of a nested model
+            model_ref = None
+
+            # Array section: List[SubModel]
             if section_def.get("type") == "array":
                 items_def = section_def.get("items", {})
-
-                # Get the reference to the nested model definition
                 if "$ref" in items_def:
-                    # Extract model name from reference (e.g., "#/$defs/CellLine" -> "CellLine")
                     model_ref = items_def["$ref"].split("/")[-1]
-                    nested_model_def = definitions.get(model_ref, {})
+                    is_list = True
 
-                    # Extract fields from the nested model
-                    fields_schema = {}
-                    nested_properties = nested_model_def.get("properties", {})
-                    nested_required = nested_model_def.get("required", [])
+            # Optional object section: Optional[SubModel] -> anyOf [{$ref: ...}, {type: null}]
+            elif "anyOf" in section_def:
+                refs = [t for t in section_def["anyOf"] if "$ref" in t]
+                if refs:
+                    model_ref = refs[0]["$ref"].split("/")[-1]
+                    is_list = False
 
-                    for field_name, field_def in nested_properties.items():
-                        field_schema = {
-                            "required": field_name in nested_required,
-                            "description": field_def.get("description", "")
-                        }
+            if model_ref:
+                nested_model_def = definitions.get(model_ref, {})
 
-                        # Determine field type and options
-                        field_type = field_def.get("type")
+                fields_schema = {}
+                nested_properties = nested_model_def.get("properties", {})
+                nested_required = nested_model_def.get("required", [])
 
-                        # Handle Optional fields (anyOf with null)
-                        if "anyOf" in field_def:
-                            # Extract non-null type from anyOf
-                            non_null_types = [t for t in field_def["anyOf"] if t.get("type") != "null"]
-                            if non_null_types:
-                                field_def = non_null_types[0]
-                                field_type = field_def.get("type")
-
-                        # Check for enum (Literal types)
-                        if "enum" in field_def:
-                            field_schema["type"] = "select"
-                            field_schema["choices"] = field_def["enum"]
-                        elif field_type == "string":
-                            field_schema["type"] = "text"
-                            if "maxLength" in field_def:
-                                field_schema["max_length"] = field_def["maxLength"]
-                        elif field_type == "integer":
-                            field_schema["type"] = "number"
-                            field_schema["number_type"] = "integer"
-                        elif field_type == "number":
-                            field_schema["type"] = "number"
-                            field_schema["number_type"] = "float"
-                        elif field_type == "boolean":
-                            field_schema["type"] = "boolean"
-                        else:
-                            field_schema["type"] = "text"
-
-                        fields_schema[field_name] = field_schema
-
-                    sections_schema[section_name] = {
-                        "fields": fields_schema,
-                        "model_name": model_ref
+                for field_name, field_def in nested_properties.items():
+                    field_schema = {
+                        "required": field_name in nested_required,
+                        "description": field_def.get("description", "")
                     }
+
+                    field_type = field_def.get("type")
+
+                    # Unwrap Optional (anyOf with null)
+                    if "anyOf" in field_def:
+                        non_null_types = [t for t in field_def["anyOf"] if t.get("type") != "null"]
+                        if non_null_types:
+                            field_def = non_null_types[0]
+                            field_type = field_def.get("type")
+
+                    if "enum" in field_def:
+                        field_schema["type"] = "select"
+                        field_schema["choices"] = field_def["enum"]
+                    elif field_type == "string":
+                        field_schema["type"] = "text"
+                        if "maxLength" in field_def:
+                            field_schema["max_length"] = field_def["maxLength"]
+                    elif field_type == "integer":
+                        field_schema["type"] = "number"
+                        field_schema["number_type"] = "integer"
+                    elif field_type == "number":
+                        field_schema["type"] = "number"
+                        field_schema["number_type"] = "float"
+                    elif field_type == "boolean":
+                        field_schema["type"] = "boolean"
+                    else:
+                        field_schema["type"] = "text"
+
+                    fields_schema[field_name] = field_schema
+
+                sections_schema[section_name] = {
+                    "fields": fields_schema,
+                    "model_name": model_ref,
+                    "is_list": is_list,
+                }
 
         return {
             "sections": sections_schema,
@@ -153,22 +159,29 @@ def generate_empty_form(form_class: type, hpscreg_name: str = "") -> Dict[str, A
 
     for field_name, field_info in form_class.model_fields.items():
         annotation = field_info.annotation
+        origin = get_origin(annotation)
+        args = get_args(annotation)
 
-        # Get the inner type of List[ModelClass]
-        if hasattr(annotation, '__origin__') and annotation.__origin__ is list:
-            args = get_args(annotation)
+        if origin is list:
+            # List[SubModel] -> single placeholder instance in a list
             if args and hasattr(args[0], 'model_fields'):
-                model_class = args[0]
-                # Special handling for cell_line section
-                overrides = {}
-                if field_name == "cell_line" and hpscreg_name:
-                    overrides["hpscreg_name"] = hpscreg_name
-
-                result[field_name] = [_create_placeholder_instance(model_class, overrides)]
+                result[field_name] = [_create_placeholder_instance(args[0])]
             else:
                 result[field_name] = []
+
+        elif origin is Union:
+            # Optional[SubModel] -> single placeholder instance (not a list)
+            non_none = [a for a in args if a is not type(None)]
+            if non_none and hasattr(non_none[0], 'model_fields'):
+                overrides = {}
+                if field_name == "general" and hpscreg_name:
+                    overrides["hpscreg_name"] = hpscreg_name
+                result[field_name] = _create_placeholder_instance(non_none[0], overrides)
+            else:
+                result[field_name] = None
+
         else:
-            result[field_name] = []
+            result[field_name] = None
 
     return result
 

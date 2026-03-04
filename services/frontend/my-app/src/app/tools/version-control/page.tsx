@@ -20,6 +20,7 @@ import {
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { useState, useEffect } from 'react';
 import { CellLineDiffViewer } from '../editor/components/CellLineDiffViewer';
+import { getApiUrl } from '@/lib/api-config';
 
 interface Version {
   filename: string;
@@ -54,7 +55,7 @@ export default function VersionControlPage() {
   useEffect(() => {
     const fetchCellLines = async () => {
       try {
-        const response = await fetch('http://localhost:8001/get-all-cell-lines');
+        const response = await fetch(getApiUrl('/get-all-cell-lines'));
         if (!response.ok) throw new Error('Failed to fetch cell lines');
         const data = await response.json();
 
@@ -107,7 +108,7 @@ export default function VersionControlPage() {
       setError(null);
 
       try {
-        const response = await fetch(`http://localhost:8001/cell-line/${leftVersion}`);
+        const response = await fetch(getApiUrl(`/cell-line/${leftVersion}`));
         if (!response.ok) throw new Error('Failed to fetch left version');
         const result = await response.json();
         setLeftData(result.data);
@@ -134,7 +135,7 @@ export default function VersionControlPage() {
       setError(null);
 
       try {
-        const response = await fetch(`http://localhost:8001/cell-line/${rightVersion}`);
+        const response = await fetch(getApiUrl(`/cell-line/${rightVersion}`));
         if (!response.ok) throw new Error('Failed to fetch right version');
         const result = await response.json();
         setRightData(result.data);

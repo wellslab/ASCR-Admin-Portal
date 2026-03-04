@@ -177,6 +177,7 @@ CellLine:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_cellline
 ExternalCellLineSource:
   fields:
     name:
@@ -251,6 +252,7 @@ ExternalCellLineSource:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_externalcelllinesource
 Contact:
   fields:
     first_name:
@@ -298,6 +300,7 @@ Contact:
       uses_ontology: false
       llm_curate: false
       llm_instructions: Contact person's phone number
+  table_name: stakeholders_contact
 Institute:
   fields:
     name:
@@ -354,6 +357,7 @@ Institute:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stakeholders_institute
 Group:
   fields:
     name:
@@ -394,6 +398,7 @@ Group:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stakeholders_group
 Ethics:
   fields:
     ethics_number:
@@ -468,6 +473,7 @@ Ethics:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_ethics
 RegistrationRequirements:
   fields:
     submitted_ethics_clearance:
@@ -482,6 +488,7 @@ RegistrationRequirements:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_registrationrequirements
 xRef:
   fields:
     db_url:
@@ -512,6 +519,7 @@ xRef:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_xref
 Publication:
   fields:
     doi:
@@ -578,6 +586,7 @@ Publication:
       uses_ontology: false
       llm_curate: true
       llm_instructions: Publication year
+  table_name: stem_cell_publication
 DonorSource:
   fields:
     age:
@@ -654,6 +663,7 @@ DonorSource:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_donorsource
 Disease:
   fields:
     name:
@@ -710,6 +720,7 @@ Disease:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_disease
 MediumComponentItems:
   fields:
     name:
@@ -773,6 +784,7 @@ MediumComponentItems:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_mediumcomponentitems
 CultureMedium:
   fields:
     co2_concentration:
@@ -837,6 +849,7 @@ CultureMedium:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_culturemedium
 MicrobiologyVirologyScreening:
   fields:
     performed:
@@ -934,6 +947,7 @@ MicrobiologyVirologyScreening:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_microbiologyvirologyscreening
 GenomicAlteration:
   fields:
     mutation_type:
@@ -988,6 +1002,7 @@ GenomicAlteration:
       llm_instructions: Write the genotype nomenclature for the genomic modification
         performed on this cell line, or "NM" if no modification, or "Missing" if not
         found
+  table_name: stem_cell_genomicalteration
 CharacterisationProtocolResult:
   fields:
     cell_type:
@@ -1058,6 +1073,7 @@ CharacterisationProtocolResult:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_characterisationprotocolresult
 UndifferentiatedCharacterisation:
   fields:
     epi_pluri_test:
@@ -1161,6 +1177,7 @@ UndifferentiatedCharacterisation:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_undifferentiatedcharacterisation
 HpscScorecard:
   fields:
     self_renewal:
@@ -1216,6 +1233,7 @@ HpscScorecard:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_hpscscorecard
 UnDiffCharacterisationExpressionMarkerMethod:
   fields:
     marker:
@@ -1237,6 +1255,7 @@ UnDiffCharacterisationExpressionMarkerMethod:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_undiffcharacterisationexpressionmarkermethod
 CharacterisationMethod:
   fields:
     description:
@@ -1257,6 +1276,7 @@ CharacterisationMethod:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_characterisationmethod
 GenomicCharacterisation:
   fields:
     passage_number:
@@ -1354,6 +1374,7 @@ GenomicCharacterisation:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_genomiccharacterisation
 AdditionalGenomicCharacterisation:
   fields:
     hla_typing:
@@ -1400,6 +1421,7 @@ AdditionalGenomicCharacterisation:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_additionalgenomiccharacterisation
 HlaResult:
   fields:
     loci_group:
@@ -1432,6 +1454,7 @@ HlaResult:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_hlaresult
 StrOrFingerprinting:
   fields:
     allele_1:
@@ -1452,6 +1475,7 @@ StrOrFingerprinting:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_strorfingerprinting
 Loci:
   fields:
     name:
@@ -1517,6 +1541,7 @@ Loci:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_loci
 VectorFreeReprogram:
   fields:
     kit_name:
@@ -1572,6 +1597,7 @@ VectorFreeReprogram:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_vectorfreereprogram
 IntegratedVector:
   fields:
     int_vector_name:
@@ -1694,6 +1720,7 @@ IntegratedVector:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_integratedvector
 NonIntegratedVector:
   fields:
     non_int_vector_name:
@@ -1751,6 +1778,7 @@ NonIntegratedVector:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_nonintegratedvector
 CellLineDerivationInducedPluripotent:
   fields:
     passage_number:
@@ -1920,6 +1948,7 @@ CellLineDerivationInducedPluripotent:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_celllinederivationinducedpluripotent
 CellLineDerivationEmbryonic:
   fields:
     e_nhmrc_licence_number:
@@ -2166,6 +2195,7 @@ CellLineDerivationEmbryonic:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_celllinederivationembryonic
 Synonym:
   fields:
     synonym:
@@ -2177,6 +2207,7 @@ Synonym:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_synonym
 IdpGene:
   fields:
     allele_1:
@@ -2197,6 +2228,7 @@ IdpGene:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_idpgene
 VectorFreeReprogrammingGenes:
   fields:
     nv_type:
@@ -2228,6 +2260,7 @@ VectorFreeReprogrammingGenes:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_vectorfreereprogramminggenes
 SmallMolecule:
   fields:
     name:
@@ -2248,6 +2281,7 @@ SmallMolecule:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: stem_cell_smallmolecule
 Ontology:
   fields:
     label:
@@ -2298,6 +2332,7 @@ Ontology:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: ontologies_ontology
 Synonyms:
   fields:
     synonym:
@@ -2309,3 +2344,4 @@ Synonyms:
       uses_ontology: false
       llm_curate: false
       llm_instructions: null
+  table_name: ontologies_synonyms

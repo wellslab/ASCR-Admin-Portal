@@ -13,7 +13,7 @@ import logging
 import base64
 from pydantic import BaseModel, ValidationError
 from agents import Agent, trace, Runner
-from data_dictionaries.curation_models import CellLineCurationForm
+from data_dictionaries.models import JSONOutputSchema
 from config_manager import config_manager
 
 logger = logging.getLogger(__name__)
@@ -90,11 +90,13 @@ async def validate_and_upload_pdf(filename: str, file_data: bytes) -> PDFInfo:
 def start_identification_agent():
     with open("prompts/identification_prompt.md", "r") as f:
         prompt = f.read()
-    
+
+    model = config_manager.get("SELECTED_MODEL", "gpt-4.1-mini")
+
     CellLineIdentificationAgent = Agent(
         name="CellLineIdentificationAgent",
         tools=[],
-        model="gpt-4.1-mini",
+        model=model,
         instructions=prompt,
         output_type=List[str]
     )
@@ -109,12 +111,14 @@ def start_curation_agent():
 
     curation_prompt_combined = cell_line_curation_prompt + '\n\n' + llm_curation_instructions
 
+    model = config_manager.get("SELECTED_MODEL", "gpt-4.1-mini")
+
     CellLineCurationAgent = Agent(
         name="CellLineCurationAgent",
         tools=[],
-        model="gpt-5-mini",
+        model=model,
         instructions=curation_prompt_combined,
-        output_type=CellLineCurationForm
+        output_type=JSONOutputSchema
     )
 
     return CellLineCurationAgent
@@ -123,12 +127,14 @@ def start_normalisation_agent():
     with open("prompts/normalisation_prompt.md", "r") as f:
         prompt = f.read()
 
+    model = config_manager.get("SELECTED_MODEL", "gpt-4.1-mini")
+
     CellLineNormalisationAgent = Agent(
         name="CellLineNormalisationAgent",
         tools=[],
-        model="gpt-5-mini",
+        model=model,
         instructions=prompt,
-        output_type=CellLineCurationForm
+        output_type=JSONOutputSchema
     )
     return CellLineNormalisationAgent
 
@@ -346,7 +352,7 @@ async def normalize_metadata(curation_results: List[Dict[str, Any]], normalizati
 
 async def validate_cell_lines(normalized_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Validate normalized cell line data against CellLineCurationForm Pydantic model.
+    Validate normalized cell line data against JSONOutputSchema Pydantic model.
 
     Args:
         normalized_results: List of normalized results from previous stage
@@ -354,7 +360,7 @@ async def validate_cell_lines(normalized_results: List[Dict[str, Any]]) -> List[
     Returns:
         List of validated results with validation status
     """
-    logger.info("STAGE 4: Validating cell line data against Pydantic model...")
+    logger.info("STAGE 4: Validating cell line data against JSONOutputSchema...")
 
     validated_results = []
     validation_errors = 0
@@ -366,8 +372,8 @@ async def validate_cell_lines(normalized_results: List[Dict[str, Any]]) -> List[
         logger.info(f"Validating cell line data for {cell_line_id}")
 
         try:
-            # Validate against CellLineCurationForm Pydantic model
-            validated_form = CellLineCurationForm(**normalized_data)
+            # Validate against JSONOutputSchema Pydantic model
+            validated_form = JSONOutputSchema(**normalized_data)
 
             # Create validated result with the validated data
             validated_result = {

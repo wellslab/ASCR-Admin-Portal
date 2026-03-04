@@ -1,0 +1,850 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "WIMRi004-A",
+    "hpscreg_synonym": [
+      "PKU_FIB_02406"
+    ],
+    "cell_line_alt_name": [
+      "PKU_FIB_02406"
+    ],
+    "curation_status": "Flagged for further review",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [
+      "PAH"
+    ],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [
+      "Compound heterozygous: unspecified_reference_PAH: c.896T>G(p.Phe299Cys)",
+      "and: unspecified_reference_PAH: c.1222C>T(p.ARG408Trp)"
+    ],
+    "subclone_of": null,
+    "parent_of": []
+  },
+  "generator": {
+    "institute": "Westmead Institute for Medical Research",
+    "institute_ror": null,
+    "group_name": "Westmead Institute for Medical Research",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": null,
+      "institute_ror": null,
+      "group_name": "Nafisinia",
+      "company_name": null,
+      "contact_first_name": "Michael",
+      "contact_last_name": "Nafisinia",
+      "contact_initials": null,
+      "email": " Michael.nafisinia@sydney.edu.au",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Unknown",
+      "ethics_number": "Holding Entry-WIMRi004-A",
+      "approval_date": null,
+      "institutional_HREC": "Holding Entry",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "BioSamples",
+      "db_url": "https://www.ebi.ac.uk/biosamples/",
+      "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA115160192"
+    },
+    {
+      "xref_id": null,
+      "db_name": "CLO",
+      "db_url": "https://www.ebi.ac.uk/ols4/ontologies/clo",
+      "xref_url": "http://purl.obolibrary.org/obo/CLO_0107139"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/WIMRi004-A"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_D6RM"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "https://doi.org/10.1016/j.scr.2024.103405",
+      "pmid": "38555716.0",
+      "first_author": "Desi Veleva",
+      "last_author": "Michael Nafisinia",
+      "journal": "Stem Cell Research",
+      "title": "Generation of fibroblast-derived induced pluripotent stem cell (iPSC) lines from two paediatric patients with phenylketonuria.",
+      "year": "2024"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": "4",
+      "karyotyped": "YES",
+      "karyotype": "46,XY",
+      "karyotype_method": "G-banding",
+      "karyotype_method_other": null,
+      "summary": "Karyotyping of metaphase spreads occurred at a resolution of 500 bphs.",
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": {
+    "hla_typing_flag": "False",
+    "hla_results": [],
+    "str_analysis_flag": "True",
+    "str_results": [
+      {
+        "loci_name": {
+          "name": "AMEL",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "CSF1PO",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "D13S317",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "D16S539",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "D21S11",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "D5S818",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "D7S820",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "TH01",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "TPOX",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      },
+      {
+        "loci_name": {
+          "name": "VWA",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "allele_1": null,
+        "allele_2": null
+      }
+    ],
+    "fingerprinting_analysis_flag": "False",
+    "fingerprinting_analysis_results": [],
+    "genome_wide_or_functional_data": "False",
+    "summary": null
+  },
+  "screening": {
+    "performed": "True",
+    "hiv1": "Not Done",
+    "hiv2": "Not Done",
+    "hep_b": "Not Done",
+    "hep_c": "Not Done",
+    "mycoplasma": "Negative",
+    "other": null,
+    "other_result": "Not Done"
+  },
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "fibroblast",
+    "i_source_cell_type_ontology": "CL:0000057",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": "forelimb stylopod muscle",
+    "i_source_cell_origin_ontology": "UBERON:0004255",
+    "derivation_year": "2021-01-01",
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": null,
+    "derived_under_gmp": null,
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": {
+      "non_int_vector_type": "Sendai Virus",
+      "reprogramming_kit": null,
+      "vector_details": [
+        {
+          "name": "[kit] CytoTune-iPS 2.0 Sendai reprogramming kit",
+          "supplier": null,
+          "cat_no": null,
+          "file": null,
+          "notes": null,
+          "gene": []
+        }
+      ],
+      "non_int_other_vector": null,
+      "vector_detection": {
+        "detected_reprogramming_vector": "No",
+        "method_used_immune_marker_staining": "False",
+        "method_used_pcr": "False",
+        "method_used_rtpcr": "False",
+        "method_used_seq": "False",
+        "detected_vector_notes": "No Sendai virus or reprogramming factors were detected in WIMRi004-A cells beyond passage 8.",
+        "reprogramming_expression_silence_file": null
+      }
+    },
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "mTeSR Plus",
+        "amount": null,
+        "unit": null,
+        "company": "STEMCELL Technologies",
+        "type": "Base Medium"
+      },
+      {
+        "name": "Matrigel",
+        "amount": null,
+        "unit": null,
+        "company": "Corning",
+        "type": "Base Coat"
+      },
+      {
+        "name": "RevitaCell (first day of passage)",
+        "amount": null,
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Supplement"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "RT-PCR",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA 1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA-1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "DNMT3B",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "REX1",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SOX2",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": null,
+    "diff_germlayer": [
+      {
+        "gl_diff_protocol": "IVD",
+        "germ_layer": "Endoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "EOMES",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "FOXA2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "GATA6",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "SOX17",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          }
+        ]
+      },
+      {
+        "gl_diff_protocol": "IVD",
+        "germ_layer": "Mesoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "Brachyury",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "CDX2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "HAND1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          }
+        ]
+      },
+      {
+        "gl_diff_protocol": "IVD",
+        "germ_layer": "Ectoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "NR2F2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "PAX6",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "SOX1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          }
+        ]
+      }
+    ],
+    "diff_other": []
+  },
+  "donor": {
+    "age": "Unknown",
+    "sex": "Male",
+    "genomic_characterisation": [],
+    "diseases": [
+      {
+        "name": "phenylketonuria",
+        "free_text": "Phenylketonuria (PKU) is the most common inborn error of amino acid metabolism and is characterized by mild to severe mental disability in untreated patients.",
+        "omim_url": null,
+        "omim_id": null,
+        "icd11_url": null,
+        "icd11_id": null,
+        "ontology_id": "MONDO:0009861"
+      }
+    ],
+    "disease_phenotypes": [],
+    "non_disease_phenotypes": [],
+    "dcv_carrier": null,
+    "dcv_affected": null,
+    "variants": [],
+    "xrefs": [
+      {
+        "xref_id": "SAMEA115160193",
+        "db_name": null,
+        "db_url": null,
+        "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA115160193"
+      }
+    ]
+  },
+  "external_cell_line_source": {
+    "name": "GM02406",
+    "provider": "Coriell Institute for Medical Research",
+    "provider_cat_num": "GM02406",
+    "provider_cat_url": "https://www.coriell.org/0/Sections/Search/Sample_Detail.aspx?Ref=GM02406&Product=CC",
+    "lot_number": null,
+    "tissue_of_origin_name": null,
+    "tissue_ontology": null,
+    "cell_type_name": "fibroblast",
+    "cell_type_ontology": "CL:0000057",
+    "variants": [],
+    "xrefs": [
+      {
+        "xref_id": "GM02406",
+        "db_name": null,
+        "db_url": null,
+        "xref_url": "https://www.coriell.org/0/Sections/Search/Sample_Detail.aspx?Ref=GM02406&Product=CC"
+      }
+    ],
+    "diseases": []
+  }
+}

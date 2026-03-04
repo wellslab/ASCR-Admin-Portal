@@ -8,7 +8,7 @@ export default function SettingsLoading() {
         flexDirection: 'column',
         alignItems: 'center',
         gap: 2,
-        minHeight: '92vh',
+        minHeight: 'calc(92vh - 24px)',
         backgroundColor: 'background.primary',
         p: 3,
       }}
@@ -44,6 +44,15 @@ export default function SettingsLoading() {
               </Typography>
               <Skeleton variant="text" width="80%" height={20} sx={{ mb: 1.5 }} />
               <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: 1 }} />
+            </Box>
+
+            {/* Curation Model Field */}
+            <Box>
+              <Typography variant="body1" fontWeight={500} sx={{ mb: 0.5 }}>
+                Curation Model
+              </Typography>
+              <Skeleton variant="text" width="60%" height={20} sx={{ mb: 1.5 }} />
+              <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: 1 }} />
             </Box>
 
             {/* Save Button */}

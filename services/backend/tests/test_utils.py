@@ -12,9 +12,8 @@ class TestUtilsHelperFunctions:
     
     def test_get_frontend_schema(self):
         """Test that get_frontend_schema still works for the API"""
-        from data_dictionaries.curation_models import CellLineCurationForm
-        result = utils.get_frontend_schema(CellLineCurationForm)
+        from data_dictionaries.models import JSONOutputSchema
+        result = utils.get_frontend_schema(JSONOutputSchema)
 
-        assert "schema" in result
-        assert "fields" in result["schema"]
-        assert result["model_name"] == "CellLineCurationForm"
+        assert "sections" in result
+        assert result["model_name"] == "JSONOutputSchema"

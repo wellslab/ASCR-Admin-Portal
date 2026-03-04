@@ -1,14 +1,14 @@
 from typing import Dict, Any, List, Tuple
 import logging
 from pydantic import ValidationError
-from data_dictionaries.curation_models import CellLineCurationForm
+from data_dictionaries.models import JSONOutputSchema
 
 logger = logging.getLogger(__name__)
 
 class CellLineValidation:
     """
     Cell line validation pipeline for processing curated cell line data.
-    Validates against CellLineCurationForm Pydantic model.
+    Validates against JSONOutputSchema Pydantic model.
     """
 
     def __init__(self):
@@ -37,7 +37,7 @@ class CellLineValidation:
 
     def _validate_single_cell_line(self, cell_line_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Validate a single cell line against the CellLineCurationForm Pydantic model.
+        Validate a single cell line against the JSONOutputSchema Pydantic model.
 
         Args:
             cell_line_data: Dict containing cell_line_id and normalized_data
@@ -49,8 +49,8 @@ class CellLineValidation:
         normalized_data = cell_line_data.get("normalized_data", {})
 
         try:
-            # Validate against CellLineCurationForm Pydantic model
-            validated_form = CellLineCurationForm(**normalized_data)
+            # Validate against JSONOutputSchema Pydantic model
+            validated_form = JSONOutputSchema(**normalized_data)
 
             return {
                 "cell_line_id": cell_line_id,

@@ -1,0 +1,185 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "WAe009-A-24",
+    "hpscreg_synonym": [],
+    "cell_line_alt_name": [],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "False",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": "WAe009-A",
+    "parent_of": []
+  },
+  "generator": {
+    "institute": "Monash Institute of Pharmaceutical Sciences",
+    "institute_ror": null,
+    "group_name": "Monash Institute of Pharmaceutical Sciences",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "Monash Institute of Pharmaceutical Sciences",
+      "institute_ror": null,
+      "group_name": "Monash Institute of Pharmaceutical Sciences",
+      "company_name": null,
+      "contact_first_name": null,
+      "contact_last_name": null,
+      "contact_initials": null,
+      "email": null,
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Unknown",
+      "ethics_number": "Holding Entry-WAe009-A",
+      "approval_date": null,
+      "institutional_HREC": "Holding Entry",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/WAe009-A-24"
+    },
+    {
+      "xref_id": null,
+      "db_name": "BioSamples",
+      "db_url": "https://www.ebi.ac.uk/biosamples/",
+      "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA6324522"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_YN82"
+    },
+    {
+      "xref_id": null,
+      "db_name": "CLO",
+      "db_url": "https://www.ebi.ac.uk/ols4/ontologies/clo",
+      "xref_url": "http://purl.obolibrary.org/obo/CLO_0102918"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q98134748"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1016/j.stemcr.2020.04.007",
+      "pmid": "32442534",
+      "first_author": "Grubman A",
+      "last_author": "Polo JM",
+      "journal": "Stem cell reports",
+      "title": "A CX3CR1 Reporter hESC Line Facilitates Integrative Analysis of In-Vitro-Derived Microglia and Improved Microglia Identity upon Neuron-Glia Co-culture",
+      "year": "2020"
+    }
+  ],
+  "genomic_alteration": [
+    {
+      "alteration_type": "GKI",
+      "isogenic_purpose": null,
+      "summary": "This line is engineered to include a genetic reporter of  CX3CR1 expression which results in expression of tdTomato and nanoluciferase in series with CX3CR1 expression.  The construct also includes a neomycin resistance cassette flanked by FRT sites.  One allele of the CX3CR1 gene contains the following construct targeted to the stop codon:  IRES-tdTomato-T2A-Nanoluc-pA-FRT-neo-FRT.  ",
+      "delivery_method": null,
+      "variation_details": {
+        "zygosity": null,
+        "gene": {
+          "name": "CX3CR1",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": "http://www.ncbi.nlm.nih.gov/gene/1524",
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "cytoband": "3p22.2",
+        "genotype": null,
+        "genomic_coord": null,
+        "coding_coord": null,
+        "rna_coord": null,
+        "protein_coord": null,
+        "summary": null,
+        "xrefs": [],
+        "disease": []
+      }
+    }
+  ],
+  "genomic_characterisation": [],
+  "additional_genomic_characterisation": null,
+  "screening": null,
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": null,
+    "i_source_cell_type_ontology": null,
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": null,
+    "i_source_cell_origin_ontology": null,
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "False",
+    "derived_under_gmp": "False",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": null,
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Not specified",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": []
+  },
+  "undiff_characterisation": null,
+  "differentiated_cell_analysis": null,
+  "donor": null,
+  "external_cell_line_source": null
+}

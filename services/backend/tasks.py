@@ -90,8 +90,22 @@ def update_job_status(job_id: str, status: str, result: Dict = None, error: str 
         redis_client.setex(f"job:{job_id}", 3600, json.dumps(job_info))
 
 
+def _parse_version_suffix(filename: str):
+    """Extract version number from filename like 'Name_v2', returns None if not found."""
+    if "_v" not in filename:
+        return None
+    try:
+        return int(filename.split("_v")[-1])
+    except (ValueError, IndexError):
+        return None
+
+
 def _save_cell_lines(validated_results: list) -> Dict[str, Any]:
-    """Save validated cell lines using FileStorage"""
+    """Save validated cell lines using FileStorage.
+
+    Upsert logic: if a working copy with the same hpscreg_name exists, overwrite it
+    in place. Otherwise create a new versioned file (version = registered count).
+    """
     storage = FileStorage()
     saved_files = []
     save_errors = 0
@@ -101,7 +115,6 @@ def _save_cell_lines(validated_results: list) -> Dict[str, Any]:
             cell_line_id = result.get("cell_line_id", "unknown")
             validation_status = result.get("validation_status")
 
-            # Only process successfully validated cell lines
             if validation_status != "success":
                 logger.warning(f"Skipping save for {cell_line_id} - validation status: {validation_status}")
                 saved_files.append({
@@ -123,50 +136,35 @@ def _save_cell_lines(validated_results: list) -> Dict[str, Any]:
                 })
                 continue
 
-            # Extract filename from validated_data (hpscreg_name from cell_line)
-            cell_line_list = validated_data.get("cell_line", [])
-            if cell_line_list and cell_line_list[0].get("hpscreg_name"):
-                filename = cell_line_list[0]["hpscreg_name"]
-            else:
-                filename = cell_line_id
+            general = validated_data.get("general") or {}
+            hpscreg_name = general.get("hpscreg_name") or general.get("aushpscreg_name") or cell_line_id
 
-            # Use FileStorage to create the cell line
-            create_result = storage.create(filename, validated_data, "working")
+            # Upsert: update existing working copy if present
+            existing_working = storage.get_files_for_base_name(hpscreg_name, "working")
+            if existing_working:
+                target_filename = existing_working[0]
+                storage.update(target_filename, validated_data, "working")
+                logger.info(f"Updated existing working cell line '{cell_line_id}' at {target_filename}.json")
+            else:
+                # Create new: version = next after highest registered version
+                registered_files = storage.get_files_for_base_name(hpscreg_name, "registered")
+                versions = [_parse_version_suffix(f) for f in registered_files]
+                versions = [v for v in versions if v is not None]
+                next_version = max(versions) + 1 if versions else 0
+                target_filename = f"{hpscreg_name}_v{next_version}"
+                storage.create(target_filename, validated_data, "working")
+                logger.info(f"Created new working cell line '{cell_line_id}' at {target_filename}.json")
 
             saved_files.append({
                 "hpscreg_name": cell_line_id,
-                "filename": f"{filename}.json",
+                "filename": f"{target_filename}.json",
                 "status": "success"
             })
-
-            logger.info(f"Successfully saved cell line '{cell_line_id}' to {filename}.json")
-
-        except FileExistsError:
-            # File already exists - try update instead
-            try:
-                storage.update(filename, validated_data, "working")
-                saved_files.append({
-                    "hpscreg_name": cell_line_id,
-                    "filename": f"{filename}.json",
-                    "status": "success"
-                })
-                logger.info(f"Updated existing cell line '{cell_line_id}' at {filename}.json")
-            except Exception as e:
-                save_errors += 1
-                error_msg = f"Failed to update cell line: {str(e)}"
-                logger.error(error_msg)
-                saved_files.append({
-                    "hpscreg_name": cell_line_id,
-                    "filename": None,
-                    "status": "failed",
-                    "error": error_msg
-                })
 
         except Exception as e:
             save_errors += 1
             error_msg = f"Failed to save cell line: {str(e)}"
             logger.error(error_msg)
-
             saved_files.append({
                 "hpscreg_name": result.get("cell_line_id", "unknown"),
                 "filename": None,

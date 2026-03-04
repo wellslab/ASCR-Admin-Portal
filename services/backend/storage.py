@@ -189,11 +189,16 @@ class FileStorage(StorageInterface):
     
     def _extract_hpscreg_name(self, data: Dict[str, Any]) -> str:
         """Extract hpscreg_name from cell line data"""
-        # Try new structure (cell_line) first, fall back to legacy (basic_data)
+        # Current format: general.hpscreg_name
+        general = data.get("general") or {}
+        name = general.get("hpscreg_name") or general.get("aushpscreg_name")
+        if name:
+            return name
+        # Legacy formats
         cell_line_data = data.get("cell_line", []) or data.get("basic_data", [])
-        if not cell_line_data or not cell_line_data[0].get("hpscreg_name"):
-            raise ValueError("Cannot save file without hpscreg_name")
-        return cell_line_data[0]["hpscreg_name"]
+        if cell_line_data and cell_line_data[0].get("hpscreg_name"):
+            return cell_line_data[0]["hpscreg_name"]
+        raise ValueError("Cannot save file without hpscreg_name")
     
     def _get_file_path(self, location: str, filename: str) -> Path:
         """Get file path for given location and filename"""
