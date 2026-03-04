@@ -1,205 +1,206 @@
-# ASCR Admin Portal - Microservices Architecture
+# ASCR Admin Portal
 
-The **Australian Stem Cell Registry (ASCR) Admin Portal** is a modern microservices-based web application for managing cell line data and AI-powered curation workflows. Built with FastAPI and Next.js, it provides a lightweight, scalable solution for cell line metadata management.
+A web application for managing Australian Stem Cell Registry (ASCR) cell line data with an AI-powered curation workflow. Built with FastAPI and Next.js.
 
-## 🏗️ Architecture
+## Architecture
 
-### Microservices Overview
+Three services communicate via HTTP and a Redis-backed task queue:
 
 ```
-┌─────────────┐    ┌──────────────────┐    ┌────────────────────┐
-│  frontend   │◄───┤ curation_service │◄───┤ background_processor│
-│  (Next.js)  │    │    (FastAPI)     │    │   (Celery+Redis)   │
-└─────┬───────┘    └──────────────────┘    └────────────────────┘
-      │                     
-      ▼                     
-┌─────────────────┐         
-│cell_line_archive│         
-│   (FastAPI)     │         
-└─────────────────┘         
+Frontend (Next.js 15)
+  :3001
+    |
+    └── Backend (FastAPI + Celery)
+          :8001
+            |
+            ├── /app/data/     (JSON file storage)
+            └── Redis :6380    (task queue)
 ```
 
-### Services
+| Service | Port | Purpose |
+|---------|------|---------|
+| Frontend | 3001 | Next.js UI |
+| Backend | 8001 | FastAPI REST API + Celery worker |
+| Redis | 6380 | Task queue and caching |
 
-🎨 **Frontend** (`services/frontend/`)
-- **Port**: 3001
-- **Tech**: Next.js 15 + TypeScript + Tailwind CSS
-- **Purpose**: User interface for cell line management and curation workflows
+## Quick Start
 
-🤖 **Curation Service** (`services/curation_service/`)
-- **Port**: 8001
-- **Tech**: FastAPI + OpenAI
-- **Purpose**: AI-powered extraction of cell line metadata from text
+**Prerequisites**: Docker and Docker Compose
 
-📁 **Cell Line Archive** (`services/cell_line_archive/`)
-- **Port**: 8002
-- **Tech**: FastAPI + File Storage
-- **Purpose**: CRUD operations and version control for cell line data
-
-⚙️ **Background Processor** (`services/background_processor/`)
-- **Tech**: Celery + Redis
-- **Purpose**: Long-running AI curation tasks and job processing
-
-🔴 **Redis**
-- **Port**: 6380
-- **Purpose**: Task queue and caching for background jobs
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Docker and Docker Compose
-- Text editor for configuration
-
-### Get Started
-
-1. **Clone and enter directory**
-   ```bash
-   git clone <repository-url>
-   cd ascr-admin-portal
-   ```
-
-2. **Start all services**
-   ```bash
-   ./start.sh
-   ```
-
-3. **Configure API keys** (edit `.env` file)
-   ```bash
-   OPENAI_API_KEY=your_actual_openai_key
-   ANTHROPIC_API_KEY=your_actual_anthropic_key
-   ```
-
-4. **Access the application**
-   - **Frontend**: http://localhost:3001
-   - **Curation API**: http://localhost:8001/docs
-   - **Archive API**: http://localhost:8002/docs
-
-## 📋 Features
-
-- **🤖 AI-Powered Curation**: Extract cell line metadata from text using OpenAI GPT-4
-- **📁 File-Based Storage**: Simple JSON file storage with automatic versioning
-- **✏️ Advanced Editor**: Cell line editing with real-time diff visualization
-- **🔄 Version Control**: Automatic versioning system (keeps last 10 versions)
-- **⚡ Background Processing**: Asynchronous handling of long-running curation tasks
-- **📊 Statistics**: Archive analytics and status tracking
-- **🔍 Search & Filter**: Query cell lines by status, content, and metadata
-
-## 🛠️ Development
-
-### Local Development
-
-**Start services:**
 ```bash
-docker-compose up -d
+# Clone the repo
+git clone <repository-url>
+cd ascr-admin-portal
+
+# Create a .env file with your API key (see Configuration below)
+
+# Start all services
+./start.sh
 ```
 
-**View logs:**
-```bash
-docker-compose logs -f [service_name]
-```
+Access points:
+- **Application**: http://localhost:3001
+- **API docs**: http://localhost:8001/docs
 
-**Stop services:**
-```bash
-docker-compose down
-```
+## Configuration
 
-### Project Structure
-
-```
-ascr-admin-portal/
-├── services/
-│   ├── frontend/              # Next.js application
-│   ├── curation_service/      # AI curation FastAPI service
-│   ├── cell_line_archive/     # Data management FastAPI service
-│   └── background_processor/  # Celery worker for long tasks
-├── sample_data/               # Example cell line data files
-├── docker-compose.yml         # Service orchestration
-├── start.sh                   # Quick start script
-└── README.md                  # This file
-```
-
-### Data Storage
-
-- **Cell Lines**: `/data/cell_lines/*.json` - Individual cell line records
-- **Versions**: `/data/versions/{cell_line_id}/v*.json` - Version history
-- **Jobs**: Redis-based temporary storage for curation job status
-
-## 📡 API Endpoints
-
-### Curation Service (Port 8001)
-- `POST /curate` - Start AI curation job for text content
-- `GET /status/{job_id}` - Check curation job status
-- `GET /jobs` - List recent curation jobs
-- `DELETE /jobs/{job_id}` - Remove completed job
-
-### Archive Service (Port 8002)
-- `GET /cell-lines/` - List all cell lines (with pagination/filtering)
-- `POST /cell-lines/` - Create new cell line
-- `GET /cell-lines/{id}` - Get specific cell line
-- `PUT /cell-lines/{id}` - Update cell line
-- `DELETE /cell-lines/{id}` - Archive cell line
-- `GET /cell-lines/{id}/versions` - Get version history
-- `GET /stats` - Archive statistics
-
-## 🔧 Configuration
-
-### Environment Variables
+Create a `.env` file in the project root:
 
 ```bash
 # Required for AI curation
 OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
 
-# Service configuration
+# Redis
 REDIS_URL=redis://redis:6379/0
+
+# Development
 DEBUG=true
 ```
 
-### Volumes
-
-- `archive_data` - Persistent storage for cell line data
-- `curation_data` - Temporary storage for curation jobs
-- `redis_data` - Redis persistence
-- `frontend_node_modules` - Node.js dependencies cache
-
-## 🧪 Sample Data
-
-The `sample_data/` directory contains example cell line records that can be imported for testing:
-
+For production, also set:
 ```bash
-# Example: Create a cell line from sample data
-curl -X POST "http://localhost:8002/cell-lines/" \
-  -H "Content-Type: application/json" \
-  -d @sample_data/TEST001-A.json
+NEXT_PUBLIC_BACKEND_API_URL=http://YOUR_SERVER_IP:8001
+CELL_LINE_DATA_PATH=/path/on/server/to/cell_lines
 ```
 
-## ⚡ Performance Features
+API keys can also be configured through the Settings page in the UI. They are stored in `services/backend/config.json` and persist across container restarts.
 
-- **File-based storage** - No database overhead
-- **Microservices** - Independent scaling and deployment
-- **Background processing** - Non-blocking AI operations
-- **Containerized** - Consistent development and deployment
-- **Version control** - Automatic cleanup (10-version retention)
+## Features
 
-## 🔒 Security Notes
+**AI Curation** — Upload publication PDFs or paste text, and the system uses OpenAI GPT-4 to extract structured cell line metadata. Curation jobs run in the background via Celery, with real-time progress updates over WebSocket.
 
-- Configure proper API keys before production use
-- Implement authentication for production deployments
-- Review network security for container communication
-- Backup data volumes regularly
+**Cell Line Editor** — Edit cell line records with field-level diff visualization showing changes between the current version and the previous one.
 
-## 🤝 Contributing
+**State Management** — Cell lines move through three states: `working` → `ready` → `registered`. Each state maps to a separate directory under `/app/data/`.
 
-1. Fork the repository
-2. Create a feature branch
-3. Follow existing code patterns
-4. Test your changes
-5. Submit a pull request
+**Version Control** — Every update creates a new versioned JSON file. The system retains the last 10 versions per cell line.
 
-## 📄 License
+**Schema-Driven Forms** — The data schema is generated from an Excel data dictionary (`data_dictionaries/2025_12_ascr_data_dictionary_v1.0.xlsx`). Changing the schema requires regenerating the Pydantic models and JSON schema artifacts.
 
-[Add your license information here]
+## Development
 
----
+### Running services individually
 
-**Simplified Architecture**: This microservices approach replaces the previous Django + PostgreSQL setup with a much lighter, more maintainable system focused on essential functionality.
+```bash
+# Backend
+cd services/backend
+python -m uvicorn main:app --reload --port 8001
+
+# Celery worker
+cd services/backend
+celery -A tasks worker --loglevel=info --pool=solo
+
+# Frontend
+cd services/frontend/my-app
+npm run dev
+```
+
+### Docker commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f [frontend|backend|redis]
+
+# Restart a service
+docker-compose restart backend
+
+# Stop all services
+docker-compose down
+```
+
+### Updating data dictionary
+
+The data dictionary Excel file is the source of truth for cell line fields and validation rules.
+
+1. Record the change in `data_dictionaries/stefan_data_dictionary_change_record.md`
+2. Edit the Excel file: `data_dictionaries/2025_12_ascr_data_dictionary_v1.0.xlsx`
+3. Regenerate artifacts:
+   ```bash
+   source .venv/bin/activate
+   python data_dictionaries/make_data_dictionary.py
+   ```
+   This regenerates `curation_models.py`, `curation_schema.yaml`, `curation_schema.jsonc`, and the LLM instructions file.
+
+## API Reference
+
+All endpoints are on the backend at port 8001. Full interactive docs available at `/docs`.
+
+### Cell line management
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/get-all-cell-lines` | List all cell lines across all states |
+| `GET` | `/working/files` | List files in working directory |
+| `GET` | `/ready/files` | List files in ready directory |
+| `GET` | `/registered/files` | List files in registered directory |
+| `GET` | `/cell-line/{filename}` | Get a specific cell line record |
+| `POST` | `/working/cell-line` | Create a new cell line |
+| `PUT` | `/working/cell-line/{filename}` | Update a cell line |
+| `DELETE` | `/working/cell-line` | Delete a cell line |
+| `POST` | `/cell-line/{filename}/move-to-ready` | Promote from working to ready |
+| `POST` | `/cell-line/{filename}/move-to-working` | Move from ready back to working |
+| `GET` | `/cell-line/{base_name}/versions` | Get all versions of a cell line |
+| `GET` | `/cell-line/{base_name}/latest` | Get the latest version with full data |
+| `GET` | `/get-empty-form` | Get an empty form template |
+| `GET` | `/cellline-schema` | Get the JSON schema for cell line validation |
+| `GET` | `/stats` | Counts by state (working/ready/registered) |
+
+### AI curation
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/start-ai-curation` | Submit files for AI curation (base64-encoded) |
+| `GET` | `/tasks` | List recent curation tasks |
+| `POST` | `/tasks/{task_id}/retry` | Retry a failed task |
+| `DELETE` | `/tasks/{task_id}` | Remove a task from history |
+
+### Settings
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/settings` | Get current settings (API keys masked) |
+| `POST` | `/settings` | Update settings |
+
+### Real-time
+
+| Protocol | Path | Description |
+|----------|------|-------------|
+| WebSocket | `/ws/task-updates` | Stream task completion and progress events |
+
+## Data Storage
+
+Cell lines are stored as JSON files in `/app/data/`:
+
+```
+/app/data/
+  working/      # in-progress records
+  ready/        # records reviewed and awaiting registration
+  registered/   # finalized records
+```
+
+Each update to a cell line creates a new versioned file (e.g., `CellLine_Name_v3.json`). There is no database.
+
+## Production Deployment
+
+```bash
+# Build and start
+docker compose -f docker-compose.prod.yml up --build -d
+
+# Update to latest
+./update.sh
+```
+
+The production compose file mounts `${CELL_LINE_DATA_PATH}` from the host for persistent cell line storage.
+
+## Documentation
+
+Auto-generated API and module documentation is available via MkDocs:
+
+```bash
+./serve-docs.sh
+```
+
+Documentation is also published to GitHub Pages on push to `master`.
