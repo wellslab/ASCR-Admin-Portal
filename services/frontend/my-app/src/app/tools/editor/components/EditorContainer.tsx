@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { VersionControlLayout } from './VersionControlLayout';
-import CurationCellLineEditor from '../../curation/components/CurationCellLineEditor';
+import CustomCellLineEditor from './CustomCellLineEditor';
 
 // Types for search results
 interface CellLineSearchResult {
@@ -199,9 +199,9 @@ function EditorContent() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <CurationCellLineEditor
-                    cellLineId={selectedCellLine.cell_line_id}
-                    cellLineData={selectedCellLineData}
+                  <CustomCellLineEditor
+                    initialCellLineId={selectedCellLine.cell_line_id}
+                    hideSelector={true}
                     onSave={(savedData) => {
                       console.log('Cell line saved:', selectedCellLine.cell_line_id, savedData);
                     }}
