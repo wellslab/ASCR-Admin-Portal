@@ -1,0 +1,55 @@
+services:
+  frontend:
+    build:
+      context: ./services/frontend/my-app
+      dockerfile: ../Dockerfile
+      target: production
+      args:
+        - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL}
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ${CELL_LINE_DATA_PATH}:/app/data
+      - ./data_dictionaries:/app/data_dictionaries
+      - ./curation_instructions:/app/curation_instructions
+      - ./services/backend/config.json:/app/config.json
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    volumes:
+      - ${CELL_LINE_DATA_PATH}:/app/data
+      - ./data_dictionaries:/app/data_dictionaries
+      - ./curation_instructions:/app/curation_instructions
+      - ./services/backend/config.json:/app/config.json
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    command: ["celery", "-A", "tasks", "worker", "--loglevel=info", "--pool=solo"]
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
