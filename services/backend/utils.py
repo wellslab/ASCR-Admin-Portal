@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Tuple, Union, get_args, get_origin
+from typing import Dict, Any, List, Tuple, Union, Literal, get_args, get_origin
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from fastapi import WebSocket
@@ -130,13 +130,13 @@ def _create_placeholder_instance(model_class: type, overrides: Dict[str, Any] = 
                 is_optional = True
                 inner_type = next((a for a in args if a is not type(None)), str)
 
-        # Handle Literal types - use first option
-        if hasattr(inner_type, '__origin__') and inner_type.__origin__ is type(None):
-            instance_data[field_name] = None
-        elif hasattr(inner_type, '__args__') and not hasattr(inner_type, '__origin__'):
-            # This is a Literal type
-            instance_data[field_name] = "..."
-        elif inner_type == str or (hasattr(inner_type, '__origin__') and get_origin(inner_type) is None and inner_type == str):
+        # Handle Literal (enum) types
+        if get_origin(inner_type) is Literal:
+            instance_data[field_name] = None if is_optional else get_args(inner_type)[0]
+        # Handle List types
+        elif get_origin(inner_type) is list:
+            instance_data[field_name] = []
+        elif inner_type == str:
             instance_data[field_name] = "..."
         elif inner_type == int:
             instance_data[field_name] = 0 if not is_optional else None
