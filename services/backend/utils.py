@@ -82,8 +82,33 @@ def get_frontend_schema(model_class: BaseModel) -> Dict[str, Any]:
                     elif field_type == "boolean":
                         field_schema["type"] = "boolean"
                     elif field_type == "array":
-                        field_schema["type"] = "text"
-                        field_schema["is_array"] = True
+                        items_def = field_def.get("items", {})
+                        if "$ref" in items_def:
+                            # List[SubModel] — object array
+                            nested_ref = items_def["$ref"].split("/")[-1]
+                            nested_def = definitions.get(nested_ref, {})
+                            nested_fields = {}
+                            for nf_name, nf_def in nested_def.get("properties", {}).items():
+                                nf_type = nf_def.get("type")
+                                if "anyOf" in nf_def:
+                                    non_null = [t for t in nf_def["anyOf"] if t.get("type") != "null"]
+                                    if non_null:
+                                        nf_type = non_null[0].get("type")
+                                if "enum" in nf_def:
+                                    nested_fields[nf_name] = {"type": "select", "choices": nf_def["enum"]}
+                                elif nf_type == "boolean":
+                                    nested_fields[nf_name] = {"type": "boolean"}
+                                elif nf_type in ("integer", "number"):
+                                    nested_fields[nf_name] = {"type": "number"}
+                                else:
+                                    nested_fields[nf_name] = {"type": "text"}
+                            field_schema["type"] = "text"
+                            field_schema["is_object_array"] = True
+                            field_schema["fields"] = nested_fields
+                        else:
+                            # List[primitive]
+                            field_schema["type"] = "text"
+                            field_schema["is_array"] = True
                     else:
                         field_schema["type"] = "text"
 

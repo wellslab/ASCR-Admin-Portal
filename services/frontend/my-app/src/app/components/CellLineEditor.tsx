@@ -77,25 +77,42 @@ const buildAvailableLists = (
 ): ListInfo[] => {
   const lists: ListInfo[] = [];
 
-  // Top-level sections marked as lists in schema (covers null/empty sections too)
+  const seen = new Set<string>();
+  const addList = (info: ListInfo) => { if (!seen.has(info.id)) { seen.add(info.id); lists.push(info); } };
+
   for (const [sectionName] of Object.entries(normalizedData)) {
-    if (schema?.sections?.[sectionName]?.is_list === true) {
-      lists.push({
-        label: sectionName,
-        path: [sectionName],
-        id: `section-${sectionName}`,
-      });
+    const sectionSchema = schema?.sections?.[sectionName];
+    if (!sectionSchema) continue;
+
+    // Top-level list sections
+    if (sectionSchema.is_list) {
+      addList({ label: sectionName, path: [sectionName], id: `section-${sectionName}` });
+    }
+
+    // Nested object array fields — discoverable from schema even when section is empty
+    const fields = sectionSchema.fields || {};
+    const instances = normalizedData[sectionName] || [];
+    for (const [fieldName, fieldDef] of Object.entries(fields)) {
+      if (!(fieldDef as any)?.is_object_array) continue;
+      if (instances.length > 0) {
+        instances.forEach((_: any, i: number) => {
+          addList({ label: `${sectionName}.${fieldName}`, path: [sectionName, i, fieldName], id: `list-${sectionName}-${i}-${fieldName}` });
+        });
+      } else {
+        // Section has no data yet — include with index 0; handleAddItem will create the parent
+        addList({ label: `${sectionName}.${fieldName}`, path: [sectionName, 0, fieldName], id: `list-${sectionName}-0-${fieldName}` });
+      }
     }
   }
 
-  // Nested array-of-objects fields within instances
+  // Data-driven discovery for deeper nesting (3+ levels)
   const traverse = (obj: any, path: (string | number)[], labelParts: string[]) => {
     if (!obj || typeof obj !== 'object') return;
     for (const [key, val] of Object.entries(obj)) {
       const nextPath = [...path, key];
       const nextLabel = [...labelParts, key];
       if (isObjectArray(val)) {
-        lists.push({ label: nextLabel.join('.'), path: nextPath, id: `list-${nextPath.join('-')}` });
+        addList({ label: nextLabel.join('.'), path: nextPath, id: `list-${nextPath.join('-')}` });
         traverse(val[0], [...nextPath, 0], nextLabel);
       } else if (isPlainObject(val)) {
         traverse(val, nextPath, nextLabel);
@@ -483,6 +500,9 @@ const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema, d
         if (isObjectArray(value)) {
           return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
         }
+        if (Array.isArray(value) && fieldsSchema[fieldName]?.is_object_array) {
+          return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={[]} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
+        }
         if (isPlainObject(value)) {
           return <SubObjectEditor key={fieldName} fieldName={fieldName} obj={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
         }
@@ -518,7 +538,7 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
   // Build an empty instance from schema fields when section has no data
   const emptyInstance = useMemo(() => {
     if (!sectionSchema?.fields) return null;
-    return Object.fromEntries(Object.keys(sectionSchema.fields).map(key => [key, sectionSchema.fields[key]?.is_array ? [] : null]));
+    return Object.fromEntries(Object.keys(sectionSchema.fields).map(key => [key, (sectionSchema.fields[key]?.is_array || sectionSchema.fields[key]?.is_object_array) ? [] : null]));
   }, [sectionSchema]);
 
   return (
@@ -763,21 +783,32 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
 
   const handleAddItem = (list: ListInfo) => {
     const newData = collectNormalizedFormData();
-    // Navigate to the target list via its path
+    // Navigate to the target list via its path, creating missing parent instances as needed
     let target: any = newData;
+    const topLevelSection = list.path[0] as string;
+    const sectionFields = schema?.sections?.[topLevelSection]?.fields;
     for (const part of list.path) {
-      if (!target) break;
+      if (target === undefined || target === null) break;
+      // If indexing into an empty array, auto-create a parent instance from schema
+      if (Array.isArray(target) && typeof part === 'number' && part >= target.length) {
+        const emptyParent = sectionFields
+          ? Object.fromEntries(Object.keys(sectionFields).map(k => [k, (sectionFields[k]?.is_array || sectionFields[k]?.is_object_array) ? [] : null]))
+          : {};
+        target.push(emptyParent);
+      }
       target = target[part];
     }
     if (Array.isArray(target)) {
       if (target.length > 0) {
         target.push(createEmptyItem(target[0]));
       } else {
-        // No existing item to use as template — build from schema instead
-        const topLevelSection = list.path[0] as string;
-        const sectionFields = schema?.sections?.[topLevelSection]?.fields;
-        const emptyItem = sectionFields
-          ? Object.fromEntries(Object.keys(sectionFields).map(key => [key, sectionFields[key]?.is_array ? [] : null]))
+        // No existing item — build from schema
+        const fieldName = list.path[list.path.length - 1] as string;
+        const nestedFields = list.path.length === 1
+          ? sectionFields  // top-level list section
+          : sectionFields?.[fieldName]?.fields;  // nested object array field
+        const emptyItem = nestedFields
+          ? Object.fromEntries(Object.keys(nestedFields).map(k => [k, null]))
           : {};
         target.push(emptyItem);
       }
