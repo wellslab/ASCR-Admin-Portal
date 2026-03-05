@@ -765,7 +765,17 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
       target = target[part];
     }
     if (Array.isArray(target)) {
-      target.push(target.length > 0 ? createEmptyItem(target[0]) : {});
+      if (target.length > 0) {
+        target.push(createEmptyItem(target[0]));
+      } else {
+        // No existing item to use as template — build from schema instead
+        const topLevelSection = list.path[0] as string;
+        const sectionFields = schema?.sections?.[topLevelSection]?.fields;
+        const emptyItem = sectionFields
+          ? Object.fromEntries(Object.keys(sectionFields).map(key => [key, null]))
+          : {};
+        target.push(emptyItem);
+      }
     }
     setAddItemOpen(false);
     setAddItemSearch('');
