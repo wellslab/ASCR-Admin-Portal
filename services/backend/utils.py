@@ -174,6 +174,9 @@ def _create_placeholder_instance(model_class: type, overrides: Dict[str, Any] = 
             instance_data[field_name] = False if not is_optional else None
         elif hasattr(inner_type, '__name__') and inner_type.__name__ in ('date', 'datetime'):
             instance_data[field_name] = None
+        elif hasattr(inner_type, 'model_fields'):
+            # Nested model — None if optional, otherwise recurse
+            instance_data[field_name] = None if is_optional else _create_placeholder_instance(inner_type)
         else:
             # Default to placeholder string for unknown types
             instance_data[field_name] = "..."
