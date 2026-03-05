@@ -72,13 +72,14 @@ interface ListInfo {
 // Collect all addable lists: top-level sections that are real arrays, plus nested array-of-object fields.
 const buildAvailableLists = (
   normalizedData: Record<string, any[]>,
-  originalData: Record<string, any[] | Record<string, any>>
+  originalData: Record<string, any[] | Record<string, any>>,
+  schema: any
 ): ListInfo[] => {
   const lists: ListInfo[] = [];
 
-  // Top-level sections that were originally arrays (not wrapped single objects)
-  for (const [sectionName, instances] of Object.entries(normalizedData)) {
-    if (Array.isArray(originalData[sectionName])) {
+  // Top-level sections marked as lists in schema (covers null/empty sections too)
+  for (const [sectionName] of Object.entries(normalizedData)) {
+    if (schema?.sections?.[sectionName]?.is_list === true) {
       lists.push({
         label: sectionName,
         path: [sectionName],
@@ -566,6 +567,10 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
                 onDeleteItem={onDeleteItem}
               />
             ))
+          ) : sectionIsArray ? (
+            <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic' }}>
+              No entries. Use &quot;Add Entry&quot; to add one.
+            </Typography>
           ) : emptyInstance ? (
             <InstanceEditor
               instance={emptyInstance}
@@ -689,7 +694,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
     ])
   );
 
-  const availableLists = useMemo(() => buildAvailableLists(normalizedData, data), [normalizedData]);
+  const availableLists = useMemo(() => buildAvailableLists(normalizedData, data, schema), [normalizedData, schema]);
   const filteredLists = useMemo(
     () => availableLists.filter(l => l.label.toLowerCase().includes(addItemSearch.toLowerCase())),
     [availableLists, addItemSearch]
@@ -999,7 +1004,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
             sectionId={`section-${sectionName}`}
             instances={instances}
             sectionSchema={schema?.sections?.[sectionName]}
-            sectionIsArray={Array.isArray(data[sectionName])}
+            sectionIsArray={schema?.sections?.[sectionName]?.is_list === true || Array.isArray(data[sectionName])}
             onDeleteItem={handleDeleteItem}
           />
         ))}
