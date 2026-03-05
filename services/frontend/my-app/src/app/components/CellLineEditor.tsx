@@ -514,6 +514,12 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
 
   const hasData = instances && instances.length > 0;
 
+  // Build an empty instance from schema fields when section has no data
+  const emptyInstance = useMemo(() => {
+    if (!sectionSchema?.fields) return null;
+    return Object.fromEntries(Object.keys(sectionSchema.fields).map(key => [key, null]));
+  }, [sectionSchema]);
+
   return (
     <Box id={sectionId} sx={{ mb: 1, scrollMarginTop: '8px' }}>
       <Box
@@ -560,6 +566,15 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
                 onDeleteItem={onDeleteItem}
               />
             ))
+          ) : emptyInstance ? (
+            <InstanceEditor
+              instance={emptyInstance}
+              instanceIndex={0}
+              sectionName={sectionName}
+              sectionSchema={sectionSchema}
+              deletable={false}
+              onDeleteItem={onDeleteItem}
+            />
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic' }}>
               No data available
@@ -688,7 +703,9 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
       const parts = key.split('.');
       const [sectionName, indexStr, fieldName, ...rest] = parts;
       const index = parseInt(indexStr, 10);
-      if (!newData[sectionName]?.[index]) continue;
+      if (!newData[sectionName]) continue;
+      // Initialize slot for sections that had no data (rendered from schema)
+      if (!newData[sectionName][index]) newData[sectionName][index] = {};
       if (rest.length === 0) {
         const originalVal = newData[sectionName][index][fieldName];
         const fieldSchema = schema?.sections?.[sectionName]?.fields?.[fieldName];
