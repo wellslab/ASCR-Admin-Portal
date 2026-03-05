@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-import subprocess
 import utils
 from storage import StorageInterface, FileStorage
 from version_control import VersionControl
@@ -519,16 +518,19 @@ async def update_settings(settings: dict):
 
 @app.post("/update")
 async def trigger_update():
-    """Run ./update.sh in the background to pull latest code and rebuild containers."""
+    """Delegate to the host-side update agent (update_agent.py) to run update.sh."""
+    import httpx
     try:
-        subprocess.Popen(
-            ["./update.sh"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        async with httpx.AsyncClient() as client:
+            await client.post("http://host.docker.internal:8099/update", timeout=5.0)
         return {"status": "started", "message": "Update started. Containers will restart shortly."}
+    except httpx.ConnectError:
+        raise HTTPException(
+            status_code=503,
+            detail="Update agent is not running. Start it on the host with: python3 update_agent.py"
+        )
     except Exception as e:
-        logger.error(f"Error starting update: {str(e)}")
+        logger.error(f"Error contacting update agent: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to start update: {str(e)}")
 
 @app.websocket("/ws/task-updates")
