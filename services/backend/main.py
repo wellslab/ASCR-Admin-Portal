@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import subprocess
 import utils
 from storage import StorageInterface, FileStorage
 from version_control import VersionControl
@@ -515,6 +516,20 @@ async def update_settings(settings: dict):
     except Exception as e:
         logger.error(f"Error updating settings: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update settings: {str(e)}")
+
+@app.post("/update")
+async def trigger_update():
+    """Run ./update.sh in the background to pull latest code and rebuild containers."""
+    try:
+        subprocess.Popen(
+            ["./update.sh"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return {"status": "started", "message": "Update started. Containers will restart shortly."}
+    except Exception as e:
+        logger.error(f"Error starting update: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to start update: {str(e)}")
 
 @app.websocket("/ws/task-updates")
 async def websocket_endpoint(websocket: WebSocket):

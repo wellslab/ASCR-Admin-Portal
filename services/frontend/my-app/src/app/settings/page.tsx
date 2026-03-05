@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 import { getApiUrl } from '@/lib/api-config';
 import SaveIcon from '@mui/icons-material/Save';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
@@ -15,6 +16,8 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [apiKeySource, setApiKeySource] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -81,6 +84,24 @@ export default function SettingsPage() {
       console.error('Error saving settings:', error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    setUpdateMessage(null);
+    try {
+      const response = await fetch(getApiUrl('/update'), { method: 'POST' });
+      if (response.ok) {
+        setUpdateMessage('Update started. The application will restart shortly — refresh this page in a minute or two.');
+      } else {
+        const error = await response.json();
+        setUpdateMessage(`Error: ${error.detail || 'Failed to start update.'}`);
+      }
+    } catch {
+      setUpdateMessage('Error: Could not reach the backend.');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -226,6 +247,35 @@ export default function SettingsPage() {
                 {isSaving ? 'Saving...' : 'Save Settings'}
               </Button>
             </Box>
+          </Box>
+        </Box>
+
+        <Box>
+          <Typography variant="h6" fontWeight={600} color="text.primary" sx={{ mb: 1 }}>
+            Software Update
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Pull the latest code from the repository and rebuild the application containers. The application will be unavailable for a short period while containers restart.
+          </Typography>
+          {updateMessage && (
+            <Alert
+              severity={updateMessage.startsWith('Error') ? 'error' : 'info'}
+              sx={{ mb: 2 }}
+              onClose={() => setUpdateMessage(null)}
+            >
+              {updateMessage}
+            </Alert>
+          )}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              startIcon={<SystemUpdateAltIcon />}
+              onClick={handleUpdate}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Starting update...' : 'Update Software'}
+            </Button>
           </Box>
         </Box>
       </Box>
