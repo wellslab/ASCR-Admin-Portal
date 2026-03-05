@@ -81,6 +81,9 @@ def get_frontend_schema(model_class: BaseModel) -> Dict[str, Any]:
                         field_schema["number_type"] = "float"
                     elif field_type == "boolean":
                         field_schema["type"] = "boolean"
+                    elif field_type == "array":
+                        field_schema["type"] = "text"
+                        field_schema["is_array"] = True
                     else:
                         field_schema["type"] = "text"
 

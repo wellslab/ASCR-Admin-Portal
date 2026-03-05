@@ -517,7 +517,7 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
   // Build an empty instance from schema fields when section has no data
   const emptyInstance = useMemo(() => {
     if (!sectionSchema?.fields) return null;
-    return Object.fromEntries(Object.keys(sectionSchema.fields).map(key => [key, null]));
+    return Object.fromEntries(Object.keys(sectionSchema.fields).map(key => [key, sectionSchema.fields[key]?.is_array ? [] : null]));
   }, [sectionSchema]);
 
   return (
@@ -709,7 +709,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
       if (rest.length === 0) {
         const originalVal = newData[sectionName][index][fieldName];
         const fieldSchema = schema?.sections?.[sectionName]?.fields?.[fieldName];
-        if (Array.isArray(originalVal) && !isObjectArray(originalVal)) {
+        if ((Array.isArray(originalVal) && !isObjectArray(originalVal)) || fieldSchema?.is_array) {
           // Preserve array type: parse CSV string back to array (or keep as empty array)
           newData[sectionName][index][fieldName] = (value as string)
             ? (value as string).split(',').map(s => s.trim()).filter(Boolean)
@@ -772,7 +772,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
         const topLevelSection = list.path[0] as string;
         const sectionFields = schema?.sections?.[topLevelSection]?.fields;
         const emptyItem = sectionFields
-          ? Object.fromEntries(Object.keys(sectionFields).map(key => [key, null]))
+          ? Object.fromEntries(Object.keys(sectionFields).map(key => [key, sectionFields[key]?.is_array ? [] : null]))
           : {};
         target.push(emptyItem);
       }
