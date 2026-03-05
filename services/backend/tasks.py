@@ -232,25 +232,35 @@ def curate_article_task(self: Task, filename: str, file_data: bytes):
                 {"cell_lines": cell_lines}
             )
 
-            # Stage 4: Curate each cell line
+            # Stages 4+5: Curate and normalize each cell line in parallel
+            cell_line_states = {
+                cl: {"curating": "pending", "normalizing": "pending"}
+                for cl in cell_lines
+            }
+
+            def update_cell_line_progress(name: str, stage: str, status: str):
+                cell_line_states[name][stage] = status
+                progress.update_stage(
+                    task_id, "processing", "processing",
+                    f"Processing {len(cell_lines)} cell line{'' if len(cell_lines) == 1 else 's'}...",
+                    {"cell_lines": [{"name": cl, **cell_line_states[cl]} for cl in cell_lines]}
+                )
+
             progress.update_stage(
-                task_id, "curating", "processing",
-                f"Curating {len(cell_lines)} cell line{'' if len(cell_lines) == 1 else 's'}...",
-                {"cell_lines": [{"name": cl, "status": "pending"} for cl in cell_lines]}
+                task_id, "processing", "processing",
+                f"Processing {len(cell_lines)} cell line{'' if len(cell_lines) == 1 else 's'}...",
+                {"cell_lines": [{"name": cl, **cell_line_states[cl]} for cl in cell_lines]}
             )
 
-            curated_data = await curate.curate_cell_lines(pdf_info, curation_agent, cell_lines)
-
-            progress.update_stage(
-                task_id, "curating", "completed",
-                "All cell lines curated",
-                {"cell_lines": [{"name": cl, "status": "completed"} for cl in cell_lines]}
+            normalized_data = await curate.run_parallel_pipeline(
+                pdf_info, curation_agent, normalization_agent, cell_lines, update_cell_line_progress
             )
 
-            # Stage 5: Normalize metadata
-            progress.update_stage(task_id, "normalizing", "processing", "Normalizing metadata...")
-            normalized_data = await curate.normalize_metadata(curated_data, normalization_agent)
-            progress.update_stage(task_id, "normalizing", "completed", "Normalization complete")
+            progress.update_stage(
+                task_id, "processing", "completed",
+                f"Processed {len(normalized_data)} of {len(cell_lines)} cell line{'' if len(cell_lines) == 1 else 's'}",
+                {"cell_lines": [{"name": cl, **cell_line_states[cl]} for cl in cell_lines]}
+            )
 
             # Stage 6: Validate
             progress.update_stage(task_id, "validating", "processing", "Validating data...")

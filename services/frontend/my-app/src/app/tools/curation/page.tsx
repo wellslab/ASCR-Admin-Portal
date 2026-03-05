@@ -36,8 +36,42 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// Compact per-cell-line pipeline card (curating / normalizing stages)
+const CellLinePipelineCard = ({ cl, theme }: { cl: any; theme: any }) => {
+  const pipelineStages = [
+    { key: 'curating', label: 'Cur' },
+    { key: 'normalizing', label: 'Nor' },
+  ];
+
+  const getStageIcon = (status: string) => {
+    if (status === 'completed') return <CheckCircleIcon sx={{ fontSize: 11, color: theme.palette.text.secondary }} />;
+    if (status === 'failed') return <ErrorIcon sx={{ fontSize: 11, color: theme.palette.error.main }} />;
+    if (status === 'processing') return <BlurOnOutlinedIcon sx={{ fontSize: 11, color: theme.palette.text.secondary }} />;
+    return <Box sx={{ width: 11, height: 11, borderRadius: '50%', border: `1px solid ${theme.palette.grey[300]}` }} />;
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.2 }}>
+      <Typography variant="caption" sx={{ flex: 1, fontSize: '0.72rem', color: theme.palette.text.secondary }}>
+        {cl.name}
+      </Typography>
+      {pipelineStages.map(({ key, label }) => (
+        <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+          {getStageIcon(cl[key] || 'pending')}
+          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.disabled }}>
+            {label}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
 // Stage status component for detailed progress
 const StageItem = ({ stage, theme }: { stage: any; theme: any }) => {
+  const isParallelProcessing = stage.stage === 'processing' && Array.isArray(stage.data?.cell_lines)
+    && stage.data.cell_lines.some((cl: any) => 'curating' in cl || 'normalizing' in cl);
+
   const getStageIcon = () => {
     if (stage.status === 'completed') {
       return <CheckCircleIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />;
@@ -56,8 +90,13 @@ const StageItem = ({ stage, theme }: { stage: any; theme: any }) => {
         <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
           {stage.message}
         </Typography>
-        {/* Show cell line sub-stages if available */}
-        {stage.data?.cell_lines && Array.isArray(stage.data.cell_lines) && (
+        {isParallelProcessing ? (
+          <Box sx={{ pl: 1, mt: 0.5 }}>
+            {stage.data.cell_lines.map((cl: any, idx: number) => (
+              <CellLinePipelineCard key={idx} cl={cl} theme={theme} />
+            ))}
+          </Box>
+        ) : stage.data?.cell_lines && Array.isArray(stage.data.cell_lines) && (
           <Box sx={{ pl: 2, mt: 0.5 }}>
             {stage.data.cell_lines.map((cl: any, idx: number) => (
               <Box key={idx} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.5, py: 0.25 }}>

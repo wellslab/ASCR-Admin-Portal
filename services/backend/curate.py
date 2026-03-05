@@ -3,7 +3,7 @@ import json
 import os
 import time
 from datetime import datetime
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 import asyncio
 import io
 from dataclasses import dataclass
@@ -207,6 +207,111 @@ async def identify_cell_lines(pdf_info: PDFInfo, identification_agent: Any) -> L
         error_msg = f"Identification stage failed: {str(e)}"
         logger.error(f"{error_msg}", exc_info=True)
         raise Exception(error_msg)
+
+async def _curate_one(pdf_info: PDFInfo, curation_agent: Any, cell_line_id: str) -> Optional[Dict[str, Any]]:
+    """Curate a single cell line. Returns result dict or None on failure."""
+    curation_input = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_file", "file_id": pdf_info.file_id},
+                {"type": "input_text", "text": f"For the cell line named {cell_line_id}, run metadata curation on the given file using your instructions."},
+            ],
+        }
+    ]
+    start = time.time()
+    try:
+        result = await asyncio.to_thread(Runner.run_sync, curation_agent, curation_input)
+        curation_data = result.final_output.model_dump() if result and result.final_output else None
+        if curation_data:
+            return {"cell_line_id": cell_line_id, "curation_data": curation_data, "curation_time": time.time() - start}
+        logger.warning(f"No curation result for {cell_line_id}")
+        return None
+    except Exception as e:
+        logger.error(f"Curation failed for {cell_line_id}: {e}", exc_info=True)
+        return None
+
+
+async def _normalize_one(normalization_agent: Any, cell_line_id: str, curated: Dict[str, Any], vocab_context: VocabularyContext) -> Optional[Dict[str, Any]]:
+    """Normalize a single curated cell line. Returns result dict or None on failure."""
+    curation_data = curated["curation_data"]
+    metadata_list = curation_data if isinstance(curation_data, list) else [curation_data]
+    start = time.time()
+    try:
+        # Use first metadata object (standard case)
+        metadata_obj = metadata_list[0]
+        normalization_input = [
+            {
+                "role": "user",
+                "content": [{"type": "input_text", "text": f"Normalize this cell line metadata for {cell_line_id}: {metadata_obj}"}],
+            }
+        ]
+        result = await asyncio.to_thread(Runner.run_sync, normalization_agent, normalization_input, context=vocab_context)
+        normalized_data = result.final_output.model_dump() if result and result.final_output else None
+        if normalized_data:
+            return {
+                "cell_line_id": cell_line_id,
+                "metadata_object_index": 0,
+                "normalized_data": normalized_data,
+                "processing_times": {
+                    "curation_seconds": curated["curation_time"],
+                    "normalization_seconds": time.time() - start,
+                },
+            }
+        logger.warning(f"No normalization result for {cell_line_id}")
+        return None
+    except Exception as e:
+        logger.error(f"Normalization failed for {cell_line_id}: {e}", exc_info=True)
+        return None
+
+
+async def process_single_cell_line(
+    pdf_info: PDFInfo,
+    curation_agent: Any,
+    normalization_agent: Any,
+    cell_line_id: str,
+    vocab_context: VocabularyContext,
+    progress_cb,
+) -> Optional[Dict[str, Any]]:
+    """Full pipeline for one cell line: curate → normalize. Calls progress_cb(name, stage, status) at each transition."""
+    try:
+        progress_cb(cell_line_id, "curating", "processing")
+        curated = await _curate_one(pdf_info, curation_agent, cell_line_id)
+        if not curated:
+            progress_cb(cell_line_id, "curating", "failed")
+            return None
+        progress_cb(cell_line_id, "curating", "completed")
+
+        progress_cb(cell_line_id, "normalizing", "processing")
+        normalized = await _normalize_one(normalization_agent, cell_line_id, curated, vocab_context)
+        if not normalized:
+            progress_cb(cell_line_id, "normalizing", "failed")
+            return None
+        progress_cb(cell_line_id, "normalizing", "completed")
+
+        return normalized
+    except Exception as e:
+        logger.error(f"Pipeline failed for {cell_line_id}: {e}", exc_info=True)
+        return None
+
+
+async def run_parallel_pipeline(
+    pdf_info: PDFInfo,
+    curation_agent: Any,
+    normalization_agent: Any,
+    cell_lines: List[str],
+    progress_cb,
+) -> List[Dict[str, Any]]:
+    """Run curate+normalize for all cell lines concurrently via asyncio.gather."""
+    vocab_context = load_controlled_vocabulary()
+    logger.info(f"Controlled vocabulary loaded with {len(vocab_context.controlled_vocabularies)} categories")
+    tasks = [
+        process_single_cell_line(pdf_info, curation_agent, normalization_agent, cl, vocab_context, progress_cb)
+        for cl in cell_lines
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    return [r for r in results if r is not None and not isinstance(r, Exception)]
+
 
 async def curate_cell_lines(pdf_info: PDFInfo, curation_agent: Any, cell_lines: List[str]) -> List[Dict[str, Any]]:
     """
