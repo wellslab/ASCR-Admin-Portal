@@ -772,11 +772,20 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
   const handleAddItem = (inputPrefix: string) => {
     const newData = collectNormalizedFormData();
     const path = pathFromPrefix(inputPrefix);
-    let target: any = newData;
-    for (const part of path) {
-      if (target == null) break;
-      target = target[part];
+
+    // Navigate to the parent object, initializing any null/missing intermediates as {}
+    let parent: any = newData;
+    for (let i = 0; i < path.length - 1; i++) {
+      if (parent == null) return;
+      if (parent[path[i]] == null) parent[path[i]] = {};
+      parent = parent[path[i]];
     }
+    if (parent == null) return;
+
+    // Initialize the target array if it is missing (e.g. list field inside a null Optional[SubModel])
+    const lastKey = path[path.length - 1];
+    if (!Array.isArray(parent[lastKey])) parent[lastKey] = [];
+    const target = parent[lastKey];
     if (!Array.isArray(target)) return;
 
     if (target.length > 0 && Object.keys(target[0]).length > 0) {
