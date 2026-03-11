@@ -67,9 +67,11 @@ interface CellLineEditorProps {
   cellLineName: string;
   filename: string;
   lastModified: string | null;
+  location: 'working' | 'ready';
   onSave: (data: Record<string, any[] | Record<string, any>>) => void;
   onCreate: (name: string, cellType: string) => void;
   onDiscard: () => void;
+  onStatusChange: (newLocation: 'working' | 'ready') => void;
   validationErrors?: string[];
   onClearErrors?: () => void;
 }
@@ -81,9 +83,11 @@ interface CellLineEditorProps {
 | `cellLineName` | Display name shown in the editor header. |
 | `filename` | The cell line's filename (e.g. `AIBNi001-A_v1.json`). Used by the parent for routing save requests. |
 | `lastModified` | ISO datetime string shown in the header, or `null`. |
+| `location` | Whether the cell line is in the `'working'` or `'ready'` directory. Controls the Working/Ready toggle in the header. |
 | `onSave` | Called when the user clicks Save. Receives the full denormalized data object. |
 | `onCreate` | Called when the user creates a new cell line. Receives the name string and the selected cell type (`"human induced pluripotent stem cell (hiPSC)"` or `"human embryonic stem cell (hESC)"`). |
 | `onDiscard` | Called when the user confirms Reset. The parent re-fetches from the backend and increments `editorKey` to force a full re-render. |
+| `onStatusChange` | Called when the user clicks the Working/Ready toggle. Receives the new location. The parent calls `POST /cell-line/{filename}/move-to-ready` or `move-to-working` and refreshes the cell line list. |
 | `validationErrors` | Array of error strings to display at the top of the editor. Provided by the parent after a failed save. |
 | `onClearErrors` | Called when the user dismisses the error alert, or at the start of each save attempt. |
 
@@ -163,7 +167,7 @@ All scalar fields are rendered by `FieldEditor`. The widget chosen depends on th
 |---|---|---|
 | `text` (default) | `TextField` | Empty string saved as `null`. |
 | `number` | `TextField type="number"` | `step="any"` for `float`, `step="1"` for `int`. Parsed with `parseFloat` on save. Empty value saved as `null`. |
-| `boolean` | `Select` dropdown | Options: `True` / `False`. Default is `false` if the current value is not `true`. Saved as a boolean (`true`/`false`), not a string. |
+| `boolean` | `Select` dropdown | Options: `True` / `False` / `— not set`. Null values render as blank (not set). Saved as `true`, `false`, or `null` — not as a string. |
 | `select` | `Select` dropdown | Options populated from `choices` array in schema. |
 
 **Primitive arrays (`is_array: true`):**
@@ -304,7 +308,7 @@ Example: `donors.0.hla_results.2.allele`
 4. Applies type coercion based on schema:
    - Primitive array: split CSV string → string array
    - `number`: `parseFloat`, empty → `null`
-   - `boolean`: `"true"` → `true`, anything else → `false`
+   - `boolean`: `"true"` → `true`, `"false"` → `false`, empty/other → `null`
    - Text: empty string → `null`
 5. Sets the value at the correct nested path using `setNestedValue`.
 
@@ -360,20 +364,9 @@ Errors are not cleared on Reset — the parent's `onDiscard` handler explicitly 
 **No client-side validation:**
 The schema contains `choices`, `type`, and field definitions that could be used to validate input before saving. Currently, none of this is enforced client-side. Invalid values only surface after a round-trip to the backend.
 
-**Boolean defaults:**
-`FieldEditor` renders the boolean select with `defaultValue` set from the initial data. If the field is `null` in the data, the select renders with an empty string default, which does not match either `"true"` or `"false"`. The select will appear blank, and saving will store `false` (because `value === 'true'` is the only truthy check). This can produce unexpected behaviour for fields that should be `null` (not set) vs. explicitly `false`.
-
-**Queued / Working toggle:**
-The toggle in the header is UI-only state (`isQueued`). It is not saved to the backend and does not affect the save payload. It has no functional effect in the current implementation.
-
-**`isSaving` state is never set:**
-The `isSaving` local state disables the Save button during saving, but it is never set to `true` — the `handleSave` function does not set it. As a result the Save button is never visually disabled during a save operation.
-
 **Primitive array editing:**
 Primitive arrays (e.g. a list of strings) are edited as a comma-separated text field. There is no per-item editing, add/remove UI, or way to include commas in individual values.
 
 **No undo:**
 There is no undo stack. Deleting an item and then clicking Reset is the only way to recover deleted data, and only if the data was previously saved.
 
-**Schema fetch failure is silent:**
-If the schema fetch fails, the editor renders using data shape only. Fields lose their type-specific widgets, `is_list` detection falls back to checking whether the original data key was an array, and the Add Entry dialog may not show all available lists. No error is shown to the user.

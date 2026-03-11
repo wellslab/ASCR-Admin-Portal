@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { Box, Typography, Collapse, IconButton, Popover } from '@mui/material';
+import React, { useMemo, useState, useRef } from 'react';
+import { Box, Typography, Collapse, IconButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useSynchronizedScrolling } from '../hooks/useSynchronizedScrolling';
 
 interface CellLineDiffViewerProps {
   originalValue: string;
@@ -22,135 +21,189 @@ interface SectionDiff {
   modifiedData: any;
 }
 
-// Convert snake_case to Title Case for display
-const formatSectionName = (name: string): string => {
-  return name
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+const formatName = (name: string): string =>
+  name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+const displayScalar = (value: any): string => {
+  if (value === null || value === undefined) return '—';
+  if (typeof value === 'boolean') return value ? 'True' : 'False';
+  if (typeof value === 'string') return value.trim() || '—';
+  if (typeof value === 'number') return String(value);
+  if (Array.isArray(value) && value.every(v => typeof v !== 'object' || v === null)) {
+    return value.length > 0 ? value.join(', ') : '—';
+  }
+  return '';
 };
 
-// Convert snake_case to Title Case for field names
-const formatFieldName = (name: string): string => {
-  return name
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
+const isNestedObject = (val: any): val is Record<string, any> =>
+  val !== null && val !== undefined && typeof val === 'object' && !Array.isArray(val);
 
-interface FieldViewerProps {
-  fieldName: string;
-  value: any;
-  onFieldClick: (fieldName: string, value: any, event: React.MouseEvent) => void;
-}
+const isObjectArray = (val: any): boolean =>
+  Array.isArray(val) && val.some(v => v !== null && typeof v === 'object');
 
-const FieldViewer = ({ fieldName, value, onFieldClick }: FieldViewerProps) => {
+const FieldRows = ({
+  leftObj,
+  rightObj,
+  indent = 0,
+}: {
+  leftObj: Record<string, any> | null;
+  rightObj: Record<string, any> | null;
+  indent?: number;
+}) => {
   const theme = useTheme();
-  const displayValue = value === null || value === undefined ? '' : String(value);
+  const allKeys = Array.from(new Set([
+    ...Object.keys(leftObj || {}),
+    ...Object.keys(rightObj || {}),
+  ]));
+
+  if (allKeys.length === 0) {
+    return (
+      <Box sx={{ pl: indent * 2 + 1, py: 0.5 }}>
+        <Typography variant="caption" sx={{ color: theme.palette.text.disabled, fontSize: '0.7rem', fontStyle: 'italic' }}>
+          No data
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1, py: 0.25 }}>
-      <Typography
-        variant="caption"
-        sx={{
-          minWidth: 140,
-          fontWeight: 500,
-          color: theme.palette.text.secondary,
-          fontSize: '0.75rem',
-        }}
-      >
-        {formatFieldName(fieldName)}
-      </Typography>
-      <Typography
-        variant="caption"
-        onClick={(e) => onFieldClick(fieldName, displayValue, e)}
-        sx={{
-          flex: 1,
-          color: theme.palette.text.primary,
-          fontSize: '0.75rem',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          cursor: 'pointer',
-          '&:hover': {
-            color: theme.palette.primary.main,
-          },
-        }}
-      >
-        {displayValue}
-      </Typography>
-    </Box>
+    <>
+      {allKeys.map(key => {
+        const leftVal = leftObj?.[key] ?? null;
+        const rightVal = rightObj?.[key] ?? null;
+
+        if (isObjectArray(leftVal) || isObjectArray(rightVal)) {
+          const leftArr = Array.isArray(leftVal) ? leftVal : [];
+          const rightArr = Array.isArray(rightVal) ? rightVal : [];
+          const itemCount = Math.max(leftArr.length, rightArr.length);
+
+          return (
+            <React.Fragment key={key}>
+              <Box sx={{ pl: indent * 2 + 1, pt: 0.75, pb: 0.25 }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+                  {formatName(key)}
+                </Typography>
+              </Box>
+              {itemCount === 0 ? (
+                <Box sx={{ pl: (indent + 1) * 2 + 1, py: 0.25 }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.disabled, fontSize: '0.7rem', fontStyle: 'italic' }}>
+                    No entries
+                  </Typography>
+                </Box>
+              ) : (
+                Array.from({ length: itemCount }).map((_, i) => (
+                  <React.Fragment key={i}>
+                    <Box sx={{ pl: (indent + 1) * 2 + 1, pt: 0.5, pb: 0.25 }}>
+                      <Typography variant="caption" sx={{ color: theme.palette.text.disabled, fontSize: '0.65rem', fontStyle: 'italic' }}>
+                        Item {i + 1}
+                      </Typography>
+                    </Box>
+                    <FieldRows
+                      leftObj={isNestedObject(leftArr[i]) ? leftArr[i] : null}
+                      rightObj={isNestedObject(rightArr[i]) ? rightArr[i] : null}
+                      indent={indent + 2}
+                    />
+                  </React.Fragment>
+                ))
+              )}
+            </React.Fragment>
+          );
+        }
+
+        if (isNestedObject(leftVal) || isNestedObject(rightVal)) {
+          return (
+            <React.Fragment key={key}>
+              <Box sx={{ pl: indent * 2 + 1, pt: 0.75, pb: 0.25 }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+                  {formatName(key)}
+                </Typography>
+              </Box>
+              <FieldRows
+                leftObj={isNestedObject(leftVal) ? leftVal : null}
+                rightObj={isNestedObject(rightVal) ? rightVal : null}
+                indent={indent + 1}
+              />
+            </React.Fragment>
+          );
+        }
+
+        return (
+          <Box
+            key={key}
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              py: 0.3,
+              pl: indent * 2 + 1,
+              '&:nth-of-type(even)': { backgroundColor: theme.palette.grey[50] },
+            }}
+          >
+            <Typography variant="caption" sx={{ width: '28%', flexShrink: 0, fontWeight: 500, color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+              {formatName(key)}
+            </Typography>
+            <Typography variant="caption" sx={{ width: '36%', fontSize: '0.7rem', color: theme.palette.text.primary, wordBreak: 'break-word', pr: 1 }}>
+              {displayScalar(leftVal)}
+            </Typography>
+            <Typography variant="caption" sx={{ width: '36%', fontSize: '0.7rem', color: theme.palette.text.primary, wordBreak: 'break-word' }}>
+              {displayScalar(rightVal)}
+            </Typography>
+          </Box>
+        );
+      })}
+    </>
   );
 };
 
-interface InstanceViewerProps {
-  instance: Record<string, any>;
-  instanceIndex: number;
-  onFieldClick: (fieldName: string, value: any, event: React.MouseEvent) => void;
-}
-
-const InstanceViewer = ({ instance, instanceIndex, onFieldClick }: InstanceViewerProps) => {
-  const theme = useTheme();
-
-  return (
-    <Box
-      sx={{
-        p: 1,
-        mb: 0.5,
-        backgroundColor: theme.palette.grey[50],
-        borderRadius: 1,
-        border: `1px solid ${theme.palette.grey[200]}`,
-      }}
-    >
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block', fontSize: '0.7rem' }}>
-        Instance {instanceIndex + 1}
-      </Typography>
-      {Object.entries(instance).map(([fieldName, value]) => (
-        <FieldViewer key={fieldName} fieldName={fieldName} value={value} onFieldClick={onFieldClick} />
-      ))}
-    </Box>
-  );
+const normalizeInstances = (data: any): Array<Record<string, any> | null> => {
+  if (data === null || data === undefined) return [null];
+  if (Array.isArray(data)) return data.length > 0 ? data : [null];
+  if (typeof data === 'object') return [data];
+  return [null];
 };
 
-interface SectionViewerProps {
-  sectionName: string;
-  instances: any[];
-  hasChanges: boolean;
+interface SectionRowProps {
+  diff: SectionDiff;
   expanded: boolean;
   onToggle: () => void;
-  onFieldClick: (fieldName: string, value: any, event: React.MouseEvent) => void;
+  originalTitle: string;
+  modifiedTitle: string;
+  sectionRef: (el: HTMLDivElement | null) => void;
 }
 
-const SectionViewer = ({ sectionName, instances, hasChanges, expanded, onToggle, onFieldClick }: SectionViewerProps) => {
+const SectionRow = ({ diff, expanded, onToggle, originalTitle, modifiedTitle, sectionRef }: SectionRowProps) => {
   const theme = useTheme();
-  const hasData = instances && instances.length > 0;
+  const { sectionName, hasChanges, originalData, modifiedData } = diff;
+
+  const leftInstances = normalizeInstances(originalData);
+  const rightInstances = normalizeInstances(modifiedData);
+  const instanceCount = Math.max(leftInstances.length, rightInstances.length);
+  const isList = instanceCount > 1 || (Array.isArray(originalData) || Array.isArray(modifiedData));
 
   return (
-    <Box sx={{ mb: 1 }}>
+    <Box ref={sectionRef} sx={{ mb: 1 }}>
       <Box
         onClick={onToggle}
         sx={{
           display: 'flex',
-          flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
           py: 0.75,
           px: 1,
           backgroundColor: hasChanges ? '#fef9e7' : theme.palette.grey[100],
-          borderRadius: 1,
+          borderRadius: expanded ? '4px 4px 0 0' : 1,
           cursor: 'pointer',
-          '&:hover': {
-            backgroundColor: hasChanges ? '#fdf3d0' : theme.palette.grey[200],
-          },
+          '&:hover': { backgroundColor: hasChanges ? '#fdf3d0' : theme.palette.grey[200] },
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2" fontWeight={600}>
-            {formatSectionName(sectionName)}
+          <Typography variant="body2" fontWeight={600} fontSize="0.8rem" sx={{ color: hasChanges ? '#b7791f' : 'inherit' }}>
+            {formatName(sectionName)}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-            ({instances?.length || 0})
-          </Typography>
+          {isList && (
+            <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+              ({instanceCount})
+            </Typography>
+          )}
         </Box>
         <IconButton size="small" sx={{ p: 0.25 }}>
           {expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
@@ -158,16 +211,34 @@ const SectionViewer = ({ sectionName, instances, hasChanges, expanded, onToggle,
       </Box>
 
       <Collapse in={expanded}>
-        <Box sx={{ pt: 0.5 }}>
-          {hasData ? (
-            instances.map((instance, index) => (
-              <InstanceViewer key={index} instance={instance} instanceIndex={index} onFieldClick={onFieldClick} />
-            ))
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic', fontSize: '0.75rem' }}>
-              No data available
+        <Box sx={{ border: `1px solid ${theme.palette.grey[200]}`, borderTop: 0, borderRadius: '0 0 4px 4px', overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', px: 1, py: 0.5, backgroundColor: theme.palette.grey[100], borderBottom: `1px solid ${theme.palette.grey[200]}` }}>
+            <Typography variant="caption" sx={{ width: '28%', fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.65rem' }}>
+              Field
             </Typography>
-          )}
+            <Typography variant="caption" sx={{ width: '36%', fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.65rem' }}>
+              {originalTitle || 'Left'}
+            </Typography>
+            <Typography variant="caption" sx={{ width: '36%', fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.65rem' }}>
+              {modifiedTitle || 'Right'}
+            </Typography>
+          </Box>
+          <Box sx={{ px: 1, py: 0.5 }}>
+            {Array.from({ length: instanceCount }).map((_, i) => (
+              <React.Fragment key={i}>
+                {isList && (
+                  <Typography variant="caption" sx={{ display: 'block', color: theme.palette.text.disabled, fontSize: '0.65rem', fontStyle: 'italic', pt: i > 0 ? 1 : 0, pb: 0.25 }}>
+                    Instance {i + 1}
+                  </Typography>
+                )}
+                <FieldRows
+                  leftObj={isNestedObject(leftInstances[i]) ? leftInstances[i] : null}
+                  rightObj={isNestedObject(rightInstances[i]) ? rightInstances[i] : null}
+                  indent={0}
+                />
+              </React.Fragment>
+            ))}
+          </Box>
         </Box>
       </Collapse>
     </Box>
@@ -177,260 +248,121 @@ const SectionViewer = ({ sectionName, instances, hasChanges, expanded, onToggle,
 export function CellLineDiffViewer({
   originalValue,
   modifiedValue,
-  originalTitle = 'Previous Version',
-  modifiedTitle = 'Current Version',
+  originalTitle = 'Left',
+  modifiedTitle = 'Right',
   showDifferencesOnly = false,
 }: CellLineDiffViewerProps) {
+  const theme = useTheme();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-  const [popoverAnchor, setPopoverAnchor] = useState<{ top: number; left: number } | null>(null);
-  const [popoverFieldName, setPopoverFieldName] = useState('');
-  const [popoverFieldValue, setPopoverFieldValue] = useState('');
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const leftPanelRef = useRef<HTMLDivElement>(null);
-  const rightPanelRef = useRef<HTMLDivElement>(null);
-
-  // Enable synchronized scrolling
-  useSynchronizedScrolling(leftPanelRef, rightPanelRef, true);
-
-  const sectionDiffs = useMemo(() => {
+  const sectionDiffs = useMemo<SectionDiff[]>(() => {
     try {
       const original = JSON.parse(originalValue);
       const modified = JSON.parse(modifiedValue);
-
-      // Deep equality check
-      const deepEqual = (obj1: any, obj2: any): boolean => {
-        return JSON.stringify(obj1) === JSON.stringify(obj2);
-      };
-
-      // Define the order based on CellLineCurationForm
-      const fieldOrder = [
-        'cell_line',
-        'external_cell_line_source',
-        'contact',
-        'institute',
-        'group',
-        'ethics',
-        'registration_requirements',
-        'x_ref',
-        'publication',
-        'donor_source',
-        'disease',
-        'medium_component_items',
-        'culture_medium',
-        'microbiology_virology_screening',
-        'genomic_alteration',
-        'characterisation_protocol_result',
-        'undifferentiated_characterisation',
-        'hpsc_scorecard',
-        'un_diff_characterisation_expression_marker_method',
-        'characterisation_method',
-        'genomic_characterisation',
-        'additional_genomic_characterisation',
-        'hla_result',
-        'str_or_fingerprinting',
-        'loci',
-        'vector_free_reprogram',
-        'integrated_vector',
-        'non_integrated_vector',
-        'cell_line_derivation_induced_pluripotent',
-        'cell_line_derivation_embryonic',
-        'synonym',
-        'idp_gene',
-        'vector_free_reprogramming_genes',
-        'small_molecule',
-        'ontology',
-        'synonyms'
-      ];
-
-      // Get all unique keys from both objects
-      const allKeys = new Set([
+      const deepEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
+      const allKeys = Array.from(new Set([
         ...Object.keys(original || {}),
-        ...Object.keys(modified || {})
-      ]);
-
-      const diffs: SectionDiff[] = [];
-      allKeys.forEach(key => {
-        const originalData = original?.[key];
-        const modifiedData = modified?.[key];
-        const hasChanges = !deepEqual(originalData, modifiedData);
-
-        diffs.push({
-          sectionName: key,
-          hasChanges,
-          originalData,
-          modifiedData
-        });
-      });
-
-      // Sort by CellLineCurationForm field order
-      return diffs.sort((a, b) => {
-        const indexA = fieldOrder.indexOf(a.sectionName);
-        const indexB = fieldOrder.indexOf(b.sectionName);
-
-        // If both are in the fieldOrder, sort by that order
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-        // If only one is in fieldOrder, prioritize it
-        if (indexA !== -1) return -1;
-        if (indexB !== -1) return 1;
-        // If neither is in fieldOrder, sort alphabetically
-        return a.sectionName.localeCompare(b.sectionName);
-      });
-    } catch (error) {
-      console.error('Error parsing JSON for diff:', error);
+        ...Object.keys(modified || {}),
+      ]));
+      return allKeys.map(key => ({
+        sectionName: key,
+        hasChanges: !deepEqual(original?.[key], modified?.[key]),
+        originalData: original?.[key] ?? null,
+        modifiedData: modified?.[key] ?? null,
+      }));
+    } catch {
       return [];
     }
   }, [originalValue, modifiedValue]);
 
-  // Initialize expanded state - auto-expand changed sections
-  useEffect(() => {
-    const initialExpanded: Record<string, boolean> = {};
-    sectionDiffs.forEach(diff => {
-      initialExpanded[diff.sectionName] = diff.hasChanges;
-    });
-    setExpandedSections(initialExpanded);
-  }, [sectionDiffs]);
+  const toggle = (name: string) => {
+    setExpandedSections(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const scrollToSection = (name: string) => {
+    const el = sectionRefs.current[name];
+    const container = scrollContainerRef.current;
+    if (el && container) {
+      const elTop = el.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
+      container.scrollBy({ top: elTop - containerTop - 8, behavior: 'smooth' });
+    }
+  };
 
   const filteredDiffs = showDifferencesOnly
-    ? sectionDiffs.filter(diff => diff.hasChanges)
+    ? sectionDiffs.filter(d => d.hasChanges)
     : sectionDiffs;
 
-  const toggleSection = (sectionName: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionName]: !prev[sectionName]
-    }));
-  };
-
-  const handleFieldClick = (fieldName: string, value: any, event: React.MouseEvent) => {
-    setPopoverFieldName(fieldName);
-    setPopoverFieldValue(value);
-    setPopoverAnchor({
-      top: event.clientY,
-      left: event.clientX,
-    });
-  };
-
-  const handlePopoverClose = () => {
-    setPopoverAnchor(null);
-  };
-
-  if (sectionDiffs.length === 0) {
+  if (filteredDiffs.length === 0) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
         <Typography variant="body1" color="text.secondary">
-          No data to compare
+          {showDifferencesOnly ? 'No differences found.' : 'No data to compare.'}
         </Typography>
       </Box>
     );
   }
 
-  // Normalize data to array format for consistent rendering
-  const normalizeData = (data: any): any[] => {
-    if (!data) return [];
-    if (Array.isArray(data)) return data;
-    if (typeof data === 'object') return [data];
-    return [{ value: data }];
-  };
-
   return (
-    <Box>
-      {/* Field Value Popover */}
-      <Popover
-        open={Boolean(popoverAnchor)}
-        onClose={handlePopoverClose}
-        anchorReference="anchorPosition"
-        anchorPosition={popoverAnchor || undefined}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+    <Box sx={{ display: 'flex', gap: 2, maxHeight: 'calc(100vh - 320px)' }}>
+      {/* Sections list */}
+      <Box ref={scrollContainerRef} sx={{ flex: 1, overflow: 'auto', pr: 1 }}>
+        {filteredDiffs.map(diff => (
+          <SectionRow
+            key={diff.sectionName}
+            diff={diff}
+            expanded={expandedSections[diff.sectionName] || false}
+            onToggle={() => toggle(diff.sectionName)}
+            originalTitle={originalTitle}
+            modifiedTitle={modifiedTitle}
+            sectionRef={el => { sectionRefs.current[diff.sectionName] = el; }}
+          />
+        ))}
+      </Box>
+
+      {/* Table of contents */}
+      <Box
+        sx={{
+          width: 180,
+          flexShrink: 0,
+          overflow: 'auto',
+          borderLeft: `1px solid ${theme.palette.grey[200]}`,
+          pl: 1.5,
         }}
       >
-        <Box sx={{ p: 2, maxWidth: 400 }}>
-          <Typography variant="caption" fontWeight={600} color="text.secondary" gutterBottom display="block">
-            {formatFieldName(popoverFieldName)}
-          </Typography>
-          <Typography
-            variant="body2"
+        <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1 }}>
+          Sections
+        </Typography>
+        {filteredDiffs.map(diff => (
+          <Box
+            key={diff.sectionName}
+            onClick={() => scrollToSection(diff.sectionName)}
             sx={{
-              mt: 1,
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
+              py: 0.4,
+              px: 0.75,
+              mb: 0.25,
+              borderRadius: 0.5,
+              cursor: 'pointer',
+              backgroundColor: diff.hasChanges ? '#fef9e7' : 'transparent',
+              '&:hover': { backgroundColor: diff.hasChanges ? '#fdf3d0' : theme.palette.grey[100] },
             }}
           >
-            {popoverFieldValue}
-          </Typography>
-        </Box>
-      </Popover>
-
-      {/* Side-by-side comparison */}
-      <Box sx={{ display: 'flex', gap: 2, height: 'calc(100vh - 320px)' }}>
-        {/* Left Panel - Original */}
-        <Box
-          ref={leftPanelRef}
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            pr: 1,
-            '&::-webkit-scrollbar': {
-              width: '8px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'grey.300',
-              borderRadius: '4px',
-            },
-          }}
-        >
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.secondary' }}>
-            {originalTitle}
-          </Typography>
-          {filteredDiffs.map((diff) => (
-            <SectionViewer
-              key={`left-${diff.sectionName}`}
-              sectionName={diff.sectionName}
-              instances={normalizeData(diff.originalData)}
-              hasChanges={diff.hasChanges}
-              expanded={expandedSections[diff.sectionName] || false}
-              onToggle={() => toggleSection(diff.sectionName)}
-              onFieldClick={handleFieldClick}
-            />
-          ))}
-        </Box>
-
-        {/* Right Panel - Modified */}
-        <Box
-          ref={rightPanelRef}
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            pl: 1,
-            borderLeft: 1,
-            borderColor: 'divider',
-            '&::-webkit-scrollbar': {
-              width: '8px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: 'grey.300',
-              borderRadius: '4px',
-            },
-          }}
-        >
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.secondary' }}>
-            {modifiedTitle}
-          </Typography>
-          {filteredDiffs.map((diff) => (
-            <SectionViewer
-              key={`right-${diff.sectionName}`}
-              sectionName={diff.sectionName}
-              instances={normalizeData(diff.modifiedData)}
-              hasChanges={diff.hasChanges}
-              expanded={expandedSections[diff.sectionName] || false}
-              onToggle={() => toggleSection(diff.sectionName)}
-              onFieldClick={handleFieldClick}
-            />
-          ))}
-        </Box>
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.7rem',
+                color: diff.hasChanges ? '#b7791f' : theme.palette.text.secondary,
+                fontWeight: diff.hasChanges ? 600 : 400,
+                lineHeight: 1.4,
+                display: 'block',
+              }}
+            >
+              {formatName(diff.sectionName)}
+            </Typography>
+          </Box>
+        ))}
       </Box>
     </Box>
   );

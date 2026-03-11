@@ -364,8 +364,8 @@ export default function VersionControlPage() {
               <CellLineDiffViewer
                 originalValue={JSON.stringify(leftData, null, 2)}
                 modifiedValue={JSON.stringify(rightData, null, 2)}
-                originalTitle=""
-                modifiedTitle=""
+                originalTitle={`${leftCellLine}${leftVersion ? ` · ${leftVersion}` : ''}`}
+                modifiedTitle={`${rightCellLine}${rightVersion ? ` · ${rightVersion}` : ''}`}
                 showDifferencesOnly={showDifferencesOnly}
               />
             </Box>
