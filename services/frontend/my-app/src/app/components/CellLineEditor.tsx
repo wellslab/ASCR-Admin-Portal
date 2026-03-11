@@ -67,7 +67,7 @@ const pathFromPrefix = (prefix: string): (string | number)[] =>
 const createEmptyItem = (template: Record<string, any>): Record<string, any> => {
   const empty: Record<string, any> = {};
   for (const [key, val] of Object.entries(template)) {
-    if (isObjectArray(val)) empty[key] = [];
+    if (Array.isArray(val)) empty[key] = [];
     else if (isPlainObject(val)) empty[key] = createEmptyItem(val);
     else empty[key] = null;
   }
@@ -792,7 +792,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
         fieldDef = fieldDef?.fields?.[fp];
       }
       const emptyItem = fieldDef?.fields
-        ? Object.fromEntries(Object.keys(fieldDef.fields).map((k: string) => [k, null]))
+        ? Object.fromEntries(Object.entries(fieldDef.fields).map(([k, fs]: [string, any]) => [k, (fs?.is_array || fs?.is_object_array) ? [] : null]))
         : {};
       target.push(emptyItem);
     }
