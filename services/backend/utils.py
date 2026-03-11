@@ -13,6 +13,64 @@ logger = logging.getLogger(__name__)
 # Helper functions for common operations
 
 
+def _resolve_field_type(field_def: Dict[str, Any], definitions: Dict[str, Any]) -> Dict[str, Any]:
+    """Recursively resolve the type schema for a single JSON schema field definition."""
+    schema: Dict[str, Any] = {}
+    field_type = field_def.get("type")
+
+    # Unwrap Optional (anyOf with null)
+    if "anyOf" in field_def:
+        non_null = [t for t in field_def["anyOf"] if t.get("type") != "null"]
+        if non_null:
+            field_def = non_null[0]
+            field_type = field_def.get("type")
+
+    if "enum" in field_def:
+        schema["type"] = "select"
+        schema["choices"] = field_def["enum"]
+    elif field_type == "string":
+        schema["type"] = "text"
+        if "maxLength" in field_def:
+            schema["max_length"] = field_def["maxLength"]
+    elif field_type == "integer":
+        schema["type"] = "number"
+        schema["number_type"] = "integer"
+    elif field_type == "number":
+        schema["type"] = "number"
+        schema["number_type"] = "float"
+    elif field_type == "boolean":
+        schema["type"] = "boolean"
+    elif field_type == "array":
+        items_def = field_def.get("items", {})
+        if "$ref" in items_def:
+            # List[SubModel] — object array
+            nested_ref = items_def["$ref"].split("/")[-1]
+            nested_def = definitions.get(nested_ref, {})
+            schema["type"] = "text"
+            schema["is_object_array"] = True
+            schema["fields"] = {
+                nf: _resolve_field_type(nd, definitions)
+                for nf, nd in nested_def.get("properties", {}).items()
+            }
+        else:
+            # List[primitive]
+            schema["type"] = "text"
+            schema["is_array"] = True
+    elif "$ref" in field_def:
+        # Optional[SubModel] — nested single object
+        nested_ref = field_def["$ref"].split("/")[-1]
+        nested_def = definitions.get(nested_ref, {})
+        schema["type"] = "object"
+        schema["fields"] = {
+            nf: _resolve_field_type(nd, definitions)
+            for nf, nd in nested_def.get("properties", {}).items()
+        }
+    else:
+        schema["type"] = "text"
+
+    return schema
+
+
 def get_frontend_schema(model_class: BaseModel) -> Dict[str, Any]:
     """
     Generate a frontend-friendly schema from a Pydantic model.
@@ -46,73 +104,17 @@ def get_frontend_schema(model_class: BaseModel) -> Dict[str, Any]:
 
             if model_ref:
                 nested_model_def = definitions.get(model_ref, {})
-
-                fields_schema = {}
                 nested_properties = nested_model_def.get("properties", {})
                 nested_required = nested_model_def.get("required", [])
 
-                for field_name, field_def in nested_properties.items():
-                    field_schema = {
+                fields_schema = {
+                    field_name: {
                         "required": field_name in nested_required,
-                        "description": field_def.get("description", "")
+                        "description": field_def.get("description", ""),
+                        **_resolve_field_type(field_def, definitions),
                     }
-
-                    field_type = field_def.get("type")
-
-                    # Unwrap Optional (anyOf with null)
-                    if "anyOf" in field_def:
-                        non_null_types = [t for t in field_def["anyOf"] if t.get("type") != "null"]
-                        if non_null_types:
-                            field_def = non_null_types[0]
-                            field_type = field_def.get("type")
-
-                    if "enum" in field_def:
-                        field_schema["type"] = "select"
-                        field_schema["choices"] = field_def["enum"]
-                    elif field_type == "string":
-                        field_schema["type"] = "text"
-                        if "maxLength" in field_def:
-                            field_schema["max_length"] = field_def["maxLength"]
-                    elif field_type == "integer":
-                        field_schema["type"] = "number"
-                        field_schema["number_type"] = "integer"
-                    elif field_type == "number":
-                        field_schema["type"] = "number"
-                        field_schema["number_type"] = "float"
-                    elif field_type == "boolean":
-                        field_schema["type"] = "boolean"
-                    elif field_type == "array":
-                        items_def = field_def.get("items", {})
-                        if "$ref" in items_def:
-                            # List[SubModel] — object array
-                            nested_ref = items_def["$ref"].split("/")[-1]
-                            nested_def = definitions.get(nested_ref, {})
-                            nested_fields = {}
-                            for nf_name, nf_def in nested_def.get("properties", {}).items():
-                                nf_type = nf_def.get("type")
-                                if "anyOf" in nf_def:
-                                    non_null = [t for t in nf_def["anyOf"] if t.get("type") != "null"]
-                                    if non_null:
-                                        nf_type = non_null[0].get("type")
-                                if "enum" in nf_def:
-                                    nested_fields[nf_name] = {"type": "select", "choices": nf_def["enum"]}
-                                elif nf_type == "boolean":
-                                    nested_fields[nf_name] = {"type": "boolean"}
-                                elif nf_type in ("integer", "number"):
-                                    nested_fields[nf_name] = {"type": "number"}
-                                else:
-                                    nested_fields[nf_name] = {"type": "text"}
-                            field_schema["type"] = "text"
-                            field_schema["is_object_array"] = True
-                            field_schema["fields"] = nested_fields
-                        else:
-                            # List[primitive]
-                            field_schema["type"] = "text"
-                            field_schema["is_array"] = True
-                    else:
-                        field_schema["type"] = "text"
-
-                    fields_schema[field_name] = field_schema
+                    for field_name, field_def in nested_properties.items()
+                }
 
                 sections_schema[section_name] = {
                     "fields": fields_schema,
