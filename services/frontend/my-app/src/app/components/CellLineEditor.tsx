@@ -1,7 +1,6 @@
 'use client';
 
-import { Box, Typography, TextField, IconButton, Collapse, Button, ButtonGroup, Switch, FormControlLabel, Popover, Select, MenuItem, Alert, Dialog, DialogTitle, DialogContent, List, ListItemButton, ListItemText, InputAdornment } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Box, Typography, TextField, IconButton, Collapse, Button, ButtonGroup, Switch, FormControlLabel, Popover, Select, MenuItem, Alert, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -63,68 +62,6 @@ const setNestedValue = (obj: any, parts: string[], rawValue: string): void => {
 const pathFromPrefix = (prefix: string): (string | number)[] =>
   prefix.split('.').map(p => /^\d+$/.test(p) ? parseInt(p) : p);
 
-interface ListInfo {
-  label: string;
-  path: (string | number)[];
-  id: string;
-}
-
-// Collect all addable lists: top-level sections that are real arrays, plus nested array-of-object fields.
-const buildAvailableLists = (
-  normalizedData: Record<string, any[]>,
-  originalData: Record<string, any[] | Record<string, any>>,
-  schema: any
-): ListInfo[] => {
-  const lists: ListInfo[] = [];
-
-  const seen = new Set<string>();
-  const addList = (info: ListInfo) => { if (!seen.has(info.id)) { seen.add(info.id); lists.push(info); } };
-
-  for (const [sectionName] of Object.entries(normalizedData)) {
-    const sectionSchema = schema?.sections?.[sectionName];
-    if (!sectionSchema) continue;
-
-    // Top-level list sections
-    if (sectionSchema.is_list) {
-      addList({ label: sectionName, path: [sectionName], id: `section-${sectionName}` });
-    }
-
-    // Nested object array fields — discoverable from schema even when section is empty
-    const fields = sectionSchema.fields || {};
-    const instances = normalizedData[sectionName] || [];
-    for (const [fieldName, fieldDef] of Object.entries(fields)) {
-      if (!(fieldDef as any)?.is_object_array) continue;
-      if (instances.length > 0) {
-        instances.forEach((_: any, i: number) => {
-          addList({ label: `${sectionName}.${fieldName}`, path: [sectionName, i, fieldName], id: `list-${sectionName}-${i}-${fieldName}` });
-        });
-      } else {
-        // Section has no data yet — include with index 0; handleAddItem will create the parent
-        addList({ label: `${sectionName}.${fieldName}`, path: [sectionName, 0, fieldName], id: `list-${sectionName}-0-${fieldName}` });
-      }
-    }
-  }
-
-  // Data-driven discovery for deeper nesting (3+ levels)
-  const traverse = (obj: any, path: (string | number)[], labelParts: string[]) => {
-    if (!obj || typeof obj !== 'object') return;
-    for (const [key, val] of Object.entries(obj)) {
-      const nextPath = [...path, key];
-      const nextLabel = [...labelParts, key];
-      if (isObjectArray(val)) {
-        addList({ label: nextLabel.join('.'), path: nextPath, id: `list-${nextPath.join('-')}` });
-        traverse(val[0], [...nextPath, 0], nextLabel);
-      } else if (isPlainObject(val)) {
-        traverse(val, nextPath, nextLabel);
-      }
-    }
-  };
-
-  for (const [sectionName, instances] of Object.entries(normalizedData)) {
-    if (instances.length > 0) traverse(instances[0], [sectionName, 0], [sectionName]);
-  }
-  return lists;
-};
 
 // Build an empty item using the first existing item as a structural template.
 const createEmptyItem = (template: Record<string, any>): Record<string, any> => {
@@ -276,9 +213,10 @@ interface SubObjectEditorProps {
   obj: Record<string, any>;
   inputPrefix: string;
   onDeleteItem?: (path: (string | number)[]) => void;
+  onAddItem?: (inputPrefix: string) => void;
 }
 
-const SubObjectEditor = ({ fieldName, obj, inputPrefix, onDeleteItem }: SubObjectEditorProps) => {
+const SubObjectEditor = ({ fieldName, obj, inputPrefix, onDeleteItem, onAddItem }: SubObjectEditorProps) => {
   const theme = useTheme();
   return (
     <Box sx={{ mt: 0.5, mb: 0.5 }}>
@@ -291,8 +229,8 @@ const SubObjectEditor = ({ fieldName, obj, inputPrefix, onDeleteItem }: SubObjec
       <Box sx={{ pl: 2, borderLeft: `2px solid ${theme.palette.grey[200]}` }}>
         {Object.entries(obj).map(([subKey, subVal]) => {
           const subPrefix = `${inputPrefix}.${subKey}`;
-          if (isObjectArray(subVal)) return <SubArrayEditor key={subKey} fieldName={subKey} arr={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
-          if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
+          if (isObjectArray(subVal)) return <SubArrayEditor key={subKey} fieldName={subKey} arr={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
+          if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
           return <FieldEditor key={subKey} fieldName={subKey} value={subVal} inputName={subPrefix} />;
         })}
       </Box>
@@ -306,9 +244,10 @@ interface SubArrayItemProps {
   inputPrefix: string;
   index: number;
   onDeleteItem?: (path: (string | number)[]) => void;
+  onAddItem?: (inputPrefix: string) => void;
 }
 
-const SubArrayItem = ({ item, inputPrefix, index, onDeleteItem }: SubArrayItemProps) => {
+const SubArrayItem = ({ item, inputPrefix, index, onDeleteItem, onAddItem }: SubArrayItemProps) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(true);
   const [deleteAnchor, setDeleteAnchor] = useState<HTMLButtonElement | null>(null);
@@ -372,8 +311,8 @@ const SubArrayItem = ({ item, inputPrefix, index, onDeleteItem }: SubArrayItemPr
         <Box sx={{ p: 1 }}>
           {entries.map(([subKey, subVal]) => {
             const subPrefix = `${inputPrefix}.${subKey}`;
-            if (isObjectArray(subVal)) return <SubArrayEditor key={subKey} fieldName={subKey} arr={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
-            if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} />;
+            if (isObjectArray(subVal)) return <SubArrayEditor key={subKey} fieldName={subKey} arr={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
+            if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
             return <FieldEditor key={subKey} fieldName={subKey} value={subVal} inputName={subPrefix} />;
           })}
         </Box>
@@ -388,14 +327,15 @@ interface SubArrayEditorProps {
   arr: Record<string, any>[];
   inputPrefix: string;
   onDeleteItem?: (path: (string | number)[]) => void;
+  onAddItem?: (inputPrefix: string) => void;
 }
 
-const SubArrayEditor = ({ fieldName, arr, inputPrefix, onDeleteItem }: SubArrayEditorProps) => {
+const SubArrayEditor = ({ fieldName, arr, inputPrefix, onDeleteItem, onAddItem }: SubArrayEditorProps) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <Box id={`list-${inputPrefix.replace(/\./g, '-')}`} sx={{ mt: 0.5, mb: 0.5 }}>
+    <Box sx={{ mt: 0.5, mb: 0.5 }}>
       <Box
         onClick={() => setExpanded(!expanded)}
         sx={{
@@ -424,8 +364,19 @@ const SubArrayEditor = ({ fieldName, arr, inputPrefix, onDeleteItem }: SubArrayE
               inputPrefix={`${inputPrefix}.${i}`}
               index={i}
               onDeleteItem={onDeleteItem}
+              onAddItem={onAddItem}
             />
           ))}
+          {onAddItem && (
+            <Button
+              size="small"
+              onClick={() => onAddItem(inputPrefix)}
+              startIcon={<AddIcon sx={{ fontSize: 12 }} />}
+              sx={{ mt: 0.5, fontSize: '0.7rem', color: theme.palette.text.secondary, textTransform: 'none' }}
+            >
+              Add item
+            </Button>
+          )}
         </Box>
       </Collapse>
     </Box>
@@ -439,9 +390,10 @@ interface InstanceEditorProps {
   sectionSchema?: any;
   deletable?: boolean;
   onDeleteItem?: (path: (string | number)[]) => void;
+  onAddItem?: (inputPrefix: string) => void;
 }
 
-const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema, deletable, onDeleteItem }: InstanceEditorProps) => {
+const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema, deletable, onDeleteItem, onAddItem }: InstanceEditorProps) => {
   const theme = useTheme();
   const [deleteAnchor, setDeleteAnchor] = useState<HTMLButtonElement | null>(null);
   const fieldsSchema = sectionSchema?.fields || {};
@@ -498,13 +450,13 @@ const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema, d
       {Object.entries(instance).map(([fieldName, value]) => {
         const inputPrefix = `${sectionName}.${instanceIndex}.${fieldName}`;
         if (isObjectArray(value)) {
-          return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
+          return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
         }
         if (Array.isArray(value) && fieldsSchema[fieldName]?.is_object_array) {
-          return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={[]} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
+          return <SubArrayEditor key={fieldName} fieldName={fieldName} arr={[]} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
         }
         if (isPlainObject(value)) {
-          return <SubObjectEditor key={fieldName} fieldName={fieldName} obj={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} />;
+          return <SubObjectEditor key={fieldName} fieldName={fieldName} obj={value} inputPrefix={inputPrefix} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
         }
         return (
           <FieldEditor
@@ -527,9 +479,10 @@ interface SectionProps {
   sectionSchema?: any;
   sectionIsArray?: boolean;
   onDeleteItem?: (path: (string | number)[]) => void;
+  onAddItem?: (inputPrefix: string) => void;
 }
 
-const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsArray, onDeleteItem }: SectionProps) => {
+const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsArray, onDeleteItem, onAddItem }: SectionProps) => {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(true);
 
@@ -585,13 +538,25 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
                 sectionSchema={sectionSchema}
                 deletable={sectionIsArray}
                 onDeleteItem={onDeleteItem}
+                onAddItem={onAddItem}
               />
             ))
           ) : sectionIsArray ? (
             <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic' }}>
-              No entries. Use &quot;Add Entry&quot; to add one.
+              No entries.
             </Typography>
-          ) : emptyInstance ? (
+          ) : null}
+          {sectionIsArray && onAddItem && (
+            <Button
+              size="small"
+              onClick={() => onAddItem(sectionName)}
+              startIcon={<AddIcon sx={{ fontSize: 12 }} />}
+              sx={{ mt: 0.5, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'none' }}
+            >
+              Add item
+            </Button>
+          )}
+          {!sectionIsArray && !hasData && emptyInstance && (
             <InstanceEditor
               instance={emptyInstance}
               instanceIndex={0}
@@ -599,11 +564,8 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
               sectionSchema={sectionSchema}
               deletable={false}
               onDeleteItem={onDeleteItem}
+              onAddItem={onAddItem}
             />
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic' }}>
-              No data available
-            </Typography>
           )}
         </Box>
       </Collapse>
@@ -671,7 +633,7 @@ interface CellLineEditorProps {
   filename: string;
   lastModified: string | null;
   onSave: (data: Record<string, any[] | Record<string, any>>) => void;
-  onCreate: (name: string) => void;
+  onCreate: (name: string, cellType: string) => void;
   onDiscard: () => void;
   validationErrors?: string[];
   onClearErrors?: () => void;
@@ -683,12 +645,10 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
   const [isQueued, setIsQueued] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
+  const [newCellType, setNewCellType] = useState<string>('');
   const [discardAnchor, setDiscardAnchor] = useState<HTMLButtonElement | null>(null);
   const newNameInputRef = useRef<HTMLInputElement>(null);
   const [schema, setSchema] = useState<any>(null);
-  const [addItemOpen, setAddItemOpen] = useState(false);
-  const [addItemSearch, setAddItemSearch] = useState('');
-  const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
   // Fetch schema on mount
   useEffect(() => {
@@ -714,11 +674,17 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
     ])
   );
 
-  const availableLists = useMemo(() => buildAvailableLists(normalizedData, data, schema), [normalizedData, schema]);
-  const filteredLists = useMemo(
-    () => availableLists.filter(l => l.label.toLowerCase().includes(addItemSearch.toLowerCase())),
-    [availableLists, addItemSearch]
-  );
+  // Extract cell_type from general section (handles both object and array shape)
+  const generalSection = data?.general;
+  const generalObj = Array.isArray(generalSection) ? generalSection[0] : generalSection;
+  const cellType: string = generalObj?.cell_type || '';
+
+  // Section names to hide based on cell type
+  const IPSC_VALUE = "human induced pluripotent stem cell (hiPSC)";
+  const ESC_VALUE = "human embryonic stem cell (hESC)";
+  const hiddenSection = cellType === IPSC_VALUE ? 'derivation_esc'
+    : cellType === ESC_VALUE ? 'derivation_ipsc'
+    : null;
 
   const collectNormalizedFormData = (): Record<string, any[]> => {
     const newData: Record<string, any[]> = JSON.parse(JSON.stringify(normalizedData));
@@ -781,51 +747,36 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
     onSave(denormalize(newData));
   };
 
-  const handleAddItem = (list: ListInfo) => {
+  const handleAddItem = (inputPrefix: string) => {
     const newData = collectNormalizedFormData();
-    // Navigate to the target list via its path, creating missing parent instances as needed
+    const path = pathFromPrefix(inputPrefix);
     let target: any = newData;
-    const topLevelSection = list.path[0] as string;
-    const sectionFields = schema?.sections?.[topLevelSection]?.fields;
-    for (const part of list.path) {
-      if (target === undefined || target === null) break;
-      // If indexing into an empty array, auto-create a parent instance from schema
-      if (Array.isArray(target) && typeof part === 'number' && part >= target.length) {
-        const emptyParent = sectionFields
-          ? Object.fromEntries(Object.keys(sectionFields).map(k => [k, (sectionFields[k]?.is_array || sectionFields[k]?.is_object_array) ? [] : null]))
-          : {};
-        target.push(emptyParent);
-      }
+    for (const part of path) {
+      if (target == null) break;
       target = target[part];
     }
-    if (Array.isArray(target)) {
-      if (target.length > 0) {
-        target.push(createEmptyItem(target[0]));
-      } else {
-        // No existing item — build from schema
-        const fieldName = list.path[list.path.length - 1] as string;
-        const nestedFields = list.path.length === 1
-          ? sectionFields  // top-level list section
-          : sectionFields?.[fieldName]?.fields;  // nested object array field
-        const emptyItem = nestedFields
-          ? Object.fromEntries(Object.keys(nestedFields).map(k => [k, null]))
-          : {};
-        target.push(emptyItem);
+    if (!Array.isArray(target)) return;
+
+    if (target.length > 0 && Object.keys(target[0]).length > 0) {
+      // Clone structure from first existing item
+      target.push(createEmptyItem(target[0]));
+    } else {
+      // Look up item field structure from schema using the inputPrefix path
+      const parts = inputPrefix.split('.');
+      const sectionName = parts[0];
+      const fieldParts = parts.filter(p => !/^\d+$/.test(p)).slice(1);
+      let fieldDef: any = schema?.sections?.[sectionName];
+      for (const fp of fieldParts) {
+        fieldDef = fieldDef?.fields?.[fp];
       }
+      const emptyItem = fieldDef?.fields
+        ? Object.fromEntries(Object.keys(fieldDef.fields).map((k: string) => [k, null]))
+        : {};
+      target.push(emptyItem);
     }
-    setAddItemOpen(false);
-    setAddItemSearch('');
-    setScrollTarget(list.id);
+
     onSave(denormalize(newData));
   };
-
-  // Scroll to newly added list after data updates
-  useEffect(() => {
-    if (!scrollTarget) return;
-    const el = document.getElementById(scrollTarget);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setScrollTarget(null);
-  }, [data, scrollTarget]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -844,7 +795,77 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
     );
   }
 
-  const sectionNames = Object.keys(normalizedData);
+  // If cell_type is not set, block rendering and prompt the user to choose
+  if (!cellType) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+        <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.grey[200]}`, flexShrink: 0 }}>
+          <Typography variant="h6" fontWeight={600}>{cellLineName}</Typography>
+        </Box>
+        <Box sx={{ flex: 1, overflow: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Alert severity="warning">
+            The cell line type (<strong>general.cell_type</strong>) is not set in the returned data. Select iPSC or ESC to proceed.
+          </Alert>
+          <Typography variant="body2" color="text.secondary">
+            Review the data returned from curation below, then select the correct cell line type.
+          </Typography>
+          <Box
+            component="pre"
+            sx={{
+              flex: 1,
+              overflow: 'auto',
+              backgroundColor: theme.palette.grey[100],
+              borderRadius: 1,
+              p: 2,
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all',
+            }}
+          >
+            {JSON.stringify(data, null, 2)}
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" fontWeight={500}>Select cell line type to continue:</Typography>
+            <ToggleButtonGroup
+              value={newCellType}
+              exclusive
+              onChange={(_, val) => { if (val) setNewCellType(val); }}
+              size="small"
+            >
+              <ToggleButton value={IPSC_VALUE} sx={{ fontSize: '0.8rem', px: 3 }}>iPSC</ToggleButton>
+              <ToggleButton value={ESC_VALUE} sx={{ fontSize: '0.8rem', px: 3 }}>ESC</ToggleButton>
+            </ToggleButtonGroup>
+            <Box>
+              <Button
+                variant="contained"
+                size="small"
+                disabled={!newCellType}
+                onClick={() => {
+                  if (!newCellType) return;
+                  // Inject cell_type into the data and re-save so the editor can render
+                  const updated = JSON.parse(JSON.stringify(data));
+                  if (Array.isArray(updated.general)) {
+                    if (!updated.general[0]) updated.general[0] = {};
+                    updated.general[0].cell_type = newCellType;
+                  } else {
+                    if (!updated.general) updated.general = {};
+                    updated.general.cell_type = newCellType;
+                  }
+                  onSave(updated);
+                }}
+                sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
+              >
+                Continue
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  const sectionNames = Object.keys(normalizedData).filter(name => name !== hiddenSection);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
@@ -931,9 +952,6 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
             <Button startIcon={<AddIcon />} onClick={(e) => setCreateAnchor(e.currentTarget)}>
               New
             </Button>
-            <Button startIcon={<AddIcon />} onClick={() => setAddItemOpen(true)}>
-              Add Entry
-            </Button>
             <Button startIcon={<RefreshIcon />} onClick={(e) => setDiscardAnchor(e.currentTarget)}>
               Reset
             </Button>
@@ -943,7 +961,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
           <Popover
             open={Boolean(createAnchor)}
             anchorEl={createAnchor}
-            onClose={() => setCreateAnchor(null)}
+            onClose={() => { setCreateAnchor(null); setNewCellType(''); }}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           >
@@ -956,19 +974,35 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
                 placeholder="e.g. AIBNi001-A"
                 inputRef={newNameInputRef}
                 autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const value = newNameInputRef.current?.value.trim();
-                    if (value) { onCreate(value); setCreateAnchor(null); }
-                  }
-                }}
               />
+              <Typography variant="body2" fontWeight={500}>
+                Cell line type
+              </Typography>
+              <ToggleButtonGroup
+                value={newCellType}
+                exclusive
+                onChange={(_, val) => { if (val) setNewCellType(val); }}
+                size="small"
+                fullWidth
+              >
+                <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ fontSize: '0.75rem' }}>
+                  iPSC
+                </ToggleButton>
+                <ToggleButton value="human embryonic stem cell (hESC)" sx={{ fontSize: '0.75rem' }}>
+                  ESC
+                </ToggleButton>
+              </ToggleButtonGroup>
               <Button
                 variant="contained"
                 size="small"
+                disabled={!newCellType}
                 onClick={() => {
                   const value = newNameInputRef.current?.value.trim();
-                  if (value) { onCreate(value); setCreateAnchor(null); }
+                  if (value && newCellType) {
+                    onCreate(value, newCellType);
+                    setCreateAnchor(null);
+                    setNewCellType('');
+                  }
                 }}
                 sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
               >
@@ -1028,7 +1062,9 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
           },
         }}
       >
-        {Object.entries(normalizedData).map(([sectionName, instances]) => (
+        {Object.entries(normalizedData)
+          .filter(([sectionName]) => sectionName !== hiddenSection)
+          .map(([sectionName, instances]) => (
           <Section
             key={sectionName}
             sectionName={sectionName}
@@ -1037,6 +1073,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
             sectionSchema={schema?.sections?.[sectionName]}
             sectionIsArray={schema?.sections?.[sectionName]?.is_list === true || Array.isArray(data[sectionName])}
             onDeleteItem={handleDeleteItem}
+            onAddItem={handleAddItem}
           />
         ))}
       </Box>
@@ -1045,49 +1082,6 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
       <TableOfContents sections={sectionNames} onSectionClick={scrollToSection} />
       </Box>
 
-      {/* Add Entry Dialog */}
-      <Dialog open={addItemOpen} onClose={() => { setAddItemOpen(false); setAddItemSearch(''); }} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography component="span" variant="h6" fontWeight={600} display="block">Add Entry</Typography>
-          <Typography component="span" variant="body2" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-            Select a list to add an entry to
-          </Typography>
-        </DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            placeholder="Search lists..."
-            value={addItemSearch}
-            onChange={(e) => setAddItemSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ mb: 1 }}
-          />
-          {filteredLists.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
-              No lists found
-            </Typography>
-          ) : (
-            <List dense disablePadding>
-              {filteredLists.map((list) => (
-                <ListItemButton key={list.id} onClick={() => handleAddItem(list)} sx={{ borderRadius: 1 }}>
-                  <ListItemText
-                    primary={list.label}
-                    primaryTypographyProps={{ fontSize: '0.8rem', fontFamily: 'monospace' }}
-                  />
-                </ListItemButton>
-              ))}
-            </List>
-          )}
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };

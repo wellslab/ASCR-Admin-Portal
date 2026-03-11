@@ -184,11 +184,27 @@ def _create_placeholder_instance(model_class: type, overrides: Dict[str, Any] = 
     return instance_data
 
 
-def generate_empty_form(form_class: type, hpscreg_name: str = "") -> Dict[str, Any]:
-    """Generate an empty form with placeholder values for all fields."""
+def generate_empty_form(form_class: type, hpscreg_name: str = "", cell_type: str = "") -> Dict[str, Any]:
+    """Generate an empty form with placeholder values for all fields.
+
+    If cell_type is provided, pre-populates general.cell_type and omits the
+    derivation section that doesn't apply to the cell line type.
+    """
+    IPSC_VALUE = "human induced pluripotent stem cell (hiPSC)"
+    ESC_VALUE = "human embryonic stem cell (hESC)"
+    exclude_field = None
+    if cell_type == IPSC_VALUE:
+        exclude_field = "derivation_esc"
+    elif cell_type == ESC_VALUE:
+        exclude_field = "derivation_ipsc"
+
     result = {}
 
     for field_name, field_info in form_class.model_fields.items():
+        if field_name == exclude_field:
+            result[field_name] = None
+            continue
+
         annotation = field_info.annotation
         origin = get_origin(annotation)
         args = get_args(annotation)
@@ -205,8 +221,11 @@ def generate_empty_form(form_class: type, hpscreg_name: str = "") -> Dict[str, A
             non_none = [a for a in args if a is not type(None)]
             if non_none and hasattr(non_none[0], 'model_fields'):
                 overrides = {}
-                if field_name == "general" and hpscreg_name:
-                    overrides["hpscreg_name"] = hpscreg_name
+                if field_name == "general":
+                    if hpscreg_name:
+                        overrides["hpscreg_name"] = hpscreg_name
+                    if cell_type:
+                        overrides["cell_type"] = cell_type
                 result[field_name] = _create_placeholder_instance(non_none[0], overrides)
             else:
                 result[field_name] = None

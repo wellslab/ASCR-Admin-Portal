@@ -100,13 +100,15 @@ async def get_cellline_schema():
         raise HTTPException(status_code=500, detail=f"Schema generation failed: {str(e)}")
 
 @app.get("/get-empty-form")
-async def get_empty_cellline_form(hpscreg_name: str = ""):
+async def get_empty_cellline_form(hpscreg_name: str = "", cell_type: str = ""):
     """
     Return an empty form structure based on JSONOutputSchema model.
     Each section has one instance with placeholder values ("..." for strings).
+    If cell_type is provided, pre-populates general.cell_type and omits the
+    irrelevant derivation section.
     """
     try:
-        return utils.generate_empty_form(JSONOutputSchema, hpscreg_name)
+        return utils.generate_empty_form(JSONOutputSchema, hpscreg_name, cell_type)
     except Exception as e:
         logger.error(f"Error generating empty form: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Empty form generation failed: {str(e)}")

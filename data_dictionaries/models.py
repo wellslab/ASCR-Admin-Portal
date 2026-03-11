@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import date
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class General(BaseModel):
@@ -65,6 +65,16 @@ class JSONOutputSchema(BaseModel):
     derivation_ipsc: Optional[DerivationIpsc] = None
     derivation_esc: Optional[DerivationEsc] = None
     culture_conditions: Optional[CultureConditions] = None
+
+    @model_validator(mode='after')
+    def enforce_derivation_section(self) -> 'JSONOutputSchema':
+        # Null out the derivation section that doesn't match the cell line type.
+        cell_type = self.general.cell_type if self.general else None
+        if cell_type == "human induced pluripotent stem cell (hiPSC)":
+            self.derivation_esc = None
+        elif cell_type == "human embryonic stem cell (hESC)":
+            self.derivation_ipsc = None
+        return self
     undiff_characterisation: Optional[UndifferentiatedCharacterisation] = None
     differentiated_cell_analysis: Optional[DifferentiatedCellAnalysis] = None
     donor: Optional[Donor] = None

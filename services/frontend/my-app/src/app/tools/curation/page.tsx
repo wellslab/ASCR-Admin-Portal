@@ -1,6 +1,6 @@
 'use client';
 
-import { Typography, Box, List, ListItem, ListItemIcon, ListItemText, IconButton, LinearProgress, Skeleton, Popover, TextField, Checkbox, FormControlLabel, InputAdornment, Collapse, Tooltip, Alert } from '@mui/material';
+import { Typography, Box, List, ListItem, ListItemIcon, ListItemText, IconButton, LinearProgress, Skeleton, Popover, TextField, Checkbox, FormControlLabel, InputAdornment, Collapse, Tooltip, Alert, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { Button } from '@mui/material';
 import BlurOnOutlinedIcon from '@mui/icons-material/BlurOnOutlined';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
@@ -271,6 +271,7 @@ export default function CurationNewPage() {
   const [isNewCellLine, setIsNewCellLine] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
+  const [newCellType, setNewCellType] = useState<string>('');
   const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(null);
   const [filterWorking, setFilterWorking] = useState(true);
   const [filterReady, setFilterReady] = useState(true);
@@ -393,8 +394,8 @@ export default function CurationNewPage() {
     });
   };
 
-  // Create new cell line with initial name
-  const createNewCellLine = async (name: string) => {
+  // Create new cell line with initial name and cell type
+  const createNewCellLine = async (name: string, cellType: string) => {
     // Check for conflicts against the already-loaded cell line list
     const extractBase = (fn: string) => fn.includes('_v') ? fn.split('_v')[0] : fn;
     const workingConflict = cellLines.find(cl => extractBase(cl.name) === name && cl.location === 'working');
@@ -413,7 +414,8 @@ export default function CurationNewPage() {
     setIsLoadingCellLine(true);
     setSelectedCellLine(name); // Set so skeleton shows while loading
     try {
-      const response = await fetch(getApiUrl(`/get-empty-form?hpscreg_name=${encodeURIComponent(name)}`));
+      const params = new URLSearchParams({ hpscreg_name: name, cell_type: cellType });
+      const response = await fetch(getApiUrl(`/get-empty-form?${params.toString()}`));
       if (!response.ok) {
         setFetchError('Failed to fetch empty form structure');
         setSelectedCellLine(null);
@@ -1103,7 +1105,7 @@ export default function CurationNewPage() {
             <Popover
               open={Boolean(createAnchor)}
               anchorEl={createAnchor}
-              onClose={() => setCreateAnchor(null)}
+              onClose={() => { setCreateAnchor(null); setNewCellType(''); }}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
               transformOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
@@ -1116,31 +1118,39 @@ export default function CurationNewPage() {
                   placeholder="e.g. AIBNi001-A"
                   inputRef={newNameInputRef}
                   autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const value = newNameInputRef.current?.value.trim();
-                      if (value) {
-                        createNewCellLine(value);
-                        setCreateAnchor(null);
-                      }
-                    }
-                  }}
                 />
+                <Typography variant="body2" fontWeight={500}>
+                  Cell line type
+                </Typography>
+                <ToggleButtonGroup
+                  value={newCellType}
+                  exclusive
+                  onChange={(_, val) => { if (val) setNewCellType(val); }}
+                  size="small"
+                  fullWidth
+                >
+                  <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ fontSize: '0.75rem' }}>
+                    iPSC
+                  </ToggleButton>
+                  <ToggleButton value="human embryonic stem cell (hESC)" sx={{ fontSize: '0.75rem' }}>
+                    ESC
+                  </ToggleButton>
+                </ToggleButtonGroup>
                 <Button
                   variant="contained"
                   size="small"
+                  disabled={!newCellType}
                   onClick={() => {
                     const value = newNameInputRef.current?.value.trim();
-                    if (value) {
-                      createNewCellLine(value);
+                    if (value && newCellType) {
+                      createNewCellLine(value, newCellType);
                       setCreateAnchor(null);
+                      setNewCellType('');
                     }
                   }}
                   sx={{
                     backgroundColor: theme.palette.secondary.dark,
-                    '&:hover': {
-                      backgroundColor: theme.palette.secondary.main,
-                    },
+                    '&:hover': { backgroundColor: theme.palette.secondary.main },
                   }}
                 >
                   Create
