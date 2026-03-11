@@ -136,18 +136,20 @@ Schema shape (relevant parts):
       is_list: boolean,
       fields: {
         [fieldName]: {
-          type: 'text' | 'number' | 'boolean' | 'select',
+          type: 'text' | 'number' | 'boolean' | 'select' | 'object',
           number_type?: 'float' | 'int',
           choices?: string[],
           is_array?: boolean,        // primitive array (rendered as CSV)
           is_object_array?: boolean, // array of objects (rendered with SubArrayEditor)
-          fields?: { ... }           // for nested object types
+          fields?: { [fieldName]: FieldSchema }  // recursive — present for 'object' and 'is_object_array'
         }
       }
     }
   }
 }
 ```
+
+The backend schema generator (`_resolve_field_type` in `utils.py`) is fully recursive: `Optional[SubModel]` fields emit `type: 'object'` with a `fields` map, and `List[SubModel]` fields emit `is_object_array: true` with a `fields` map. Both recurse into any depth of nesting.
 
 If the schema fetch fails, the editor still renders using the raw data shape, but field-type-specific widgets (select dropdowns, number inputs) fall back to plain text inputs.
 
@@ -207,23 +209,32 @@ The hidden section is excluded from both the form render loop and the `TableOfCo
 
 ## 8. Nested Object and Array Rendering
 
-`InstanceEditor` inspects each field value and routes it to the correct renderer:
+`InstanceEditor`, `SubObjectEditor`, and `SubArrayItem` all use the same five-case dispatch on each field:
 
-| Value type | Renderer |
+| Condition | Renderer |
 |---|---|
-| Scalar (string, number, boolean, null) | `FieldEditor` |
-| Primitive array (`is_array` in schema, or non-object array) | `FieldEditor` (CSV display) |
-| Plain object | `SubObjectEditor` |
-| Array of objects | `SubArrayEditor` |
+| Non-empty array of objects (`isObjectArray`) | `SubArrayEditor` |
+| Empty array where schema says `is_object_array` | `SubArrayEditor` with `arr=[]` |
+| Plain object (non-null) | `SubObjectEditor` |
+| `null` where schema says `type: 'object'` | `SubObjectEditor` with an empty instance built from `schema.fields` |
+| Scalar, primitive array, or unrecognised null | `FieldEditor` |
+
+**Schema threading:**
+Each component receives the schema for its children and passes it down:
+- `InstanceEditor` → `SubObjectEditor(fieldsSchema=fieldSchema.fields)` and `SubArrayEditor(itemSchema=fieldSchema.fields)`
+- `SubArrayEditor` → `SubArrayItem(fieldsSchema=itemSchema)`
+- `SubObjectEditor` and `SubArrayItem` → nested `SubObjectEditor(fieldsSchema=subFieldSchema.fields)` and `SubArrayEditor(itemSchema=subFieldSchema.fields)`
+
+This ensures field-type-specific widgets (dropdowns, number inputs) and correct null-object rendering work at any nesting depth.
 
 **`SubObjectEditor`:**
-Renders a nested object as an indented block with a bold heading. Recurses into its fields using the same dispatch logic.
+Renders a nested object as an indented block with a bold heading. Recurses into its fields using the shared dispatch.
 
 **`SubArrayEditor`:**
 Renders an array of objects as a collapsible labelled list with an item count. Each item is rendered by `SubArrayItem`.
 
 **`SubArrayItem`:**
-Renders one item in an object array. Starts expanded. Shows a delete icon with a confirmation popover. Recurses into the item's fields using the same dispatch logic.
+Renders one item in an object array. Starts expanded. Shows a delete icon with a confirmation popover. Recurses into the item's fields using the shared dispatch.
 
 **Empty object arrays:**
 If a field is an object array but currently has no items (i.e. `[]`), `SubArrayEditor` is still rendered (showing zero items). The user can add items via the inline `+` button at the bottom of the `SubArrayEditor`.
