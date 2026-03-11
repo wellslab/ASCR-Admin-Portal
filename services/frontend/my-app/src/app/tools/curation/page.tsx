@@ -263,6 +263,7 @@ export default function CurationNewPage() {
   }>>([]);
   const [cellLines, setCellLines] = useState<Array<{ name: string; location: string }>>([]);
   const [selectedCellLine, setSelectedCellLine] = useState<string | null>(null);
+  const [selectedCellLineLocation, setSelectedCellLineLocation] = useState<'working' | 'ready'>('working');
   const [editedMetadata, setEditedMetadata] = useState<Record<string, any[] | Record<string, any>>>({});
   const [lastModified, setLastModified] = useState<string | null>(null);
   const [isLoadingCellLine, setIsLoadingCellLine] = useState(false);
@@ -320,6 +321,7 @@ export default function CurationNewPage() {
         // Backend returns { data: {...}, location: "...", filename: "...", last_modified: "..." }
         setEditedMetadata(result.data);
         setSelectedCellLine(filename);
+        setSelectedCellLineLocation((result.location as 'working' | 'ready') || 'working');
         setIsNewCellLine(false);
         setLastModified(result.last_modified || null);
         setEditorKey(k => k + 1); // Force remount so uncontrolled inputs reset to new defaultValues
@@ -332,6 +334,20 @@ export default function CurationNewPage() {
       setFetchError('Network error — could not reach the backend.');
     } finally {
       setIsLoadingCellLine(false);
+    }
+  };
+
+  const handleStatusChange = async (newLocation: 'working' | 'ready') => {
+    if (!selectedCellLine) return;
+    const endpoint = newLocation === 'ready' ? 'move-to-ready' : 'move-to-working';
+    try {
+      const response = await fetch(getApiUrl(`/cell-line/${selectedCellLine}/${endpoint}`), { method: 'POST' });
+      if (response.ok) {
+        setSelectedCellLineLocation(newLocation);
+        fetchAllCellLines();
+      }
+    } catch (error) {
+      console.error('Failed to change cell line status:', error);
     }
   };
 
@@ -1070,6 +1086,7 @@ export default function CurationNewPage() {
             cellLineName={selectedCellLine.replace('.json', '')}
             filename={selectedCellLine}
             lastModified={lastModified}
+            location={selectedCellLineLocation}
             onSave={saveCellLine}
             onCreate={createNewCellLine}
             onDiscard={async () => {
@@ -1077,6 +1094,7 @@ export default function CurationNewPage() {
               setEditorKey(k => k + 1);
               setValidationErrors([]);
             }}
+            onStatusChange={handleStatusChange}
             validationErrors={validationErrors}
             onClearErrors={() => setValidationErrors([])}
           />

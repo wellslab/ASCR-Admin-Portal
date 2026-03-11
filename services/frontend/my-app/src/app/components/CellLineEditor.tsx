@@ -137,7 +137,7 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
         <Select
           size="small"
           name={inputName}
-          defaultValue={value === true || value === 'true' ? 'true' : 'false'}
+          defaultValue={value === true || value === 'true' ? 'true' : value === false || value === 'false' ? 'false' : ''}
           fullWidth
           sx={{
             backgroundColor: theme.palette.background.paper,
@@ -161,6 +161,7 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
             },
           }}
         >
+          <MenuItem value=""><em>— not set</em></MenuItem>
           <MenuItem value="true">True</MenuItem>
           <MenuItem value="false">False</MenuItem>
         </Select>
@@ -654,25 +655,31 @@ interface CellLineEditorProps {
   cellLineName: string;
   filename: string;
   lastModified: string | null;
+  location: 'working' | 'ready';
   onSave: (data: Record<string, any[] | Record<string, any>>) => void;
   onCreate: (name: string, cellType: string) => void;
   onDiscard: () => void;
+  onStatusChange: (newLocation: 'working' | 'ready') => void;
   validationErrors?: string[];
   onClearErrors?: () => void;
 }
 
-const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, onCreate, onDiscard, validationErrors = [], onClearErrors }: CellLineEditorProps) => {
+const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, onSave, onCreate, onDiscard, onStatusChange, validationErrors = [], onClearErrors }: CellLineEditorProps) => {
   const theme = useTheme();
   const formRef = useRef<HTMLFormElement>(null);
-  const [isQueued, setIsQueued] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [schemaError, setSchemaError] = useState(false);
+  const [schemaRetryTick, setSchemaRetryTick] = useState(0);
   const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
   const [newCellType, setNewCellType] = useState<string>('');
   const [discardAnchor, setDiscardAnchor] = useState<HTMLButtonElement | null>(null);
   const newNameInputRef = useRef<HTMLInputElement>(null);
   const [schema, setSchema] = useState<any>(null);
 
-  // Fetch schema on mount
+  // Reset isSaving when parent responds (data updated = success, validationErrors updated = failure)
+  useEffect(() => { setIsSaving(false); }, [data, validationErrors]);
+
+  // Fetch schema on mount (and on retry)
   useEffect(() => {
     const fetchSchema = async () => {
       try {
@@ -680,13 +687,16 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
         if (response.ok) {
           const schemaData = await response.json();
           setSchema(schemaData);
+          setSchemaError(false);
+        } else {
+          setSchemaError(true);
         }
       } catch (error) {
-        console.error('Error fetching schema:', error);
+        setSchemaError(true);
       }
     };
     fetchSchema();
-  }, []);
+  }, [schemaRetryTick]);
 
   // Normalize: convert single objects to arrays for consistent internal rendering
   const normalizedData: Record<string, any[]> = Object.fromEntries(
@@ -730,7 +740,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
         } else if (fieldSchema?.type === 'number') {
           newData[sectionName][index][fieldName] = value ? parseFloat(value as string) : null;
         } else if (fieldSchema?.type === 'boolean') {
-          newData[sectionName][index][fieldName] = value === 'true';
+          newData[sectionName][index][fieldName] = value === 'true' ? true : value === 'false' ? false : null;
         } else {
           newData[sectionName][index][fieldName] = value || null;
         }
@@ -752,6 +762,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
 
   const handleSave = () => {
     if (onClearErrors) onClearErrors();
+    setIsSaving(true);
     onSave(denormalize(collectNormalizedFormData()));
   };
 
@@ -900,6 +911,14 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+      {/* Schema fetch error */}
+      {schemaError && (
+        <Alert severity="warning" sx={{ m: 2, mb: 0 }} action={
+          <Button size="small" onClick={() => setSchemaRetryTick(t => t + 1)}>Retry</Button>
+        }>
+          Schema failed to load — field type widgets unavailable.
+        </Alert>
+      )}
       {/* Validation errors */}
       {validationErrors && validationErrors.length > 0 && (
         <Alert severity="error" onClose={onClearErrors} sx={{ m: 2, mb: 0 }}>
@@ -936,12 +955,12 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, onSave, on
           <FormControlLabel
             control={
               <Switch
-                checked={isQueued}
-                onChange={(e) => setIsQueued(e.target.checked)}
+                checked={location === 'ready'}
+                onChange={(e) => onStatusChange(e.target.checked ? 'ready' : 'working')}
                 size="small"
               />
             }
-            label={isQueued ? 'Queued' : 'Working'}
+            label={location === 'ready' ? 'Ready' : 'Working'}
             labelPlacement="start"
             sx={{ mr: 0 }}
           />
