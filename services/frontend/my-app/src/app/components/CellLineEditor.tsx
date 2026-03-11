@@ -235,7 +235,7 @@ const SubObjectEditor = ({ fieldName, obj, inputPrefix, fieldsSchema, onDeleteIt
           if (Array.isArray(subVal) && subFieldSchema?.is_object_array) return <SubArrayEditor key={subKey} fieldName={subKey} arr={[]} inputPrefix={subPrefix} itemSchema={subFieldSchema?.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
           if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} fieldsSchema={subFieldSchema?.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
           if (subVal === null && subFieldSchema?.type === 'object') {
-            const emptyObj = Object.fromEntries(Object.keys(subFieldSchema.fields || {}).map((k: string) => [k, null]));
+            const emptyObj = Object.fromEntries(Object.entries(subFieldSchema.fields || {}).map(([k, fs]: [string, any]) => [k, (fs?.is_array || fs?.is_object_array) ? [] : null]));
             return <SubObjectEditor key={subKey} fieldName={subKey} obj={emptyObj} inputPrefix={subPrefix} fieldsSchema={subFieldSchema.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
           }
           return <FieldEditor key={subKey} fieldName={subKey} value={subVal} inputName={subPrefix} fieldSchema={subFieldSchema} />;
@@ -324,7 +324,7 @@ const SubArrayItem = ({ item, inputPrefix, index, fieldsSchema, onDeleteItem, on
             if (Array.isArray(subVal) && subFieldSchema?.is_object_array) return <SubArrayEditor key={subKey} fieldName={subKey} arr={[]} inputPrefix={subPrefix} itemSchema={subFieldSchema?.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
             if (isPlainObject(subVal)) return <SubObjectEditor key={subKey} fieldName={subKey} obj={subVal} inputPrefix={subPrefix} fieldsSchema={subFieldSchema?.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
             if (subVal === null && subFieldSchema?.type === 'object') {
-              const emptyObj = Object.fromEntries(Object.keys(subFieldSchema.fields || {}).map((k: string) => [k, null]));
+              const emptyObj = Object.fromEntries(Object.entries(subFieldSchema.fields || {}).map(([k, fs]: [string, any]) => [k, (fs?.is_array || fs?.is_object_array) ? [] : null]));
               return <SubObjectEditor key={subKey} fieldName={subKey} obj={emptyObj} inputPrefix={subPrefix} fieldsSchema={subFieldSchema.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
             }
             return <FieldEditor key={subKey} fieldName={subKey} value={subVal} inputName={subPrefix} fieldSchema={subFieldSchema} />;
@@ -477,7 +477,7 @@ const InstanceEditor = ({ instance, instanceIndex, sectionName, sectionSchema, d
         }
         // null value for an Optional[SubModel] field — render as empty nested object
         if (value === null && fieldSchema?.type === 'object') {
-          const emptyObj = Object.fromEntries(Object.keys(fieldSchema.fields || {}).map((k: string) => [k, null]));
+          const emptyObj = Object.fromEntries(Object.entries(fieldSchema.fields || {}).map(([k, fs]: [string, any]) => [k, (fs?.is_array || fs?.is_object_array) ? [] : null]));
           return <SubObjectEditor key={fieldName} fieldName={fieldName} obj={emptyObj} inputPrefix={inputPrefix} fieldsSchema={fieldSchema.fields} onDeleteItem={onDeleteItem} onAddItem={onAddItem} />;
         }
         return (
