@@ -22,6 +22,7 @@
     "@types/react-window": "^1.8.8",
     "diff": "^8.0.2",
     "filepond": "^4.32.8",
+    "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "lru-cache": "^7.18.3",
     "next": "15.3.4",

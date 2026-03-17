@@ -9,9 +9,11 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import DownloadIcon from '@mui/icons-material/Download';
 import { useTheme } from '@mui/material/styles';
 import CellLineEditor from '@/app/components/CellLineEditor';
 import { getApiUrl } from '@/lib/api-config';
+import JSZip from 'jszip';
 
 type Location = 'working' | 'ready' | 'registered';
 
@@ -34,9 +36,14 @@ interface CellLinePanelProps {
   groups: CellLineGroup[];
   selectedCellLine: string | null;
   onSelect: (filename: string) => void;
+  checkedFilenames: Set<string>;
+  onToggleCheck: (filename: string) => void;
+  onDownloadSelected: () => void;
+  onDownloadAll: () => void;
+  isDownloading: boolean;
 }
 
-const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePanelProps) => {
+const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenames, onToggleCheck, onDownloadSelected, onDownloadAll, isDownloading }: CellLinePanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState<Set<Location>>(new Set(['working', 'ready', 'registered']));
   const [curationFilter, setCurationFilter] = useState<Set<CurationMethod | 'unset'>>(new Set(['LLM', 'Manual', 'Human Verified', 'unset']));
@@ -135,7 +142,7 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
         Name
       </Typography>
 
-      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         {filtered.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
             {groups.length === 0 ? 'No cell lines found.' : 'No matches.'}
@@ -180,8 +187,15 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
                       key={v.filename}
                       selected={selectedCellLine === v.filename}
                       onClick={() => onSelect(v.filename)}
-                      sx={{ borderRadius: 1, py: 0.25, pl: 3, pr: 1 }}
+                      sx={{ borderRadius: 1, py: 0.25, pl: 1, pr: 1 }}
                     >
+                      <Checkbox
+                        size="small"
+                        disableRipple
+                        checked={checkedFilenames.has(v.filename)}
+                        onClick={e => { e.stopPropagation(); onToggleCheck(v.filename); }}
+                        sx={{ p: 0.25, mr: 0.5 }}
+                      />
                       <ListItemText
                         primary={
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0, gap: 0.5 }}>
@@ -207,6 +221,30 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
             })}
           </List>
         )}
+      </Box>
+
+      {/* Download buttons */}
+      <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          disabled={checkedFilenames.size === 0 || isDownloading}
+          onClick={onDownloadSelected}
+          sx={{ flex: 1, fontSize: '0.7rem' }}
+        >
+          Selected ({checkedFilenames.size})
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          disabled={isDownloading}
+          onClick={onDownloadAll}
+          sx={{ flex: 1, fontSize: '0.7rem' }}
+        >
+          All
+        </Button>
       </Box>
     </Box>
   );
@@ -369,6 +407,59 @@ export default function EditorPage() {
   const [newCellType, setNewCellType] = useState('');
   const newNameInputRef = useRef<HTMLInputElement>(null);
 
+  const [checkedFilenames, setCheckedFilenames] = useState<Set<string>>(new Set());
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleToggleCheck = useCallback((filename: string) => {
+    setCheckedFilenames(prev => {
+      const next = new Set(prev);
+      next.has(filename) ? next.delete(filename) : next.add(filename);
+      return next;
+    });
+  }, []);
+
+  const downloadRecords = async (filenames: string[]) => {
+    setIsDownloading(true);
+    try {
+      const zip = new JSZip();
+      await Promise.all(
+        filenames.map(async (filename) => {
+          const res = await fetch(getApiUrl(`/cell-line/${filename}`));
+          if (!res.ok) return;
+          const result = await res.json();
+          const versionEntry = groups.flatMap(g => g.versions).find(v => v.filename === filename);
+          const record = {
+            filename: result.filename,
+            location: result.location,
+            version: versionEntry?.version ?? null,
+            curation_method: result.curation_method,
+            last_modified: result.last_modified,
+            data: result.data,
+          };
+          zip.file(`${filename}.json`, JSON.stringify(record, null, 2));
+        })
+      );
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cell_lines_${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadSelected = useCallback(() => {
+    downloadRecords(Array.from(checkedFilenames));
+  }, [checkedFilenames]);
+
+  const handleDownloadAll = useCallback(() => {
+    const all = groups.flatMap(g => g.versions.map(v => v.filename));
+    downloadRecords(all);
+  }, [groups]);
+
   const handleSelect = useCallback((filename: string) => fetchCellLineData(filename), []);
 
   return (
@@ -378,6 +469,11 @@ export default function EditorPage() {
         groups={groups}
         selectedCellLine={selectedCellLine}
         onSelect={handleSelect}
+        checkedFilenames={checkedFilenames}
+        onToggleCheck={handleToggleCheck}
+        onDownloadSelected={handleDownloadSelected}
+        onDownloadAll={handleDownloadAll}
+        isDownloading={isDownloading}
       />
 
       {/* Right panel — editor */}
