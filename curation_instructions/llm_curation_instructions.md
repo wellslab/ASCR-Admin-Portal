@@ -4,12 +4,14 @@ Auto-generated from: 2025_12_ascr_data_dictionary_v1.0.xlsx
 
 Fields marked for LLM curation (`llm_curate = YES`).
 
+Use `null` for any field where the value is unknown, not reported, or not found in the article.
+
 ## CellLine
 
 | Field | Instruction |
 |-------|-------------|
 | `hpscreg_name` | Write the name of the cell line that you are currently curating. This should have been given to you in the prompt. |
-| `cell_line_alt_name` | Alternative names for the cell line used in article, or "Missing" if none. Used semicolon separated values if multiple names. |
+| `cell_line_alt_name` | Alternative names for the cell line used in article, or null if none. Use semicolon separated values if multiple names. |
 | `cell_type` | Select from schema literals (e.g., hiPSC, ESC) |
 | `frozen` | Write "True" if the article mentions a stocked/archived date. "False" otherwise |
 
@@ -36,33 +38,33 @@ Fields marked for LLM curation (`llm_curate = YES`).
 
 | Field | Instruction |
 |-------|-------------|
-| `age` | Age range (see accepted values for how to represent age ranges) of the donor or "Missing" if not found. If the line was embryonically derived, write "EM". If fetus write FE or if neonatal write NEO. |
-| `sex` | Biological sex of the donor or "Missing" if not found |
+| `age` | Age range (see accepted values for how to represent age ranges) of the donor or null if not found. If the line was embryonically derived, write "EM". If fetus write FE or if neonatal write NEO. |
+| `sex` | Biological sex of the donor or null if not found |
 
 ## Disease
 
 | Field | Instruction |
 |-------|-------------|
-| `name` | Disease name or "Missing" if not found |
-| `description` | Brief disease description or "Missing" if not found |
+| `name` | Disease name or null if not found |
+| `description` | Brief disease description or null if not found |
 
 ## CultureMedium
 
 | Field | Instruction |
 |-------|-------------|
-| `co2_concentration` | CO₂ concentration or "Missing" if not found |
-| `o2_concentration` | O₂ concentration or "Missing" if not found |
+| `co2_concentration` | CO₂ concentration or null if not found |
+| `o2_concentration` | O₂ concentration or null if not found |
 | `passage_method` | Write the passage method used to culture the cell line |
 
 ## GenomicAlteration
 
 | Field | Instruction |
 |-------|-------------|
-| `mutation_type` | Type of genomic alteration or "Missing" if not found |
-| `cytoband` | Chromosomal location or "Missing" if not found |
-| `delivery_method` | How modification was delivered or "Missing" if not found |
-| `description` | Modification description or "Missing" if not found |
-| `genotype` | Write the genotype nomenclature for the genomic modification performed on this cell line, or "NM" if no modification, or "Missing" if not found |
+| `mutation_type` | Type of genomic alteration or null if not found |
+| `cytoband` | Chromosomal location or null if not found |
+| `delivery_method` | How modification was delivered or null if not found |
+| `description` | Modification description or null if not found |
+| `genotype` | Write the genotype nomenclature for the genomic modification performed on this cell line, or "NM" if no modification, or null if not found |
 
 ## CharacterisationProtocolResult
 
@@ -77,9 +79,9 @@ Fields marked for LLM curation (`llm_curate = YES`).
 
 | Field | Instruction |
 |-------|-------------|
-| `epi_pluri_score` | EpiPluriScore result or "Missing" if not found |
-| `pluri_test_score` | PluriTest score or "Missing" if not found |
-| `pluri_novelty_score` | PluriTest novelty score or "Missing" if not found |
+| `epi_pluri_score` | EpiPluriScore result or null if not found |
+| `pluri_test_score` | PluriTest score or null if not found |
+| `pluri_novelty_score` | PluriTest novelty score or null if not found |
 
 ## GenomicCharacterisation
 

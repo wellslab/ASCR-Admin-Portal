@@ -48,6 +48,8 @@ class General(BaseModel):
     associated_polymorphism: List[str] = Field(default_factory=list)
     subclone_of: Optional[str] = None
     parent_of: List[str] = Field(default_factory=list)
+    igsn: Optional[str] = None
+    modified: Optional[bool] = None
 
 
 class JSONOutputSchema(BaseModel):
@@ -419,6 +421,7 @@ class DiffGermlayerAnalysis(BaseModel):
     germ_layer: Optional[Literal["Endoderm", "Ectoderm", "Mesoderm", "Trophectoderm"]] = None
     show_potency: Optional[bool] = None
     marker_analysis: List[MarkerAnalysis] = Field(default_factory=list)
+    free_text: Optional[str] = None
 
 
 class DiffOtherAnalysis(BaseModel):
@@ -427,6 +430,7 @@ class DiffOtherAnalysis(BaseModel):
     end_cell_type_ontology_id: Optional[str] = None
     marker_analysis: List[MarkerAnalysis] = Field(default_factory=list)
     publication: Optional[Publication] = None
+    free_text: Optional[str] = None
 
 
 class KitDetails(BaseModel):

@@ -103,7 +103,7 @@ async def get_cellline_schema():
 async def get_empty_cellline_form(hpscreg_name: str = "", cell_type: str = ""):
     """
     Return an empty form structure based on JSONOutputSchema model.
-    Each section has one instance with placeholder values ("..." for strings).
+    Each section has one instance with null values for all string fields.
     If cell_type is provided, pre-populates general.cell_type and omits the
     irrelevant derivation section.
     """

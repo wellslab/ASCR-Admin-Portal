@@ -360,8 +360,8 @@ Return your response as a JSON object with this structure:
         {{
             "CellLine_hpscreg_id": "extracted_id_or_generated",
             "CellLine_cell_line_type": "hESC or hiPSC",
-            "CellLine_source_cell_type": "...",
-            // ... other fields as specified in instructions
+            "CellLine_source_cell_type": null,
+            // ... other fields as specified in instructions. Use null for any field where the value is unknown or not reported.
         }}
     ],
     "metadata": {{
