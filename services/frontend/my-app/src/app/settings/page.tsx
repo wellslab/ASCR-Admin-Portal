@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 import { getApiUrl } from '@/lib/api-config';
 import SaveIcon from '@mui/icons-material/Save';
-import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
@@ -16,14 +15,14 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [apiKeySource, setApiKeySource] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<{ total: number; changed: number } | null>(null);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
 
-  // Fetch current settings
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -31,8 +30,6 @@ export default function SettingsPage() {
         if (response.ok) {
           const data = await response.json();
           const settings = data.settings;
-
-          // Load the full API key
           if (settings.OPENAI_API_KEY) {
             setApiKey(settings.OPENAI_API_KEY);
           }
@@ -50,7 +47,6 @@ export default function SettingsPage() {
         setIsLoading(false);
       }
     };
-
     fetchSettings();
   }, []);
 
@@ -58,7 +54,6 @@ export default function SettingsPage() {
     setIsSaving(true);
     setSaveSuccess(false);
     setSaveError(null);
-
     try {
       const response = await fetch(getApiUrl('/settings'), {
         method: 'POST',
@@ -68,13 +63,10 @@ export default function SettingsPage() {
           SELECTED_MODEL: selectedModel || undefined,
         }),
       });
-
       if (response.ok) {
         setSaveSuccess(true);
         setApiKeySource(null);
-        setTimeout(() => {
-          setSaveSuccess(false);
-        }, 3000);
+        setTimeout(() => setSaveSuccess(false), 3000);
       } else {
         const error = await response.json();
         setSaveError(error.detail || 'Failed to save settings');
@@ -87,21 +79,22 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUpdate = async () => {
-    setIsUpdating(true);
-    setUpdateMessage(null);
+  const handleMigrateSchema = async () => {
+    setIsMigrating(true);
+    setMigrationResult(null);
+    setMigrationError(null);
     try {
-      const response = await fetch(getApiUrl('/update'), { method: 'POST' });
+      const response = await fetch(getApiUrl('/admin/migrate-schema'), { method: 'POST' });
       if (response.ok) {
-        setUpdateMessage('Update started. The application will restart shortly — refresh this page in a minute or two.');
+        setMigrationResult(await response.json());
       } else {
         const error = await response.json();
-        setUpdateMessage(`Error: ${error.detail || 'Failed to start update.'}`);
+        setMigrationError(error.detail || 'Migration failed');
       }
     } catch {
-      setUpdateMessage('Error: Could not reach the backend.');
+      setMigrationError('Network error. Please try again.');
     } finally {
-      setIsUpdating(false);
+      setIsMigrating(false);
     }
   };
 
@@ -130,8 +123,6 @@ export default function SettingsPage() {
           <Typography variant="h4" fontWeight={600} color="text.primary">
             Settings
           </Typography>
-
-          {/* Success notification - right aligned with fade in/out */}
           <Box
             sx={{
               opacity: saveSuccess ? 1 : 0,
@@ -165,7 +156,6 @@ export default function SettingsPage() {
             API Configuration
           </Typography>
           <Divider sx={{ mb: 3 }} />
-
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box>
               <Typography variant="body1" fontWeight={500} sx={{ mb: 0.5 }}>
@@ -181,7 +171,7 @@ export default function SettingsPage() {
               </Typography>
               <TextField
                 fullWidth
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your OpenAI API key"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
@@ -189,21 +179,13 @@ export default function SettingsPage() {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        disabled={isLoading}
-                      >
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" disabled={isLoading}>
                         {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: theme.palette.background.paper,
-                  },
-                }}
+                sx={{ '& .MuiOutlinedInput-root': { backgroundColor: theme.palette.background.paper } }}
               />
             </Box>
 
@@ -231,7 +213,7 @@ export default function SettingsPage() {
               </Box>
             )}
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 startIcon={<SaveIcon />}
@@ -239,9 +221,7 @@ export default function SettingsPage() {
                 disabled={isSaving || isLoading || !apiKey}
                 sx={{
                   backgroundColor: theme.palette.secondary.dark,
-                  '&:hover': {
-                    backgroundColor: theme.palette.secondary.main,
-                  },
+                  '&:hover': { backgroundColor: theme.palette.secondary.main },
                 }}
               >
                 {isSaving ? 'Saving...' : 'Save Settings'}
@@ -252,29 +232,25 @@ export default function SettingsPage() {
 
         <Box>
           <Typography variant="h6" fontWeight={600} color="text.primary" sx={{ mb: 1 }}>
-            Software Update
+            Schema Migration
           </Typography>
           <Divider sx={{ mb: 3 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Pull the latest code from the repository and rebuild the application containers. The application will be unavailable for a short period while containers restart.
+            Apply the current data schema to all cell line records. Adds any fields missing from existing records with null or empty defaults. Existing values are never overwritten.
           </Typography>
-          {updateMessage && (
-            <Alert
-              severity={updateMessage.startsWith('Error') ? 'error' : 'info'}
-              sx={{ mb: 2 }}
-              onClose={() => setUpdateMessage(null)}
-            >
-              {updateMessage}
+          {migrationResult && (
+            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setMigrationResult(null)}>
+              Migration complete — {migrationResult.changed} of {migrationResult.total} records updated.
+            </Alert>
+          )}
+          {migrationError && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setMigrationError(null)}>
+              {migrationError}
             </Alert>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="outlined"
-              startIcon={<SystemUpdateAltIcon />}
-              onClick={handleUpdate}
-              disabled={isUpdating}
-            >
-              {isUpdating ? 'Starting update...' : 'Update Software'}
+            <Button variant="outlined" onClick={handleMigrateSchema} disabled={isMigrating}>
+              {isMigrating ? 'Running...' : 'Run Schema Migration'}
             </Button>
           </Box>
         </Box>

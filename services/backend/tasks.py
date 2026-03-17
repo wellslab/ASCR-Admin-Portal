@@ -136,6 +136,8 @@ def _save_cell_lines(validated_results: list) -> Dict[str, Any]:
                 })
                 continue
 
+            validated_data["curation_method"] = "LLM"
+
             general = validated_data.get("general") or {}
             hpscreg_name = general.get("hpscreg_name") or general.get("aushpscreg_name") or cell_line_id
 

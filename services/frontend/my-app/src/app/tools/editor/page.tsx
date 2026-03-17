@@ -15,10 +15,13 @@ import { getApiUrl } from '@/lib/api-config';
 
 type Location = 'working' | 'ready' | 'registered';
 
+type CurationMethod = 'LLM' | 'Manual' | 'Human Verified';
+
 interface CellLineVersion {
   filename: string;
   location: Location;
   version: number | null;
+  curation_method: CurationMethod | null;
 }
 
 interface CellLineGroup {
@@ -36,6 +39,7 @@ interface CellLinePanelProps {
 const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState<Set<Location>>(new Set(['working', 'ready', 'registered']));
+  const [curationFilter, setCurationFilter] = useState<Set<CurationMethod | 'unset'>>(new Set(['LLM', 'Manual', 'Human Verified', 'unset']));
   const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const newNameInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +47,10 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
   const filtered = groups
     .map(g => ({
       ...g,
-      versions: g.versions.filter(v => locationFilter.has(v.location)),
+      versions: g.versions.filter(v =>
+        locationFilter.has(v.location) &&
+        (v.curation_method ? curationFilter.has(v.curation_method) : curationFilter.has('unset'))
+      ),
     }))
     .filter(g => g.versions.length > 0 && g.base_name.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -55,7 +62,15 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
     });
   };
 
-  const isFiltered = locationFilter.size < 3;
+  const toggleCuration = (method: CurationMethod | 'unset') => {
+    setCurationFilter(prev => {
+      const next = new Set(prev);
+      next.has(method) ? next.delete(method) : next.add(method);
+      return next;
+    });
+  };
+
+  const isFiltered = locationFilter.size < 3 || curationFilter.size < 4;
 
   const toggleGroup = (baseName: string) => {
     setExpandedGroups(prev => {
@@ -95,12 +110,21 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>Filter by location</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>Location</Typography>
           {(['working', 'ready', 'registered'] as const).map(loc => (
             <FormControlLabel
               key={loc}
               control={<Checkbox size="small" checked={locationFilter.has(loc)} onChange={() => toggleLocation(loc)} />}
               label={<Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{loc}</Typography>}
+              sx={{ m: 0 }}
+            />
+          ))}
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, mb: 0.5 }}>Curation Method</Typography>
+          {(['LLM', 'Manual', 'Human Verified', 'unset'] as const).map(method => (
+            <FormControlLabel
+              key={method}
+              control={<Checkbox size="small" checked={curationFilter.has(method)} onChange={() => toggleCuration(method)} />}
+              label={<Typography variant="body2">{method === 'unset' ? 'Not set' : method}</Typography>}
               sx={{ m: 0 }}
             />
           ))}
@@ -160,13 +184,18 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePane
                     >
                       <ListItemText
                         primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0 }}>
-                            <Typography variant="body2" noWrap sx={{ fontSize: '0.75rem' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0, gap: 0.5 }}>
+                            <Typography variant="body2" noWrap sx={{ fontSize: '0.75rem', flex: 1 }}>
                               {v.filename}
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled', flexShrink: 0, ml: 1 }}>
+                            <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled', flexShrink: 0 }}>
                               {v.location}
                             </Typography>
+                            {v.curation_method && (
+                              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled', flexShrink: 0 }}>
+                                · {v.curation_method}
+                              </Typography>
+                            )}
                           </Box>
                         }
                         disableTypography
@@ -202,6 +231,7 @@ export default function EditorPage() {
   // Editor state
   const [selectedCellLine, setSelectedCellLine] = useState<string | null>(null);
   const [selectedCellLineLocation, setSelectedCellLineLocation] = useState<'working' | 'ready'>('working');
+  const [curationMethod, setCurationMethod] = useState<string | null>(null);
   const [editedMetadata, setEditedMetadata] = useState<Record<string, any> | null>(null);
   const [lastModified, setLastModified] = useState<string | null>(null);
   const [isNewCellLine, setIsNewCellLine] = useState(false);
@@ -234,6 +264,7 @@ export default function EditorPage() {
         setSelectedCellLineLocation((result.location as 'working' | 'ready') || 'working');
         setIsNewCellLine(false);
         setLastModified(result.last_modified || null);
+        setCurationMethod(result.curation_method || null);
         setEditorKey(k => k + 1);
       } else if (response.status === 404) {
         setFetchError(`Cell line "${filename}" was not found.`);
@@ -263,13 +294,14 @@ export default function EditorPage() {
     if (!selectedCellLine) return;
     try {
       setValidationErrors([]);
+      const method = curationMethod ? `?curation_method=${encodeURIComponent(curationMethod)}` : '';
       const response = isNewCellLine
-        ? await fetch(getApiUrl('/working/cell-line'), {
+        ? await fetch(getApiUrl(`/working/cell-line${method}`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           })
-        : await fetch(getApiUrl(`/working/cell-line/${selectedCellLine}`), {
+        : await fetch(getApiUrl(`/working/cell-line/${selectedCellLine}${method}`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -310,6 +342,7 @@ export default function EditorPage() {
     setIsNewCellLine(true);
     setIsLoadingCellLine(true);
     setSelectedCellLine(name);
+    setCurationMethod('Manual');
     try {
       const params = new URLSearchParams({ hpscreg_name: name, cell_type: cellType });
       const response = await fetch(getApiUrl(`/get-empty-form?${params.toString()}`));
@@ -378,6 +411,8 @@ export default function EditorPage() {
               onStatusChange={handleStatusChange}
               validationErrors={validationErrors}
               onClearErrors={() => setValidationErrors([])}
+              curationMethod={curationMethod}
+              onCurationMethodChange={setCurationMethod}
             />
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, flex: 1 }}>

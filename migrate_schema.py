@@ -19,107 +19,13 @@ import sys
 import json
 import argparse
 from pathlib import Path
-from typing import get_origin, get_args
-import typing
 
 sys.path.insert(0, str(Path(__file__).parent / "services" / "backend"))
 sys.path.insert(0, str(Path(__file__).parent))
 
+from schema_migration import apply_schema, LOCATIONS
+from storage import FileStorage
 from data_dictionaries.models import JSONOutputSchema
-
-
-LOCATIONS = ["working", "ready", "registered"]
-DATA_DIR = Path(__file__).parent / "services" / "backend" / "data"
-
-
-def _list_item_model(annotation):
-    """Return the model class for List[Model], or None if items are not a model."""
-    args = get_args(annotation)
-    if args and hasattr(args[0], 'model_fields'):
-        return args[0]
-    return None
-
-
-def apply_schema(model_class: type, existing: dict) -> dict:
-    """
-    Recursively apply model_class structure to existing data.
-
-    - Missing fields are added with null / [] defaults.
-    - Existing field values are never overwritten.
-    - Fields in existing data that are not in the schema are preserved.
-    - List items are recursed into when their type is a known model.
-    """
-    result = {}
-
-    for field_name, field_info in model_class.model_fields.items():
-        annotation = field_info.annotation
-        existing_value = existing.get(field_name)
-        origin = get_origin(annotation)
-
-        # Optional[X]
-        if origin is typing.Union:
-            args = get_args(annotation)
-            if type(None) in args:
-                inner = next((a for a in args if a is not type(None)), None)
-                inner_origin = get_origin(inner)
-
-                if inner_origin is list:
-                    # Optional[List[Model]]
-                    item_model = _list_item_model(inner)
-                    if existing_value is None:
-                        result[field_name] = []
-                    elif item_model and isinstance(existing_value, list):
-                        result[field_name] = [
-                            apply_schema(item_model, item) if isinstance(item, dict) else item
-                            for item in existing_value
-                        ]
-                    else:
-                        result[field_name] = existing_value
-
-                elif inner is not None and hasattr(inner, 'model_fields'):
-                    # Optional[NestedModel]
-                    if isinstance(existing_value, dict):
-                        result[field_name] = apply_schema(inner, existing_value)
-                    else:
-                        result[field_name] = existing_value  # None or unexpected type
-
-                else:
-                    # Optional[scalar]
-                    result[field_name] = existing_value  # None if missing
-
-            continue
-
-        # List[Model]
-        if origin is list:
-            item_model = _list_item_model(annotation)
-            if existing_value is None:
-                result[field_name] = []
-            elif item_model and isinstance(existing_value, list):
-                result[field_name] = [
-                    apply_schema(item_model, item) if isinstance(item, dict) else item
-                    for item in existing_value
-                ]
-            else:
-                result[field_name] = existing_value if existing_value is not None else []
-            continue
-
-        # Non-optional NestedModel
-        if hasattr(annotation, 'model_fields'):
-            if isinstance(existing_value, dict):
-                result[field_name] = apply_schema(annotation, existing_value)
-            else:
-                result[field_name] = apply_schema(annotation, {})
-            continue
-
-        # Scalar (str, int, float, bool, Literal, date, etc.)
-        result[field_name] = existing_value  # None if missing
-
-    # Preserve fields in existing data that are not in the schema
-    for key in existing:
-        if key not in result:
-            result[key] = existing[key]
-
-    return result
 
 
 def migrate_file(filepath: Path, dry_run: bool) -> bool:
@@ -148,6 +54,7 @@ def main():
     if args.dry_run:
         print("Dry run — no files will be written.\n")
 
+    data_dir = FileStorage.get_data_dir()
     total = 0
     changed = 0
 
@@ -164,7 +71,7 @@ def main():
             print(f"  {filepath.name} — {status}")
     else:
         for location in LOCATIONS:
-            location_dir = DATA_DIR / location
+            location_dir = data_dir / location
             if not location_dir.exists():
                 continue
             for filepath in sorted(location_dir.glob("*.json")):

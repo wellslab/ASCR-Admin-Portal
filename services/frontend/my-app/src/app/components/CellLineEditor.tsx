@@ -626,9 +626,11 @@ interface CellLineEditorProps {
   onStatusChange: (newLocation: 'working' | 'ready') => void;
   validationErrors?: string[];
   onClearErrors?: () => void;
+  curationMethod?: string | null;
+  onCurationMethodChange?: (method: string) => void;
 }
 
-const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, onSave, onCreate, onDiscard, onStatusChange, validationErrors = [], onClearErrors }: CellLineEditorProps) => {
+const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, onSave, onCreate, onDiscard, onStatusChange, validationErrors = [], onClearErrors, curationMethod, onCurationMethodChange }: CellLineEditorProps) => {
   const theme = useTheme();
   const formRef = useRef<HTMLFormElement>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -866,8 +868,8 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
                 Continue
               </Button>
             </Box>
-          </Box>
         </Box>
+      </Box>
       </Box>
     );
   }
@@ -917,126 +919,141 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={location === 'ready'}
-                onChange={(e) => onStatusChange(e.target.checked ? 'ready' : 'working')}
-                size="small"
-              />
-            }
-            label={location === 'ready' ? 'Ready' : 'Working'}
-            labelPlacement="start"
-            sx={{ mr: 0 }}
-          />
-          <ButtonGroup
-            size="small"
-            variant="outlined"
-            sx={{
-              '& .MuiButton-root': {
-                fontSize: '0.75rem',
-                px: 1.25,
-                py: 0.5,
-                whiteSpace: 'nowrap',
-                minWidth: 'unset',
-                lineHeight: 1.5,
-                borderColor: theme.palette.secondary.dark,
-                color: theme.palette.secondary.dark,
-                '&:hover': {
-                  borderColor: theme.palette.secondary.main,
-                  backgroundColor: theme.palette.action.hover,
-                },
-              },
-              '& .MuiButton-startIcon': { mr: 0.5 },
-              '& .MuiButton-startIcon svg': { fontSize: '0.9rem !important' },
-            }}
-          >
-            <Button
-              startIcon={<SaveIcon />}
-              onClick={handleSave}
-              disabled={isSaving}
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={location === 'ready'}
+                  onChange={(e) => onStatusChange(e.target.checked ? 'ready' : 'working')}
+                  size="small"
+                />
+              }
+              label={location === 'ready' ? 'Ready' : 'Working'}
+              labelPlacement="start"
+              sx={{ mr: 0 }}
+            />
+            <ButtonGroup
+              size="small"
+              variant="outlined"
               sx={{
-                backgroundColor: `${theme.palette.secondary.dark} !important`,
-                color: 'white !important',
-                '&:hover': { backgroundColor: `${theme.palette.secondary.main} !important` },
-                '&:disabled': { backgroundColor: `${theme.palette.grey[300]} !important`, color: `${theme.palette.grey[500]} !important` },
+                '& .MuiButton-root': {
+                  fontSize: '0.75rem',
+                  px: 1.25,
+                  py: 0.5,
+                  whiteSpace: 'nowrap',
+                  minWidth: 'unset',
+                  lineHeight: 1.5,
+                  borderColor: theme.palette.secondary.dark,
+                  color: theme.palette.secondary.dark,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.main,
+                    backgroundColor: theme.palette.action.hover,
+                  },
+                },
+                '& .MuiButton-startIcon': { mr: 0.5 },
+                '& .MuiButton-startIcon svg': { fontSize: '0.9rem !important' },
               }}
             >
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>
-            <Button startIcon={<AddIcon />} onClick={e => {
-              setNewCellLineName('');
-              setCreateAnchor(e.currentTarget);
-              setTimeout(() => newNameInputRef.current?.focus(), 50);
-            }}>
-              New
-            </Button>
-            <Button startIcon={<RefreshIcon />} onClick={(e) => setDiscardAnchor(e.currentTarget)}>
-              Reset
-            </Button>
-          </ButtonGroup>
-
-          {/* New cell line popover */}
-          <Popover
-            open={Boolean(createAnchor)}
-            anchorEl={createAnchor}
-            onClose={() => setCreateAnchor(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          >
-            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 260 }}>
-              <Typography variant="body2" fontWeight={500}>New cell line</Typography>
-              <TextField
-                inputRef={newNameInputRef}
-                size="small"
-                label="Name"
-                value={newCellLineName}
-                onChange={e => setNewCellLineName(e.target.value)}
-              />
-              <ToggleButtonGroup size="small" exclusive value={newCellType} onChange={(_, v) => { if (v) setNewCellType(v); }}>
-                <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hiPSC</ToggleButton>
-                <ToggleButton value="human embryonic stem cell (hESC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hESC</ToggleButton>
-              </ToggleButtonGroup>
               <Button
-                size="small"
-                variant="contained"
-                disabled={!newCellLineName.trim() || !newCellType}
-                onClick={() => {
-                  setCreateAnchor(null);
-                  onCreate(newCellLineName.trim(), newCellType);
+                startIcon={<SaveIcon />}
+                onClick={handleSave}
+                disabled={isSaving}
+                sx={{
+                  backgroundColor: `${theme.palette.secondary.dark} !important`,
+                  color: 'white !important',
+                  '&:hover': { backgroundColor: `${theme.palette.secondary.main} !important` },
+                  '&:disabled': { backgroundColor: `${theme.palette.grey[300]} !important`, color: `${theme.palette.grey[500]} !important` },
                 }}
-                sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
               >
-                Create
+                {isSaving ? 'Saving...' : 'Save'}
               </Button>
-            </Box>
-          </Popover>
+              <Button startIcon={<AddIcon />} onClick={e => {
+                setNewCellLineName('');
+                setCreateAnchor(e.currentTarget);
+                setTimeout(() => newNameInputRef.current?.focus(), 50);
+              }}>
+                New
+              </Button>
+              <Button startIcon={<RefreshIcon />} onClick={(e) => setDiscardAnchor(e.currentTarget)}>
+                Reset
+              </Button>
+            </ButtonGroup>
 
-          {/* Reset confirmation popover */}
-          <Popover
-            open={Boolean(discardAnchor)}
-            anchorEl={discardAnchor}
-            onClose={() => setDiscardAnchor(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          >
-            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 250 }}>
-              <Typography variant="body2" fontWeight={500}>
-                Are you sure you want to reset changes?
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                <Button size="small" onClick={() => setDiscardAnchor(null)}>No</Button>
-                <Button
-                  variant="contained"
+            {/* New cell line popover */}
+            <Popover
+              open={Boolean(createAnchor)}
+              anchorEl={createAnchor}
+              onClose={() => setCreateAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 260 }}>
+                <Typography variant="body2" fontWeight={500}>New cell line</Typography>
+                <TextField
+                  inputRef={newNameInputRef}
                   size="small"
-                  onClick={() => { setDiscardAnchor(null); onDiscard(); }}
+                  label="Name"
+                  value={newCellLineName}
+                  onChange={e => setNewCellLineName(e.target.value)}
+                />
+                <ToggleButtonGroup size="small" exclusive value={newCellType} onChange={(_, v) => { if (v) setNewCellType(v); }}>
+                  <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hiPSC</ToggleButton>
+                  <ToggleButton value="human embryonic stem cell (hESC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hESC</ToggleButton>
+                </ToggleButtonGroup>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!newCellLineName.trim() || !newCellType}
+                  onClick={() => {
+                    setCreateAnchor(null);
+                    onCreate(newCellLineName.trim(), newCellType);
+                  }}
                   sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
                 >
-                  Yes
+                  Create
                 </Button>
               </Box>
-            </Box>
-          </Popover>
+            </Popover>
+
+            {/* Reset confirmation popover */}
+            <Popover
+              open={Boolean(discardAnchor)}
+              anchorEl={discardAnchor}
+              onClose={() => setDiscardAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            >
+              <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 250 }}>
+                <Typography variant="body2" fontWeight={500}>
+                  Are you sure you want to reset changes?
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                  <Button size="small" onClick={() => setDiscardAnchor(null)}>No</Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => { setDiscardAnchor(null); onDiscard(); }}
+                    sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
+                  >
+                    Yes
+                  </Button>
+                </Box>
+              </Box>
+            </Popover>
+
+            {onCurationMethodChange && (
+              <Select
+                size="small"
+                value={curationMethod || ''}
+                onChange={e => onCurationMethodChange(e.target.value)}
+                displayEmpty
+                sx={{ fontSize: '0.8rem', '& .MuiSelect-select': { py: 0.5, px: 1 } }}
+              >
+                <MenuItem value=""><em>Not set</em></MenuItem>
+                <MenuItem value="LLM">LLM</MenuItem>
+                <MenuItem value="Manual">Manual</MenuItem>
+                <MenuItem value="Human Verified">Human Verified</MenuItem>
+              </Select>
+            )}
         </Box>
       </Box>
 
@@ -1077,6 +1094,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
             onAddItem={handleAddItem}
           />
         ))}
+
       </Box>
 
       {/* Table of Contents */}

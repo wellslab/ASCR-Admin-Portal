@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query
+from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import utils
@@ -9,6 +10,7 @@ from models import StartAICurationRequest, TaskCompletionNotification
 from data_dictionaries.models import JSONOutputSchema
 from tasks import curate_article_task, redis_client
 from config_manager import config_manager
+from schema_migration import migrate_all
 from task_progress import TaskProgressManager
 from ingestion_monitor import IngestionMonitor
 import asyncio
@@ -179,10 +181,13 @@ async def get_cell_lines_grouped(
                     groups[base_name] = []
                 for filename in filenames:
                     version = version_control.parse_version_from_filename(filename)
+                    file_data = storage.get(filename, location)
+                    curation_method = file_data.get("curation_method") if file_data else None
                     groups[base_name].append({
                         "filename": filename,
                         "location": location,
-                        "version": version
+                        "version": version,
+                        "curation_method": curation_method,
                     })
 
         result = []
@@ -360,7 +365,11 @@ async def get_latest_cell_line_version(base_name: str, version_control: VersionC
         raise HTTPException(status_code=500, detail=f"Failed to get latest version: {str(e)}")
 
 @app.post("/working/cell-line")
-async def create_cell_line(cell_line_data: JSONOutputSchema, data_transport: DataTransport = Depends(get_data_transport)):
+async def create_cell_line(
+    cell_line_data: JSONOutputSchema,
+    curation_method: Optional[str] = Query(default="Manual"),
+    data_transport: DataTransport = Depends(get_data_transport)
+):
     """
     Create a new cell line file in the working directory.
     Version number is based on the number of previously registered copies.
@@ -368,6 +377,7 @@ async def create_cell_line(cell_line_data: JSONOutputSchema, data_transport: Dat
     """
     try:
         cell_line_dict = cell_line_data.model_dump()
+        cell_line_dict["curation_method"] = curation_method
         return data_transport.save_with_auto_versioning(cell_line_dict)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
@@ -379,6 +389,7 @@ async def create_cell_line(cell_line_data: JSONOutputSchema, data_transport: Dat
 async def update_cell_line(
     filename: str,
     cell_line_data: JSONOutputSchema,
+    curation_method: Optional[str] = Query(default=None),
     storage: StorageInterface = Depends(get_storage)
 ):
     """
@@ -389,6 +400,12 @@ async def update_cell_line(
         raise HTTPException(status_code=404, detail=f"Cell line '{filename}' not found in working directory")
     try:
         cell_line_dict = cell_line_data.model_dump()
+        # Preserve existing curation_method if not provided
+        if curation_method is not None:
+            cell_line_dict["curation_method"] = curation_method
+        else:
+            existing = storage.get(filename, "working")
+            cell_line_dict["curation_method"] = existing.get("curation_method") if existing else None
         result = storage.update(filename, cell_line_dict, "working")
         result["filename"] = filename
         return result
@@ -553,22 +570,20 @@ async def update_settings(settings: dict):
         logger.error(f"Error updating settings: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update settings: {str(e)}")
 
-@app.post("/update")
-async def trigger_update():
-    """Delegate to the host-side update agent (update_agent.py) to run update.sh."""
-    import httpx
+@app.post("/admin/migrate-schema")
+async def run_schema_migration():
+    """
+    Apply the current JSONOutputSchema to all cell line records.
+    Adds any missing fields with null/[] defaults. Existing values are never overwritten.
+    """
     try:
-        async with httpx.AsyncClient() as client:
-            await client.post("http://host.docker.internal:8099/update", timeout=5.0)
-        return {"status": "started", "message": "Update started. Containers will restart shortly."}
-    except httpx.ConnectError:
-        raise HTTPException(
-            status_code=503,
-            detail="Update agent is not running. Start it on the host with: python3 update_agent.py"
-        )
+        result = migrate_all(dry_run=False)
+        return result
     except Exception as e:
-        logger.error(f"Error contacting update agent: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to start update: {str(e)}")
+        logger.error(f"Schema migration failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
 
 @app.websocket("/ws/task-updates")
 async def websocket_endpoint(websocket: WebSocket):

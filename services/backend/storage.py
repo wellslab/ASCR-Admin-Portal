@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from datetime import datetime, date
+import os
 import json
 import logging
 
@@ -186,12 +187,17 @@ class FileStorage(StorageInterface):
     
     def __init__(self):
         """Initialize file-based storage.
-        
+
         Sets up the FileStorage instance. No parameters required as all configuration
         is handled internally through directory structure and file naming conventions.
         """
         pass
-    
+
+    @staticmethod
+    def get_data_dir() -> Path:
+        """Return the root data directory. Override with DATA_DIR env var."""
+        return Path(os.environ.get("DATA_DIR", str(Path(__file__).parent / "data")))
+
     def _extract_hpscreg_name(self, data: Dict[str, Any]) -> str:
         """Extract hpscreg_name from cell line data"""
         # Current format: general.hpscreg_name
@@ -207,16 +213,15 @@ class FileStorage(StorageInterface):
     
     def _get_file_path(self, location: str, filename: str) -> Path:
         """Get file path for given location and filename"""
-        return Path(f"data/{location}") / f"{filename}.json"
-    
+        return self.get_data_dir() / location / f"{filename}.json"
+
     def _get_index_path(self, location: str) -> Path:
         """Get index file path for given location"""
-        return Path(f"data/{location}/index.json")
-    
+        return self.get_data_dir() / location / "index.json"
+
     def _ensure_directory_exists(self, location: str):
         """Ensure directory exists"""
-        dir_path = Path(f"data/{location}")
-        dir_path.mkdir(parents=True, exist_ok=True)
+        (self.get_data_dir() / location).mkdir(parents=True, exist_ok=True)
     
     def _load_index(self, location: str) -> Dict[str, List[str]]:
         """Load index file for given location (dict format)"""
@@ -339,11 +344,15 @@ class FileStorage(StorageInterface):
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
+            # Extract metadata stored alongside scientific data
+            curation_method = data.pop("curation_method", None)
+
             # Get file's last modified time
             last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)
 
             return {
                 "data": data,
+                "curation_method": curation_method,
                 "location": location,
                 "filename": filename,
                 "last_modified": last_modified.isoformat()
