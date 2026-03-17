@@ -3,7 +3,7 @@
 import { Box, Typography, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import BlurOnOutlinedIcon from '@mui/icons-material/BlurOnOutlined';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -25,7 +25,7 @@ const navSections: NavSection[] = [
   {
     title: 'Explore',
     items: [
-      { label: 'Curation', path: '/tools/curation', icon: <ScienceOutlinedIcon fontSize="small" /> },
+      { label: 'AI Curation', path: '/tools/curation', icon: <BlurOnOutlinedIcon fontSize="small" /> },
       { label: 'Editor', path: '/tools/editor', icon: <EditOutlinedIcon fontSize="small" /> },
       { label: 'Import', path: '/tools/import', icon: <FileUploadOutlinedIcon fontSize="small" /> },
       { label: 'Version Control', path: '/tools/version-control', icon: <CompareArrowsIcon fontSize="small" /> },
