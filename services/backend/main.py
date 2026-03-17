@@ -161,6 +161,41 @@ async def get_stats(storage: StorageInterface = Depends(get_storage)):
         logger.error(f"Error getting stats: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get stats: {str(e)}")
 
+@app.get("/cell-lines/grouped")
+async def get_cell_lines_grouped(
+    storage: StorageInterface = Depends(get_storage),
+    version_control: VersionControl = Depends(get_version_control)
+):
+    """
+    Get all cell lines grouped by base name, with each version's filename and location.
+    Aggregates index.json files from working, ready, and registered directories.
+    """
+    try:
+        groups: dict = {}
+        for location in ["working", "ready", "registered"]:
+            index = storage.list_files_grouped(location)
+            for base_name, filenames in index.items():
+                if base_name not in groups:
+                    groups[base_name] = []
+                for filename in filenames:
+                    version = version_control.parse_version_from_filename(filename)
+                    groups[base_name].append({
+                        "filename": filename,
+                        "location": location,
+                        "version": version
+                    })
+
+        result = []
+        for base_name in sorted(groups.keys()):
+            versions = sorted(groups[base_name], key=lambda x: x.get("version") if x.get("version") is not None else -1)
+            result.append({"base_name": base_name, "versions": versions})
+
+        return {"groups": result}
+    except Exception as e:
+        logger.error(f"Error getting grouped cell lines: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get grouped cell lines: {str(e)}")
+
+
 @app.get("/get-all-cell-lines")
 async def get_all_cell_lines(storage: StorageInterface = Depends(get_storage)):
     """

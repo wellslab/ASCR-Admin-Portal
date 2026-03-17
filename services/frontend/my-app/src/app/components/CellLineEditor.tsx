@@ -634,10 +634,11 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
   const [isSaving, setIsSaving] = useState(false);
   const [schemaError, setSchemaError] = useState(false);
   const [schemaRetryTick, setSchemaRetryTick] = useState(0);
-  const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
   const [newCellType, setNewCellType] = useState<string>('');
-  const [discardAnchor, setDiscardAnchor] = useState<HTMLButtonElement | null>(null);
+  const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
+  const [newCellLineName, setNewCellLineName] = useState('');
   const newNameInputRef = useRef<HTMLInputElement>(null);
+  const [discardAnchor, setDiscardAnchor] = useState<HTMLButtonElement | null>(null);
   const [schema, setSchema] = useState<any>(null);
 
   // Reset isSaving when parent responds (data updated = success, validationErrors updated = failure)
@@ -963,7 +964,11 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
             >
               {isSaving ? 'Saving...' : 'Save'}
             </Button>
-            <Button startIcon={<AddIcon />} onClick={(e) => setCreateAnchor(e.currentTarget)}>
+            <Button startIcon={<AddIcon />} onClick={e => {
+              setNewCellLineName('');
+              setCreateAnchor(e.currentTarget);
+              setTimeout(() => newNameInputRef.current?.focus(), 50);
+            }}>
               New
             </Button>
             <Button startIcon={<RefreshIcon />} onClick={(e) => setDiscardAnchor(e.currentTarget)}>
@@ -975,48 +980,30 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
           <Popover
             open={Boolean(createAnchor)}
             anchorEl={createAnchor}
-            onClose={() => { setCreateAnchor(null); setNewCellType(''); }}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            onClose={() => setCreateAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
           >
-            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 280 }}>
-              <Typography variant="body2" fontWeight={500}>
-                Enter a name for the new cell line
-              </Typography>
+            <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 260 }}>
+              <Typography variant="body2" fontWeight={500}>New cell line</Typography>
               <TextField
-                size="small"
-                placeholder="e.g. AIBNi001-A"
                 inputRef={newNameInputRef}
-                autoFocus
-              />
-              <Typography variant="body2" fontWeight={500}>
-                Cell line type
-              </Typography>
-              <ToggleButtonGroup
-                value={newCellType}
-                exclusive
-                onChange={(_, val) => { if (val) setNewCellType(val); }}
                 size="small"
-                fullWidth
-              >
-                <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ fontSize: '0.75rem' }}>
-                  iPSC
-                </ToggleButton>
-                <ToggleButton value="human embryonic stem cell (hESC)" sx={{ fontSize: '0.75rem' }}>
-                  ESC
-                </ToggleButton>
+                label="Name"
+                value={newCellLineName}
+                onChange={e => setNewCellLineName(e.target.value)}
+              />
+              <ToggleButtonGroup size="small" exclusive value={newCellType} onChange={(_, v) => { if (v) setNewCellType(v); }}>
+                <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hiPSC</ToggleButton>
+                <ToggleButton value="human embryonic stem cell (hESC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hESC</ToggleButton>
               </ToggleButtonGroup>
               <Button
-                variant="contained"
                 size="small"
-                disabled={!newCellType}
+                variant="contained"
+                disabled={!newCellLineName.trim() || !newCellType}
                 onClick={() => {
-                  const value = newNameInputRef.current?.value.trim();
-                  if (value && newCellType) {
-                    onCreate(value, newCellType);
-                    setCreateAnchor(null);
-                    setNewCellType('');
-                  }
+                  setCreateAnchor(null);
+                  onCreate(newCellLineName.trim(), newCellType);
                 }}
                 sx={{ backgroundColor: theme.palette.secondary.dark, '&:hover': { backgroundColor: theme.palette.secondary.main } }}
               >

@@ -140,6 +140,11 @@ class StorageInterface(ABC):
         pass
     
     @abstractmethod
+    def list_files_grouped(self, location: str = "working") -> Dict[str, List[str]]:
+        """Return the index dict for a location: {base_name: [filenames]}"""
+        pass
+
+    @abstractmethod
     def get_files_for_base_name(self, base_name: str, location: str = "ready") -> List[str]:
         """
         Get all files matching a base name in specified location.
@@ -425,6 +430,10 @@ class FileStorage(StorageInterface):
                 return True
         return False
     
+    def list_files_grouped(self, location: str = "working") -> Dict[str, List[str]]:
+        """Return the index dict for a location: {base_name: [filenames]}"""
+        return self._load_index(location)
+
     def get_files_for_base_name(self, base_name: str, location: str = "ready") -> List[str]:
         """Get all files matching a base name in specified location"""
         index = self._load_index(location)

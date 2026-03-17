@@ -1,153 +1,181 @@
 'use client';
 
-import { useState, useEffect, useRef, memo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import {
   Box, Typography, TextField, InputAdornment, List, ListItemButton,
-  ListItemText, Skeleton, Alert, ToggleButtonGroup, ToggleButton,
-  Popover, Button,
+  ListItemText, Skeleton, Alert, Popover, Button, Checkbox, FormControlLabel, IconButton,
+  ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useTheme } from '@mui/material/styles';
 import CellLineEditor from '@/app/components/CellLineEditor';
 import { getApiUrl } from '@/lib/api-config';
 
 type Location = 'working' | 'ready' | 'registered';
 
-interface CellLineEntry {
-  name: string;
+interface CellLineVersion {
+  filename: string;
   location: Location;
+  version: number | null;
+}
+
+interface CellLineGroup {
+  base_name: string;
+  versions: CellLineVersion[];
 }
 
 
 interface CellLinePanelProps {
-  cellLines: CellLineEntry[];
+  groups: CellLineGroup[];
   selectedCellLine: string | null;
   onSelect: (filename: string) => void;
-  onCreate: (name: string, cellType: string) => void;
 }
 
-const CellLinePanel = memo(({ cellLines, selectedCellLine, onSelect, onCreate }: CellLinePanelProps) => {
+const CellLinePanel = memo(({ groups, selectedCellLine, onSelect }: CellLinePanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationFilter, setLocationFilter] = useState<Location | 'all'>('all');
-  const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
-  const [newCellLineName, setNewCellLineName] = useState('');
-  const [newCellType, setNewCellType] = useState('');
+  const [locationFilter, setLocationFilter] = useState<Set<Location>>(new Set(['working', 'ready', 'registered']));
+  const [filterAnchor, setFilterAnchor] = useState<HTMLButtonElement | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const newNameInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredCellLines = cellLines.filter(cl => {
-    const matchesLocation = locationFilter === 'all' || cl.location === locationFilter;
-    const matchesSearch = cl.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesLocation && matchesSearch;
-  });
+  const filtered = groups
+    .map(g => ({
+      ...g,
+      versions: g.versions.filter(v => locationFilter.has(v.location)),
+    }))
+    .filter(g => g.versions.length > 0 && g.base_name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const toggleLocation = (loc: Location) => {
+    setLocationFilter(prev => {
+      const next = new Set(prev);
+      next.has(loc) ? next.delete(loc) : next.add(loc);
+      return next;
+    });
+  };
+
+  const isFiltered = locationFilter.size < 3;
+
+  const toggleGroup = (baseName: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      next.has(baseName) ? next.delete(baseName) : next.add(baseName);
+      return next;
+    });
+  };
 
   return (
     <Box sx={{ width: 280, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 1, overflow: 'hidden' }}>
-      <TextField
-        size="small"
-        placeholder="Search cell lines..."
-        value={searchQuery}
-        onChange={e => setSearchQuery(e.target.value)}
-        InputProps={{
-          startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
-        }}
-      />
-
-      <ToggleButtonGroup
-        size="small"
-        value={locationFilter}
-        exclusive
-        onChange={(_, v) => { if (v) setLocationFilter(v); }}
-        sx={{ flexWrap: 'wrap' }}
-      >
-        {(['all', 'working', 'ready', 'registered'] as const).map(loc => (
-          <ToggleButton key={loc} value={loc} sx={{ flex: 1, fontSize: '0.7rem', textTransform: 'capitalize' }}>
-            {loc}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-
-      <Button
-        size="small"
-        startIcon={<AddIcon />}
-        variant="outlined"
-        onClick={e => {
-          setNewCellLineName('');
-          setNewCellType('');
-          setCreateAnchor(e.currentTarget);
-          setTimeout(() => newNameInputRef.current?.focus(), 50);
-        }}
-      >
-        Create cell line
-      </Button>
+      <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <TextField
+          size="small"
+          placeholder="Search cell lines..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          sx={{ flex: 1 }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
+          }}
+        />
+        <IconButton
+          size="small"
+          onClick={e => setFilterAnchor(e.currentTarget)}
+          sx={{ color: isFiltered ? 'primary.main' : 'action.active' }}
+        >
+          <FilterListIcon fontSize="small" />
+        </IconButton>
+      </Box>
 
       <Popover
-        open={Boolean(createAnchor)}
-        anchorEl={createAnchor}
-        onClose={() => setCreateAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        open={Boolean(filterAnchor)}
+        anchorEl={filterAnchor}
+        onClose={() => setFilterAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 260 }}>
-          <Typography variant="body2" fontWeight={500}>New cell line</Typography>
-          <TextField
-            inputRef={newNameInputRef}
-            size="small"
-            label="Name"
-            value={newCellLineName}
-            onChange={e => setNewCellLineName(e.target.value)}
-          />
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={newCellType}
-            onChange={(_, v) => { if (v) setNewCellType(v); }}
-          >
-            <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hiPSC</ToggleButton>
-            <ToggleButton value="human embryonic stem cell (hESC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hESC</ToggleButton>
-          </ToggleButtonGroup>
-          <Button
-            size="small"
-            variant="contained"
-            disabled={!newCellLineName.trim() || !newCellType}
-            onClick={() => {
-              setCreateAnchor(null);
-              onCreate(newCellLineName.trim(), newCellType);
-            }}
-          >
-            Create
-          </Button>
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>Filter by location</Typography>
+          {(['working', 'ready', 'registered'] as const).map(loc => (
+            <FormControlLabel
+              key={loc}
+              control={<Checkbox size="small" checked={locationFilter.has(loc)} onChange={() => toggleLocation(loc)} />}
+              label={<Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{loc}</Typography>}
+              sx={{ m: 0 }}
+            />
+          ))}
         </Box>
       </Popover>
 
+      <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', px: 1 }}>
+        Name
+      </Typography>
+
       <Box sx={{ flex: 1, overflowY: 'auto' }}>
-        {filteredCellLines.length === 0 ? (
+        {filtered.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
-            {cellLines.length === 0 ? 'No cell lines found.' : 'No matches.'}
+            {groups.length === 0 ? 'No cell lines found.' : 'No matches.'}
           </Typography>
         ) : (
           <List dense disablePadding>
-            {filteredCellLines.map(cl => (
-              <ListItemButton
-                key={cl.name}
-                selected={selectedCellLine === cl.name}
-                onClick={() => onSelect(cl.name)}
-                sx={{ borderRadius: 1, py: 0.25, px: 1 }}
-              >
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, minWidth: 0 }}>
-                      <Typography variant="body2" noWrap sx={{ flex: 1, fontSize: '0.8rem' }}>
-                        {cl.name.replace('.json', '')}
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled', flexShrink: 0 }}>
-                        {cl.location}
-                      </Typography>
-                    </Box>
-                  }
-                  disableTypography
-                />
-              </ListItemButton>
-            ))}
+            {filtered.map(group => {
+              const isExpanded = expandedGroups.has(group.base_name);
+              const isGroupSelected = group.versions.some(v => v.filename === selectedCellLine);
+              return (
+                <React.Fragment key={group.base_name}>
+                  {/* Group header */}
+                  <ListItemButton
+                    disableRipple
+                    onClick={() => toggleGroup(group.base_name)}
+                    sx={{
+                      borderRadius: 1, py: 0.5, px: 1,
+                      bgcolor: isGroupSelected ? 'action.selected' : undefined,
+                    }}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                          <Typography variant="body2" noWrap sx={{ flex: 1, fontSize: '0.8rem', fontWeight: 500 }}>
+                            {group.base_name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled', flexShrink: 0 }}>
+                            {group.versions.length}
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled', flexShrink: 0 }}>
+                            {isExpanded ? '▾' : '▸'}
+                          </Typography>
+                        </Box>
+                      }
+                      disableTypography
+                    />
+                  </ListItemButton>
+
+                  {/* Versions */}
+                  {isExpanded && group.versions.map(v => (
+                    <ListItemButton
+                      key={v.filename}
+                      selected={selectedCellLine === v.filename}
+                      onClick={() => onSelect(v.filename)}
+                      sx={{ borderRadius: 1, py: 0.25, pl: 3, pr: 1 }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minWidth: 0 }}>
+                            <Typography variant="body2" noWrap sx={{ fontSize: '0.75rem' }}>
+                              {v.filename}
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled', flexShrink: 0, ml: 1 }}>
+                              {v.location}
+                            </Typography>
+                          </Box>
+                        }
+                        disableTypography
+                      />
+                    </ListItemButton>
+                  ))}
+                </React.Fragment>
+              );
+            })}
           </List>
         )}
       </Box>
@@ -169,7 +197,7 @@ export default function EditorPage() {
   const theme = useTheme();
 
   // Cell line list state
-  const [cellLines, setCellLines] = useState<CellLineEntry[]>([]);
+  const [groups, setGroups] = useState<CellLineGroup[]>([]);
 
   // Editor state
   const [selectedCellLine, setSelectedCellLine] = useState<string | null>(null);
@@ -184,10 +212,10 @@ export default function EditorPage() {
 
   const fetchAllCellLines = async () => {
     try {
-      const response = await fetch(getApiUrl('/get-all-cell-lines'));
+      const response = await fetch(getApiUrl('/cell-lines/grouped'));
       if (response.ok) {
         const data = await response.json();
-        setCellLines(data.cell_lines || []);
+        setGroups(data.groups || []);
       }
     } catch {}
   };
@@ -270,12 +298,12 @@ export default function EditorPage() {
   };
 
   const createNewCellLine = async (name: string, cellType: string) => {
-    const extractBase = (fn: string) => fn.includes('_v') ? fn.split('_v')[0] : fn;
-    if (cellLines.find(cl => extractBase(cl.name) === name && cl.location === 'working')) {
+    const group = groups.find(g => g.base_name === name);
+    if (group?.versions.some(v => v.location === 'working')) {
       setFetchError(`A working copy of "${name}" already exists.`);
       return;
     }
-    if (cellLines.find(cl => extractBase(cl.name) === name && cl.location === 'ready')) {
+    if (group?.versions.some(v => v.location === 'ready')) {
       setFetchError(`Cannot create "${name}": a ready copy exists.`);
       return;
     }
@@ -303,56 +331,104 @@ export default function EditorPage() {
     }
   };
 
+  const [createAnchor, setCreateAnchor] = useState<HTMLButtonElement | null>(null);
+  const [newCellLineName, setNewCellLineName] = useState('');
+  const [newCellType, setNewCellType] = useState('');
+  const newNameInputRef = useRef<HTMLInputElement>(null);
+
   const handleSelect = useCallback((filename: string) => fetchCellLineData(filename), []);
-  const handleCreate = useCallback((name: string, cellType: string) => createNewCellLine(name, cellType), [cellLines]);
 
   return (
     <Box sx={{ display: 'flex', height: 'calc(100vh - 4rem - 16px)', gap: 2, overflow: 'hidden', pr: 2, pb: 2 }}>
 
       <CellLinePanel
-        cellLines={cellLines}
+        groups={groups}
         selectedCellLine={selectedCellLine}
         onSelect={handleSelect}
-        onCreate={handleCreate}
       />
 
       {/* Right panel — editor */}
       <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        {fetchError && (
-          <Alert severity="warning" onClose={() => setFetchError(null)} sx={{ mb: 1 }}>
-            {fetchError}
-          </Alert>
-        )}
+          {fetchError && (
+            <Alert severity="warning" onClose={() => setFetchError(null)} sx={{ mb: 1 }}>
+              {fetchError}
+            </Alert>
+          )}
 
-        {isLoadingCellLine ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
-            {[...Array(6)].map((_, i) => <Skeleton key={i} height={40} />)}
-          </Box>
-        ) : selectedCellLine && editedMetadata ? (
-          <CellLineEditor
-            key={editorKey}
-            data={editedMetadata}
-            cellLineName={selectedCellLine.replace('.json', '').replace(/_v\d+$/, '')}
-            filename={selectedCellLine}
-            lastModified={lastModified}
-            location={selectedCellLineLocation}
-            onSave={saveCellLine}
-            onCreate={createNewCellLine}
-            onDiscard={() => {
-              setSelectedCellLine(null);
-              setEditedMetadata(null);
-              setIsNewCellLine(false);
-              setValidationErrors([]);
-            }}
-            onStatusChange={handleStatusChange}
-            validationErrors={validationErrors}
-            onClearErrors={() => setValidationErrors([])}
-          />
-        ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-            <Typography color="text.secondary">Select a cell line to edit, or create a new one.</Typography>
-          </Box>
-        )}
+          {isLoadingCellLine ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
+              {[...Array(6)].map((_, i) => <Skeleton key={i} height={40} />)}
+            </Box>
+          ) : selectedCellLine && editedMetadata ? (
+            <CellLineEditor
+              key={editorKey}
+              data={editedMetadata}
+              cellLineName={selectedCellLine.replace('.json', '').replace(/_v\d+$/, '')}
+              filename={selectedCellLine}
+              lastModified={lastModified}
+              location={selectedCellLineLocation}
+              onSave={saveCellLine}
+              onCreate={createNewCellLine}
+              onDiscard={() => {
+                setSelectedCellLine(null);
+                setEditedMetadata(null);
+                setIsNewCellLine(false);
+                setValidationErrors([]);
+              }}
+              onStatusChange={handleStatusChange}
+              validationErrors={validationErrors}
+              onClearErrors={() => setValidationErrors([])}
+            />
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, flex: 1 }}>
+              <Typography color="text.secondary">Select a cell line from the list, or create a new one.</Typography>
+              <Button
+                startIcon={<AddIcon />}
+                variant="outlined"
+                onClick={e => {
+                  setNewCellLineName('');
+                  setNewCellType('');
+                  setCreateAnchor(e.currentTarget);
+                  setTimeout(() => newNameInputRef.current?.focus(), 50);
+                }}
+              >
+                Create cell line
+              </Button>
+              <Popover
+                open={Boolean(createAnchor)}
+                anchorEl={createAnchor}
+                onClose={() => setCreateAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+              >
+                <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 260 }}>
+                  <Typography variant="body2" fontWeight={500}>New cell line</Typography>
+                  <TextField
+                    inputRef={newNameInputRef}
+                    size="small"
+                    label="Name"
+                    value={newCellLineName}
+                    onChange={e => setNewCellLineName(e.target.value)}
+                  />
+                  <ToggleButtonGroup size="small" exclusive value={newCellType} onChange={(_, v) => { if (v) setNewCellType(v); }}>
+                    <ToggleButton value="human induced pluripotent stem cell (hiPSC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hiPSC</ToggleButton>
+                    <ToggleButton value="human embryonic stem cell (hESC)" sx={{ flex: 1, fontSize: '0.7rem' }}>hESC</ToggleButton>
+                  </ToggleButtonGroup>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={!newCellLineName.trim() || !newCellType}
+                    onClick={() => {
+                      setCreateAnchor(null);
+                      createNewCellLine(newCellLineName.trim(), newCellType);
+                    }}
+                  >
+                    Create
+                  </Button>
+                </Box>
+              </Popover>
+            </Box>
+          )}
       </Box>
     </Box>
   );

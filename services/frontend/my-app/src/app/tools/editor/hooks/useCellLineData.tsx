@@ -5,39 +5,46 @@ import { getApiUrl } from '@/lib/api-config';
 import { CellLineData, CellLineTemplate } from '../types/editor';
 import { API_ENDPOINTS } from '../../../../lib/api';
 
+export interface CellLineVersion {
+  filename: string;
+  location: 'working' | 'ready' | 'registered';
+  version: number | null;
+}
+
+export interface CellLineGroup {
+  base_name: string;
+  versions: CellLineVersion[];
+}
+
 export function useCellLineData() {
   const [cellLines, setCellLines] = useState<CellLineTemplate[]>([]);
+  const [groupedCellLines, setGroupedCellLines] = useState<CellLineGroup[]>([]);
   const [selectedCellLine, setSelectedCellLine] = useState<CellLineData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch list of available cell lines from new archive service
-  const fetchCellLines = useCallback(async (curationSource?: string) => {
+  // Fetch grouped cell lines from backend
+  const fetchCellLines = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      // Use the new search endpoint to get all cell lines
-      const response = await fetch('http://localhost:8002/search/cell-lines?limit=200');
+      const response = await fetch('http://localhost:8001/cell-lines/grouped');
       if (!response.ok) {
         throw new Error(`Failed to fetch cell lines: ${response.statusText}`);
       }
-      
-      const searchResults = await response.json();
-      
-      // Transform search results to match the expected format
-      const transformedCellLines = searchResults.map((result: any) => ({
-        CellLine_hpscreg_id: result.cell_line_id,
-        id: result.cell_line_id,
-        curation_source: result.status, // working, live, historical
-        work_status: result.status,
-        saved_on: result.saved_on,
-        modified_on: result.modified_on,
-        file_name: result.file_name,
-        ...result.basic_info // Include any basic info we have
-      }));
-      
-      setCellLines(transformedCellLines);
+      const data = await response.json();
+      setGroupedCellLines(data.groups || []);
+
+      // Keep flat list for backwards compatibility
+      const flat = (data.groups || []).flatMap((g: CellLineGroup) =>
+        g.versions.map((v: CellLineVersion) => ({
+          CellLine_hpscreg_id: v.filename,
+          id: v.filename,
+          curation_source: v.location,
+        }))
+      );
+      setCellLines(flat);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch cell lines');
       console.error('Error fetching cell lines:', err);
@@ -52,17 +59,14 @@ export function useCellLineData() {
     setError(null);
     
     try {
-      // Try to get from working storage first (most common case)
-      const response = await fetch(`http://localhost:8002/curated-cell-lines/${encodeURIComponent(id)}`);
+      const response = await fetch(`http://localhost:8001/cell-line/${encodeURIComponent(id)}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch cell line: ${response.statusText}`);
       }
       
       const responseData = await response.json();
-      // Extract the curated data from the response
-      const cellLineData = responseData.curated_data || responseData;
-      
-      // Ensure the id field is set for the frontend to use
+      const cellLineData = responseData.data || responseData;
+
       if (cellLineData && !cellLineData.id) {
         cellLineData.id = id;
       }
@@ -83,8 +87,8 @@ export function useCellLineData() {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`http://localhost:8002/curated-cell-lines/${encodeURIComponent(id)}`, {
-        method: 'POST',
+      const response = await fetch(`http://localhost:8001/working/cell-line/${encodeURIComponent(id)}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -131,6 +135,7 @@ export function useCellLineData() {
 
   return {
     cellLines,
+    groupedCellLines,
     selectedCellLine,
     isLoading,
     error,
@@ -138,6 +143,6 @@ export function useCellLineData() {
     saveCellLine,
     getNewTemplate,
     refetch: fetchCellLines,
-    setSelectedCellLine, // Export the setter for local updates
+    setSelectedCellLine,
   };
 } 
