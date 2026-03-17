@@ -3,7 +3,7 @@
 import { Box, Typography, Divider } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import { getApiUrl } from '@/lib/api-config';
 
 interface CellLineStats {
@@ -49,7 +49,7 @@ export default function Home() {
     {
       title: 'AI Curation',
       description: 'Use AI to extract cell line metadata from text',
-      icon: <ScienceOutlinedIcon sx={{ fontSize: 48, color: 'primary.main' }} />,
+      icon: <ManageSearchIcon sx={{ fontSize: 48, color: 'primary.main' }} />,
       path: '/tools/curation',
     },
   ];

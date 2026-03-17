@@ -2,6 +2,7 @@
 
 import { Typography, Box, List, ListItem, ListItemText, IconButton, LinearProgress, Collapse, Tooltip, Button } from '@mui/material';
 import BlurOnOutlinedIcon from '@mui/icons-material/BlurOnOutlined';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -415,7 +416,7 @@ export default function CurationPage() {
 
       {/* Header */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-        <BlurOnOutlinedIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
+        <ManageSearchIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
         <Typography variant="h5" component="h1">AI Curation</Typography>
       </Box>
 
@@ -499,7 +500,7 @@ export default function CurationPage() {
                 fontWeight: 600,
               }}
             >
-              <BlurOnOutlinedIcon sx={{ mr: 1 }} />
+              <ManageSearchIcon sx={{ mr: 1 }} />
               Start AI Curation
             </Button>
           </Box>
