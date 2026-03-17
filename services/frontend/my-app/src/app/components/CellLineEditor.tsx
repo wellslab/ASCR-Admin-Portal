@@ -105,32 +105,18 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
           name={inputName}
           defaultValue={defaultValue}
           fullWidth
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            fontSize: '0.8rem',
-            '& .MuiSelect-select': {
-              py: 0.5,
-              px: 1,
-            },
-          }}
+          sx={{ backgroundColor: theme.palette.background.paper, fontSize: '0.8rem' }}
           MenuProps={{
             PaperProps: {
               sx: {
                 maxHeight: 300,
-                '& .MuiMenuItem-root': {
-                  fontSize: '0.8rem',
-                  py: 0.5,
-                  px: 1.5,
-                  minHeight: 'unset',
-                },
+                '& .MuiMenuItem-root': { fontSize: '0.8rem' },
               },
             },
           }}
         >
           {fieldSchema.choices.map((choice: string) => (
-            <MenuItem key={choice} value={choice}>
-              {choice}
-            </MenuItem>
+            <MenuItem key={choice} value={choice}>{choice}</MenuItem>
           ))}
         </Select>
       ) : fieldType === 'boolean' ? (
@@ -139,24 +125,12 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
           name={inputName}
           defaultValue={value === true || value === 'true' ? 'true' : value === false || value === 'false' ? 'false' : ''}
           fullWidth
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            fontSize: '0.8rem',
-            '& .MuiSelect-select': {
-              py: 0.5,
-              px: 1,
-            },
-          }}
+          sx={{ backgroundColor: theme.palette.background.paper, fontSize: '0.8rem' }}
           MenuProps={{
             PaperProps: {
               sx: {
                 maxHeight: 300,
-                '& .MuiMenuItem-root': {
-                  fontSize: '0.8rem',
-                  py: 0.5,
-                  px: 1.5,
-                  minHeight: 'unset',
-                },
+                '& .MuiMenuItem-root': { fontSize: '0.8rem' },
               },
             },
           }}
@@ -171,19 +145,10 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
           name={inputName}
           type="number"
           defaultValue={defaultValue}
-          inputProps={{
-            step: fieldSchema?.number_type === 'float' ? 'any' : '1',
-          }}
+          inputProps={{ step: fieldSchema?.number_type === 'float' ? 'any' : '1' }}
           fullWidth
           sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: theme.palette.background.paper,
-              fontSize: '0.8rem',
-            },
-            '& .MuiOutlinedInput-input': {
-              py: 0.5,
-              px: 1,
-            },
+            '& .MuiOutlinedInput-root': { backgroundColor: theme.palette.background.paper, fontSize: '0.8rem' },
           }}
         />
       ) : (
@@ -192,15 +157,10 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
           name={inputName}
           defaultValue={defaultValue}
           fullWidth
+          multiline
+          minRows={1}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: theme.palette.background.paper,
-              fontSize: '0.8rem',
-            },
-            '& .MuiOutlinedInput-input': {
-              py: 0.5,
-              px: 1,
-            },
+            '& .MuiOutlinedInput-root': { backgroundColor: theme.palette.background.paper, fontSize: '0.8rem' },
           }}
         />
       )}
@@ -389,7 +349,7 @@ const SubArrayEditor = ({ fieldName, arr, inputPrefix, itemSchema, onDeleteItem,
               size="small"
               onClick={() => onAddItem(inputPrefix)}
               startIcon={<AddIcon sx={{ fontSize: 12 }} />}
-              sx={{ mt: 0.5, fontSize: '0.7rem', color: theme.palette.text.secondary, textTransform: 'none' }}
+              sx={{ mt: 0.5, fontSize: '0.7rem', color: theme.palette.text.secondary, textTransform: 'none', width: '100%', justifyContent: 'center' }}
             >
               Add item
             </Button>
@@ -531,6 +491,10 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
           backgroundColor: theme.palette.grey[100],
           borderRadius: 1,
           cursor: 'pointer',
+          position: 'sticky',
+          top: -16,
+          zIndex: 1,
+          pb: 0.5,
           '&:hover': {
             backgroundColor: theme.palette.grey[200],
           },
@@ -574,7 +538,7 @@ const Section = ({ sectionName, sectionId, instances, sectionSchema, sectionIsAr
               size="small"
               onClick={() => onAddItem(sectionName)}
               startIcon={<AddIcon sx={{ fontSize: 12 }} />}
-              sx={{ mt: 0.5, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'none' }}
+              sx={{ mt: 0.5, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'none', width: '100%', justifyContent: 'center' }}
             >
               Add item
             </Button>

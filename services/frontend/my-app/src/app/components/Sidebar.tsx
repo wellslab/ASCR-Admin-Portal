@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
 const SIDEBAR_WIDTH = 220;
 
@@ -25,6 +26,7 @@ const navSections: NavSection[] = [
     title: 'Explore',
     items: [
       { label: 'Curation', path: '/tools/curation', icon: <ScienceOutlinedIcon fontSize="small" /> },
+      { label: 'Editor', path: '/tools/editor', icon: <EditOutlinedIcon fontSize="small" /> },
       { label: 'Import', path: '/tools/import', icon: <FileUploadOutlinedIcon fontSize="small" /> },
       { label: 'Version Control', path: '/tools/version-control', icon: <CompareArrowsIcon fontSize="small" /> },
     ],
