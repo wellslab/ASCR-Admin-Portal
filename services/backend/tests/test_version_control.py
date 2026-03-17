@@ -107,11 +107,6 @@ class TestVersionControl:
         assert filename == "TestCell001_v0"
 
     # Test extract_base_name
-    def test_extract_base_name_from_working_file(self, version_control):
-        """Test extracting base name from working file"""
-        base_name = version_control.extract_base_name("TestCell001_working")
-        assert base_name == "TestCell001"
-
     def test_extract_base_name_from_versioned_file(self, version_control):
         """Test extracting base name from versioned file"""
         base_name = version_control.extract_base_name("TestCell001_v5")

@@ -137,8 +137,8 @@ class VersionControl:
         clean base name. This is essential for grouping related files and version management.
         
         Args:
-            filename (str): Filename to extract base name from. Can contain '_working'
-                or version suffixes like '_v0', '_v1', etc.
+            filename (str): Filename to extract base name from. Can contain
+                version suffixes like '_v0', '_v1', etc.
                 
         Returns:
             str: Clean base name without any suffixes. This represents the core
@@ -146,17 +146,12 @@ class VersionControl:
                 
         Example:
             >>> vc = VersionControl(storage)
-            >>> base = vc.extract_base_name("TestCell001_working")
-            >>> print(base)
-            'TestCell001'
             >>> base = vc.extract_base_name("TestCell001_v2")
             >>> print(base)
             'TestCell001'
         """
         base_name = filename
-        if "_working" in filename:
-            base_name = filename.replace("_working", "")
-        elif "_v" in filename:
+        if "_v" in filename:
             base_name = filename.split("_v")[0]
         return base_name
     

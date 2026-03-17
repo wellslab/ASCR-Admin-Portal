@@ -262,9 +262,7 @@ class FileStorage(StorageInterface):
     def _extract_base_name_from_filename(self, filename: str) -> str:
         """Extract base name from filename (remove suffixes)"""
         base_name = filename
-        if "_working" in filename:
-            base_name = filename.replace("_working", "")
-        elif "_v" in filename:
+        if "_v" in filename:
             base_name = filename.split("_v")[0]
         return base_name
     
