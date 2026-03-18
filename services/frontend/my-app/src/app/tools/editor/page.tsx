@@ -4,12 +4,13 @@ import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import {
   Box, Typography, TextField, InputAdornment, List, ListItemButton,
   ListItemText, Skeleton, Alert, Popover, Button, Checkbox, FormControlLabel, IconButton,
-  ToggleButtonGroup, ToggleButton,
+  ToggleButtonGroup, ToggleButton, Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '@mui/material/styles';
 import CellLineEditor from '@/app/components/CellLineEditor';
 import { getApiUrl } from '@/lib/api-config';
@@ -36,6 +37,8 @@ interface CellLinePanelProps {
   groups: CellLineGroup[];
   selectedCellLine: string | null;
   onSelect: (filename: string) => void;
+  onDelete: (filename: string) => void;
+  onDeleteSelected: () => void;
   checkedFilenames: Set<string>;
   onToggleCheck: (filename: string) => void;
   onDownloadSelected: () => void;
@@ -43,7 +46,7 @@ interface CellLinePanelProps {
   isDownloading: boolean;
 }
 
-const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenames, onToggleCheck, onDownloadSelected, onDownloadAll, isDownloading }: CellLinePanelProps) => {
+const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, onDelete, onDeleteSelected, checkedFilenames, onToggleCheck, onDownloadSelected, onDownloadAll, isDownloading }: CellLinePanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState<Set<Location>>(new Set(['working', 'ready', 'registered']));
   const [curationFilter, setCurationFilter] = useState<Set<CurationMethod | 'unset'>>(new Set(['LLM', 'Manual', 'Human Verified', 'unset']));
@@ -187,7 +190,7 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenam
                       key={v.filename}
                       selected={selectedCellLine === v.filename}
                       onClick={() => onSelect(v.filename)}
-                      sx={{ borderRadius: 1, py: 0.25, pl: 1, pr: 1 }}
+                      sx={{ borderRadius: 1, py: 0.25, pl: 1, pr: 0.5 }}
                     >
                       <Checkbox
                         size="small"
@@ -214,6 +217,15 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenam
                         }
                         disableTypography
                       />
+                      {v.location === 'working' && (
+                        <IconButton
+                          size="small"
+                          onClick={e => { e.stopPropagation(); onDelete(v.filename); }}
+                          sx={{ color: 'text.disabled', '&:hover': { color: 'error.main', bgcolor: 'transparent' }, flexShrink: 0, ml: 0.5 }}
+                        >
+                          <DeleteIcon sx={{ fontSize: '0.9rem' }} />
+                        </IconButton>
+                      )}
                     </ListItemButton>
                   ))}
                 </React.Fragment>
@@ -223,7 +235,7 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenam
         )}
       </Box>
 
-      {/* Download buttons */}
+      {/* Download / delete buttons */}
       <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
         <Button
           size="small"
@@ -231,7 +243,7 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenam
           startIcon={<DownloadIcon />}
           disabled={checkedFilenames.size === 0 || isDownloading}
           onClick={onDownloadSelected}
-          sx={{ flex: 1, fontSize: '0.7rem' }}
+          sx={{ flex: 1, fontSize: '0.6rem' }}
         >
           Selected ({checkedFilenames.size})
         </Button>
@@ -241,9 +253,20 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, checkedFilenam
           startIcon={<DownloadIcon />}
           disabled={isDownloading}
           onClick={onDownloadAll}
-          sx={{ flex: 1, fontSize: '0.7rem' }}
+          sx={{ flex: 1, fontSize: '0.6rem' }}
         >
           All
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          color="error"
+          startIcon={<DeleteIcon />}
+          disabled={checkedFilenames.size === 0}
+          onClick={onDeleteSelected}
+          sx={{ flex: 1, fontSize: '0.6rem' }}
+        >
+          Delete ({checkedFilenames.size})
         </Button>
       </Box>
     </Box>
@@ -268,7 +291,7 @@ export default function EditorPage() {
 
   // Editor state
   const [selectedCellLine, setSelectedCellLine] = useState<string | null>(null);
-  const [selectedCellLineLocation, setSelectedCellLineLocation] = useState<'working' | 'ready'>('working');
+  const [selectedCellLineLocation, setSelectedCellLineLocation] = useState<'working' | 'ready' | 'registered'>('working');
   const [curationMethod, setCurationMethod] = useState<string | null>(null);
   const [editedMetadata, setEditedMetadata] = useState<Record<string, any> | null>(null);
   const [lastModified, setLastModified] = useState<string | null>(null);
@@ -299,7 +322,7 @@ export default function EditorPage() {
         const result = await response.json();
         setEditedMetadata(result.data);
         setSelectedCellLine(filename);
-        setSelectedCellLineLocation((result.location as 'working' | 'ready') || 'working');
+        setSelectedCellLineLocation((result.location as 'working' | 'ready' | 'registered') || 'working');
         setIsNewCellLine(false);
         setLastModified(result.last_modified || null);
         setCurationMethod(result.curation_method || null);
@@ -409,6 +432,33 @@ export default function EditorPage() {
 
   const [checkedFilenames, setCheckedFilenames] = useState<Set<string>>(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false);
+
+  const handleDeleteRequest = useCallback((filename: string) => {
+    setDeleteConfirm(filename);
+  }, []);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    try {
+      const response = await fetch(getApiUrl('/working/cell-line'), {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: deleteConfirm }),
+      });
+      if (response.ok) {
+        if (selectedCellLine === deleteConfirm) {
+          setSelectedCellLine(null);
+          setEditedMetadata(null);
+          setIsNewCellLine(false);
+        }
+        fetchAllCellLines();
+      }
+    } finally {
+      setDeleteConfirm(null);
+    }
+  };
 
   const handleToggleCheck = useCallback((filename: string) => {
     setCheckedFilenames(prev => {
@@ -455,6 +505,34 @@ export default function EditorPage() {
     downloadRecords(Array.from(checkedFilenames));
   }, [checkedFilenames]);
 
+  const handleDeleteSelectedConfirm = async () => {
+    // Only delete working-location files
+    const workingFilenames = Array.from(checkedFilenames).filter(f =>
+      groups.flatMap(g => g.versions).find(v => v.filename === f)?.location === 'working'
+    );
+    await Promise.all(
+      workingFilenames.map(filename =>
+        fetch(getApiUrl('/working/cell-line'), {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename }),
+        })
+      )
+    );
+    if (selectedCellLine && workingFilenames.includes(selectedCellLine)) {
+      setSelectedCellLine(null);
+      setEditedMetadata(null);
+      setIsNewCellLine(false);
+    }
+    setCheckedFilenames(prev => {
+      const next = new Set(prev);
+      workingFilenames.forEach(f => next.delete(f));
+      return next;
+    });
+    setDeleteSelectedConfirm(false);
+    fetchAllCellLines();
+  };
+
   const handleDownloadAll = useCallback(() => {
     const all = groups.flatMap(g => g.versions.map(v => v.filename));
     downloadRecords(all);
@@ -469,12 +547,38 @@ export default function EditorPage() {
         groups={groups}
         selectedCellLine={selectedCellLine}
         onSelect={handleSelect}
+        onDelete={handleDeleteRequest}
+        onDeleteSelected={() => setDeleteSelectedConfirm(true)}
         checkedFilenames={checkedFilenames}
         onToggleCheck={handleToggleCheck}
         onDownloadSelected={handleDownloadSelected}
         onDownloadAll={handleDownloadAll}
         isDownloading={isDownloading}
       />
+
+      <Dialog open={Boolean(deleteConfirm)} onClose={() => setDeleteConfirm(null)}>
+        <DialogTitle>Delete cell line?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">{deleteConfirm}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={handleDeleteConfirm}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteSelectedConfirm} onClose={() => setDeleteSelectedConfirm(false)}>
+        <DialogTitle>Delete selected cell lines?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            {checkedFilenames.size} cell line{checkedFilenames.size !== 1 ? 's' : ''} selected. Only working copies will be deleted.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteSelectedConfirm(false)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={handleDeleteSelectedConfirm}>Delete</Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Right panel — editor */}
       <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>

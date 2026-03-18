@@ -114,6 +114,25 @@ export function useCellLineData() {
     }
   }, []);
 
+  // Delete a cell line from the working directory
+  const deleteCellLine = useCallback(async (filename: string) => {
+    try {
+      const response = await fetch('http://localhost:8001/working/cell-line', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete cell line: ${response.statusText} - ${errorText}`);
+      }
+      await fetchCellLines();
+    } catch (err) {
+      console.error('Error deleting cell line:', err);
+      throw err;
+    }
+  }, [fetchCellLines]);
+
   // Create a new empty template by fetching from backend
   const getNewTemplate = useCallback(async (hpscreg_name?: string) => {
     try {
@@ -141,6 +160,7 @@ export function useCellLineData() {
     error,
     fetchCellLine,
     saveCellLine,
+    deleteCellLine,
     getNewTemplate,
     refetch: fetchCellLines,
     setSelectedCellLine,

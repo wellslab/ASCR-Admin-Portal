@@ -619,7 +619,7 @@ interface CellLineEditorProps {
   cellLineName: string;
   filename: string;
   lastModified: string | null;
-  location: 'working' | 'ready';
+  location: 'working' | 'ready' | 'registered';
   onSave: (data: Record<string, any[] | Record<string, any>>) => void;
   onCreate: (name: string, cellType: string) => void;
   onDiscard: () => void;
@@ -633,6 +633,9 @@ interface CellLineEditorProps {
 const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, onSave, onCreate, onDiscard, onStatusChange, validationErrors = [], onClearErrors, curationMethod, onCurationMethodChange }: CellLineEditorProps) => {
   const theme = useTheme();
   const formRef = useRef<HTMLFormElement>(null);
+  const versionMatch = filename.match(/_v(\d+)(?:\.json)?$/);
+  const versionLabel = versionMatch ? `version ${versionMatch[1]}` : null;
+  const isReadOnly = location === 'registered';
   const [isSaving, setIsSaving] = useState(false);
   const [schemaError, setSchemaError] = useState(false);
   const [schemaRetryTick, setSchemaRetryTick] = useState(0);
@@ -808,8 +811,12 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
   if (!cellType) {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
-        <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.grey[200]}`, flexShrink: 0 }}>
+        <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.grey[200]}`, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h6" fontWeight={600}>{cellLineName}</Typography>
+          {versionLabel && <>
+            <Typography variant="body2" color="text.disabled">·</Typography>
+            <Typography variant="body2" color="text.disabled">{versionLabel}</Typography>
+          </>}
         </Box>
         <Box sx={{ flex: 1, overflow: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Alert severity="warning">
@@ -911,14 +918,28 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
         }}
       >
         <Box>
-          <Typography variant="h6" fontWeight={600}>
-            {cellLineName}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h6" fontWeight={600}>{cellLineName}</Typography>
+            {versionLabel && <>
+              <Typography variant="body2" color="text.disabled">·</Typography>
+              <Typography variant="body2" color="text.disabled">{versionLabel}</Typography>
+            </>}
+          </Box>
           <Typography variant="body2" color="text.secondary">
             Last Edited: {lastModified ? new Date(lastModified).toLocaleString() : '—'}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+            {isReadOnly ? (
+              <Typography variant="caption" sx={{
+                px: 1.5, py: 0.5, borderRadius: 1,
+                border: `1px solid ${theme.palette.success.main}`,
+                color: 'success.main',
+                fontWeight: 600, fontSize: '0.7rem',
+              }}>
+                Registered
+              </Typography>
+            ) : (
             <FormControlLabel
               control={
                 <Switch
@@ -931,7 +952,8 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
               labelPlacement="start"
               sx={{ mr: 0 }}
             />
-            <ButtonGroup
+            )}
+            {!isReadOnly && <ButtonGroup
               size="small"
               variant="outlined"
               sx={{
@@ -976,7 +998,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
               <Button startIcon={<RefreshIcon />} onClick={(e) => setDiscardAnchor(e.currentTarget)}>
                 Reset
               </Button>
-            </ButtonGroup>
+            </ButtonGroup>}
 
             {/* New cell line popover */}
             <Popover
@@ -1054,6 +1076,28 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
                 <MenuItem value="Human Verified">Human Verified</MenuItem>
               </Select>
             )}
+            <Typography
+              variant="caption"
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filename || cellLineName}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              sx={{
+                px: 1.5, py: 0.5, borderRadius: 1, cursor: 'pointer',
+                border: `1px solid ${theme.palette.secondary.dark}`,
+                backgroundColor: theme.palette.secondary.dark,
+                color: '#fff',
+                fontWeight: 600, fontSize: '0.7rem',
+                '&:hover': { backgroundColor: theme.palette.secondary.main },
+              }}
+            >
+              Download
+            </Typography>
         </Box>
       </Box>
 
@@ -1080,6 +1124,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
           },
         }}
       >
+        <Box sx={{ ...(isReadOnly && { pointerEvents: 'none', '& .MuiOutlinedInput-root': { backgroundColor: theme.palette.grey[100] }, '& .MuiInputBase-root': { backgroundColor: theme.palette.grey[100] } }) }}>
         {Object.entries(normalizedData)
           .filter(([sectionName]) => sectionName !== hiddenSection)
           .map(([sectionName, instances]) => (
@@ -1094,6 +1139,7 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
             onAddItem={handleAddItem}
           />
         ))}
+        </Box>
 
       </Box>
 

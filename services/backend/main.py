@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query
+from fastapi.responses import Response
 from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -14,6 +15,9 @@ from schema_migration import migrate_all
 from task_progress import TaskProgressManager
 from ingestion_monitor import IngestionMonitor
 import asyncio
+import zipfile
+import io
+import json
 from pathlib import Path
 
 # Set up logging
@@ -296,6 +300,19 @@ async def move_cell_line_to_ready(filename: str, data_transport: DataTransport =
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Error moving {filename} to ready: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
+
+@app.post("/cell-line/{filename}/move-to-registered")
+async def move_cell_line_to_registered(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
+    """
+    Move a cell line file from ready to registered directory.
+    """
+    try:
+        return data_transport.move_to_registered(filename)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error moving {filename} to registered: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
 
 @app.post("/cell-line/{filename}/move-to-working")
@@ -582,6 +599,58 @@ async def run_schema_migration():
     except Exception as e:
         logger.error(f"Schema migration failed: {e}")
         raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
+@app.get("/admin/download-backup")
+async def download_backup():
+    """
+    Download all cell line data as a zip. Does not delete anything.
+    """
+    try:
+        data_dir = FileStorage.get_data_dir()
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for location in ["working", "ready", "registered"]:
+                loc_dir = data_dir / location
+                if loc_dir.exists():
+                    for json_file in loc_dir.glob("*.json"):
+                        zf.write(json_file, f"{location}/{json_file.name}")
+        zip_data = zip_buffer.getvalue()
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        return Response(
+            content=zip_data,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename=ascr_backup_{timestamp}.zip"}
+        )
+    except Exception as e:
+        logger.error(f"Backup download failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Backup failed: {str(e)}")
+
+
+@app.post("/admin/purge-all-data")
+async def purge_all_data():
+    """
+    Delete all cell line data from working, ready, and registered directories.
+    Resets each index.json to an empty dict.
+    """
+    try:
+        data_dir = FileStorage.get_data_dir()
+
+        for location in ["working", "ready", "registered"]:
+            loc_dir = data_dir / location
+            if loc_dir.exists():
+                for json_file in loc_dir.glob("*.json"):
+                    json_file.unlink()
+                with open(loc_dir / "index.json", 'w') as f:
+                    json.dump({}, f)
+
+        return {"status": "success", "message": "All data purged"}
+    except Exception as e:
+        logger.error(f"Purge all data failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Purge failed: {str(e)}")
 
 
 

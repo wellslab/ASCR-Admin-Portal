@@ -11,10 +11,11 @@ const LOCATION_BADGE: Record<string, string> = {
 };
 
 export function CellLineSelector() {
-  const { groupedCellLines, isLoading } = useCellLineData();
+  const { groupedCellLines, isLoading, deleteCellLine } = useCellLineData();
   const { state, actions } = useEditor();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const filtered = groupedCellLines.filter(g =>
     g.base_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -30,6 +31,22 @@ export function CellLineSelector() {
 
   const handleSelectVersion = async (filename: string) => {
     await actions.selectCellLine(filename);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, filename: string) => {
+    e.stopPropagation();
+    setConfirmDelete(filename);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await deleteCellLine(confirmDelete);
+      // If the deleted line was selected, the editor will retain the stale view
+      // until the user selects another cell line.
+    } finally {
+      setConfirmDelete(null);
+    }
   };
 
   const selectedFilename = state.cellLineData?.id;
@@ -97,20 +114,32 @@ export function CellLineSelector() {
                     {group.versions.map((v: CellLineVersion) => {
                       const isSelected = v.filename === selectedFilename;
                       return (
-                        <button
-                          key={v.filename}
-                          onClick={() => handleSelectVersion(v.filename)}
-                          className={`w-full text-left px-3 py-1.5 rounded-md text-xs flex items-center justify-between transition-colors ${
-                            isSelected
-                              ? 'bg-blue-100 border border-blue-200 text-blue-900'
-                              : 'hover:bg-gray-50 text-gray-600'
-                          }`}
-                        >
-                          <span>{v.version !== null ? `v${v.version}` : v.filename}</span>
-                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${LOCATION_BADGE[v.location] ?? ''}`}>
-                            {v.location}
-                          </span>
-                        </button>
+                        <div key={v.filename} className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleSelectVersion(v.filename)}
+                            className={`flex-1 text-left px-3 py-1.5 rounded-md text-xs flex items-center justify-between transition-colors ${
+                              isSelected
+                                ? 'bg-blue-100 border border-blue-200 text-blue-900'
+                                : 'hover:bg-gray-50 text-gray-600'
+                            }`}
+                          >
+                            <span>{v.version !== null ? `v${v.version}` : v.filename}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${LOCATION_BADGE[v.location] ?? ''}`}>
+                              {v.location}
+                            </span>
+                          </button>
+                          {v.location === 'working' && (
+                            <button
+                              onClick={(e) => handleDeleteClick(e, v.filename)}
+                              className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              title="Delete"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
@@ -125,6 +154,29 @@ export function CellLineSelector() {
         <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500 flex items-center justify-between">
           <span>Selected:</span>
           <span className="font-medium text-gray-800">{state.cellLineData.id}</span>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-5 max-w-sm w-full mx-4">
+            <p className="text-sm font-medium text-gray-900 mb-1">Delete cell line?</p>
+            <p className="text-xs text-gray-500 mb-4 break-all">{confirmDelete}</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-3 py-1.5 text-xs rounded-md bg-red-600 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

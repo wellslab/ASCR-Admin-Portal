@@ -55,11 +55,14 @@ export default function ImportPage() {
     for (const file of files) {
       try {
         const text = await file.text();
-        const data = JSON.parse(text);
-        const response = await fetch(getApiUrl('/working/cell-line'), {
+        const parsed = JSON.parse(text);
+        // Unwrap export format: { filename, location, data: {...}, curation_method, ... }
+        const body = parsed.data ?? parsed;
+        const curationMethod = parsed.curation_method ?? 'Manual';
+        const response = await fetch(getApiUrl(`/working/cell-line?curation_method=${encodeURIComponent(curationMethod)}`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          body: JSON.stringify(body),
         });
 
         if (response.ok) {
