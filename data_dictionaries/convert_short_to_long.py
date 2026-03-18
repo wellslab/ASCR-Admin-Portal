@@ -20,13 +20,18 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-XLSX_PATH = Path("data_dictionaries/2025_12_ascr_data_dictionary_v1.0.xlsx")
+XLSX_PATH = Path("data_dictionaries/2026_02_ascr_data_dictionary_v1.1 (1).xlsx")
 
 
 def build_mapping(xlsx_path: Path) -> dict:
-    """Build {field_name: {short_value: long_value}} from the data dictionary."""
+    """Build {curation_field_name: {short_value: long_value}} from the current_LLM_schema sheet."""
     wb = load_workbook(xlsx_path)
-    ws = wb["data_dictionary"]
+    ws = wb["current_LLM_schema"]
+    headers = [cell.value for cell in ws[1]]
+
+    field_col = headers.index('curation_field_name')
+    short_col = headers.index('allowed_values_short')
+    long_col = headers.index('allowed_values_long')
 
     def parse_values(val):
         if not val or str(val).strip() in ("NA", "None", ""):
@@ -38,14 +43,13 @@ def build_mapping(xlsx_path: Path) -> dict:
 
     mapping = {}
     for row in ws.iter_rows(min_row=2, values_only=True):
-        field = row[1]
-        short_raw = row[11]
-        long_raw = row[12]
+        field = row[field_col]
+        short_raw = row[short_col]
+        long_raw = row[long_col]
 
         if not field or not short_raw or str(short_raw).strip() in ("NA", "None", ""):
             continue
 
-        # Skip ontology URLs and boolean fields (TRUE/FALSE don't need conversion)
         short_str = str(short_raw).strip()
         if "purl.obolibrary" in short_str or short_str in ("[TRUE,FALSE]", "TRUE,FALSE"):
             continue
@@ -63,15 +67,6 @@ def build_mapping(xlsx_path: Path) -> dict:
         for s, l in zip(shorts, longs):
             if s != l:
                 mapping[field][s] = l
-
-    # JSON field names that differ from the Excel field names
-    FIELD_ALIASES = {
-        'non_int_vector_type': 'non_int_vector',  # JSON uses _type suffix
-        'germ_layer': 'cell_type',                # JSON uses germ_layer, Excel uses cell_type (2nd occurrence)
-    }
-    for json_field, excel_field in FIELD_ALIASES.items():
-        if excel_field in mapping:
-            mapping[json_field] = mapping[excel_field]
 
     return mapping
 

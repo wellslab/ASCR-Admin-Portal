@@ -6,7 +6,7 @@
       "1502-COL2A1 p.R719C"
     ],
     "cell_line_alt_name": [
-      "COL2A1\u00a0p.R719C",
+      "COL2A1 p.R719C",
       "1502.3 COL2A1 p.R719C",
       "1502-COL2A1 p.R719C"
     ],
@@ -36,7 +36,9 @@
       "Heterozygous: unspecified_reference_COL2A1:c.2155C>T(p.Arg719Cys)"
     ],
     "subclone_of": "MCRIi019-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -54,7 +56,7 @@
     {
       "institute": "Murdoch Children's Research Institute",
       "institute_ror": null,
-      "group_name": "Lamand\u00e9",
+      "group_name": "Lamandé",
       "company_name": null,
       "contact_first_name": "Matthew",
       "contact_last_name": "Shoulders",
@@ -110,7 +112,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "IM",
+      "alteration_type": "Isogenic modification",
       "isogenic_purpose": null,
       "summary": "Heterozygous COL2A1 c.2155C>T  (p.Arg719Cys) variant was introduced to COL2A1 exon 33 to generate a model of Osteoarthritis with Mild Chondrodysplasia. A synonymous change was also introduced.",
       "delivery_method": "CRISPR/Cas9",
@@ -695,7 +697,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -717,10 +719,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -742,10 +745,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -785,7 +789,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

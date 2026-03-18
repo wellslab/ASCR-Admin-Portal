@@ -29,7 +29,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Melbourne",
@@ -87,8 +89,8 @@
     {
       "doi": "10.1016/j.scr.2021.102373",
       "pmid": "34088002",
-      "first_author": "Hern\u00e1ndez D",
-      "last_author": "P\u00e9bay A",
+      "first_author": "Hernández D",
+      "last_author": "Pébay A",
       "journal": "Stem cell research",
       "title": "Generation of a gene-corrected human isogenic iPSC line from an Alzheimer's disease iPSC line carrying the London mutation in APP (V717I)",
       "year": "2021"

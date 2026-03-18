@@ -26,7 +26,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": "WAe009-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Monash Institute of Pharmaceutical Sciences",
@@ -112,7 +114,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "GKI",
+      "alteration_type": "Gene Knock-in",
       "isogenic_purpose": null,
       "summary": "This line is engineered to include a genetic reporter of  CX3CR1 expression which results in expression of tdTomato and nanoluciferase in series with CX3CR1 expression.  The construct also includes a neomycin resistance cassette flanked by FRT sites.  One allele of the CX3CR1 gene contains the following construct targeted to the stop codon:  IRES-tdTomato-T2A-Nanoluc-pA-FRT-neo-FRT.  ",
       "delivery_method": null,

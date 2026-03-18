@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": "UTSWi002-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Wollongong",
@@ -81,7 +83,7 @@
   "publications": [],
   "genomic_alteration": [
     {
-      "alteration_type": "TE",
+      "alteration_type": "Transgene Expression",
       "isogenic_purpose": null,
       "summary": "This line expresses Neurogenin 2 under a doxycycline inducible promoter. The line also contains a floxed Blasticidin resistance/nuclear mApple selection cassette.",
       "delivery_method": "crispr",

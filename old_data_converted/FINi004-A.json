@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "The Florey Institute of Neuroscience and Mental Health",

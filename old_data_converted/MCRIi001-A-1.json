@@ -35,7 +35,9 @@
       "Heterozygous: unspecified_reference_COL1A1:c.3969_3970insT"
     ],
     "subclone_of": "MCRIi001-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -238,7 +240,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "GKI",
+      "alteration_type": "Gene Knock-in",
       "isogenic_purpose": null,
       "summary": "A group of usually autosomal dominant inherited disorders characterized by defective synthesis of collagen type I resulting in defective collagen formation. It is characterized by brittle and easily fractured bones.",
       "delivery_method": "crispr",
@@ -267,7 +269,7 @@
       }
     },
     {
-      "alteration_type": "IM",
+      "alteration_type": "Isogenic modification",
       "isogenic_purpose": null,
       "summary": "Introduction of heterozygous COL1A1:c.3969_3970insT variant in exon 49 leading to a frameshift and insertion of a premature stop codon. Synonymous changes were also introduced.",
       "delivery_method": "CRISPR/Cas9",
@@ -525,7 +527,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -547,10 +549,11 @@
             "method_name": "Flow cytometry",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -590,10 +593,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -633,7 +637,8 @@
             "method_name": "Flow cytometry",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

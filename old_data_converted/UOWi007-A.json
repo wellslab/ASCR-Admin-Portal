@@ -34,7 +34,9 @@
       "Heterozygous: unspecified_reference_SOD1:p.Glu101Gly"
     ],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Wollongong",
@@ -306,7 +308,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "UN",
+      "s_card_diff_protocol": "Unknown",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

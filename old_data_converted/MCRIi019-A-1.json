@@ -35,7 +35,9 @@
       "Homozygous deletion of miR-26b stem-loop"
     ],
     "subclone_of": "MCRIi019-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -109,7 +111,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "GKO",
+      "alteration_type": "Gene Knock-out",
       "isogenic_purpose": null,
       "summary": "Homozygous deletion of MIR26B stem-loop region removing the sequences containing miR-26b-5p and miR-26b-3p in both alleles (allele 1: 121 bp deletion; allele 2: 132 bp deletion).",
       "delivery_method": "CRISPR/Cas9",
@@ -320,7 +322,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -342,10 +344,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -421,10 +424,11 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -464,7 +468,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

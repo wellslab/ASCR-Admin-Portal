@@ -29,7 +29,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": "MCRIi010-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",

@@ -33,7 +33,9 @@
       "NM_001232.4:c.539A=((NP_001223.2):p.(Lys180=))"
     ],
     "subclone_of": "CIAUi003-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Centenary Institute of Cancer Medicine and Cell Biology",
@@ -119,7 +121,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "VA",
+      "alteration_type": "Variant",
       "isogenic_purpose": null,
       "summary": "Any catecholaminergic polymorphic ventricular tachycardia in which the cause of the disease is a mutation in the CASQ2 gene.",
       "delivery_method": null,
@@ -160,7 +162,7 @@
       }
     },
     {
-      "alteration_type": "IM",
+      "alteration_type": "Isogenic modification",
       "isogenic_purpose": null,
       "summary": "Correction of heterozygous NM_001232.4(CASQ2):c.539A>G((NP_001223.2):p.(Lys180Arg)) variant present in the parental line (CIAUi003-A). Clones were characterised to confirm the absence of plasmid integration, the donor variant and off-target activity of Cas9. ",
       "delivery_method": "CRISPR/Cas9",
@@ -473,7 +475,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -513,10 +515,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -556,10 +559,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -599,7 +603,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

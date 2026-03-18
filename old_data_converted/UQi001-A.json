@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "The University of Queensland",
@@ -97,7 +99,7 @@
       "first_author": "Tracey TJ",
       "last_author": "Ngo ST",
       "journal": "Stem cell research",
-      "title": "Generation of a human induced pluripotent stem cell line (UQi001-A-1) edited with the CRISPR-Cas9 system to carry the heterozygous TARDBP c.1144G\u00a0>\u00a0A (p.A382T) missense mutation",
+      "title": "Generation of a human induced pluripotent stem cell line (UQi001-A-1) edited with the CRISPR-Cas9 system to carry the heterozygous TARDBP c.1144G > A (p.A382T) missense mutation",
       "year": "2023"
     }
   ],
@@ -213,7 +215,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "False",
         "marker_analysis": [
@@ -235,10 +237,11 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "False",
         "marker_analysis": [
@@ -260,10 +263,11 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "False",
         "marker_analysis": [
@@ -285,7 +289,8 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

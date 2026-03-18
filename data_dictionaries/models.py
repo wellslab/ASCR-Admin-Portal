@@ -35,7 +35,7 @@ class General(BaseModel):
         "human induced pluripotent stem cell (hiPSC)",
     ]] = None
     frozen: Optional[bool] = None
-    available_third_parties: Optional[str] = None
+    available_third_parties: Optional[Literal["Yes", "No", "Unknown"]] = None
     research_use: Optional[bool] = None
     clinical_use: Optional[bool] = None
     commercial_use: Optional[bool] = None
@@ -95,8 +95,8 @@ class Donor(BaseModel):
     diseases: List[Disease] = Field(default_factory=list)
     disease_phenotypes: List[str] = Field(default_factory=list)
     non_disease_phenotypes: List[str] = Field(default_factory=list)
-    dcv_carrier: Optional[str] = None
-    dcv_affected: Optional[str] = None
+    dcv_carrier: Optional[Literal["Yes", "No", "Unknown"]] = None
+    dcv_affected: Optional[Literal["Yes", "No", "Unknown"]] = None
     variants: List[Variation] = Field(default_factory=list)
     xrefs: List[Xref] = Field(default_factory=list)
 
@@ -146,7 +146,7 @@ class DerivationIpsc(BaseModel):
     i_reprogramming_vector_type: Optional[Literal[
         "Not integrated", "Integrated", "None", "Vector free",
     ]] = None
-    clonal_line: Optional[str] = None
+    clonal_line: Optional[Literal["Yes", "No", "Not specified"]] = None
     selection_criteria_for_clones: Optional[str] = Field(default=None, max_length=500)
     integrated_vector: Optional[IntegratedVector] = None
     non_integrated_vector: Optional[NonIntegratedVector] = None
@@ -162,7 +162,7 @@ class NonIntegratedVector(BaseModel):
 
 
 class IntegratedVector(BaseModel):
-    int_rep_vector_type: Optional[str] = None  # renamed from int_rep_vector; no direct enum match
+    int_rep_vector_type: Optional[Literal["Virus", "Plasmid", "Transposon", "Other"]] = None
     int_rep_virus_type: Optional[Literal["Adenovirus", "Retrovirus", "Lentivirus", "Other"]] = None
     int_rep_virus_other: Optional[str] = Field(default=None, max_length=100)
     int_rep_trans_type: Optional[Literal["PiggyBac", "Sleeping Beauty", "Other"]] = None
@@ -241,7 +241,7 @@ class DerivationEsc(BaseModel):
     derived_under_gmp: Optional[bool] = None
     derived_under_xeno_free: Optional[bool] = None
     available_as_clinical_grade: Optional[bool] = None
-    clonal_line: Optional[str] = None
+    clonal_line: Optional[Literal["Yes", "No", "Not specified"]] = None
     selection_criteria_for_clones: Optional[str] = None
 
 
@@ -287,15 +287,15 @@ class Publication(BaseModel):
 
 
 class GenomicAlteration(BaseModel):
-    alteration_type: Optional[str] = None  # renamed from mutation_type; enum may be added later
-    isogenic_purpose: Optional[str] = None
+    alteration_type: Optional[Literal["Variant", "Transgene Expression", "Gene Knock-out", "Gene Knock-in", "Isogenic modification"]] = None
+    isogenic_purpose: Optional[Literal["Introduce predicted disease-associated variant", "Alter existing predicted disease-associated-variant"]] = None
     summary: Optional[str] = None
     delivery_method: Optional[str] = Field(default=None, max_length=500)
     variation_details: Optional[Variation] = None
 
 
 class Variation(BaseModel):
-    zygosity: Optional[str] = None
+    zygosity: Optional[Literal["Homozygous", "Heterozygous", "Hemizygous", "Nullizygous", "Unspecified"]] = None
     gene: Optional[Loci] = None
     cytoband: Optional[str] = Field(default=None, max_length=100)
     genotype: Optional[str] = Field(default=None, max_length=500)
@@ -412,12 +412,12 @@ class MarkerAnalysis(BaseModel):
 
 
 class DiffScorecard(BaseModel):
-    s_card_diff_protocol: Optional[str] = None
+    s_card_diff_protocol: Optional[Literal["In vivo teratoma", "In vitro spontaneous differentiation", "In vitro directed differentiation", "Other", "Unknown"]] = None
     diff_scorecard: Optional[HpscScorecard] = None
 
 
 class DiffGermlayerAnalysis(BaseModel):
-    gl_diff_protocol: Optional[str] = None
+    gl_diff_protocol: Optional[Literal["In vivo teratoma", "In vitro spontaneous differentiation", "In vitro directed differentiation", "Other", "Unknown"]] = None
     germ_layer: Optional[Literal["Endoderm", "Ectoderm", "Mesoderm", "Trophectoderm"]] = None
     show_potency: Optional[bool] = None
     marker_analysis: List[MarkerAnalysis] = Field(default_factory=list)
@@ -425,7 +425,7 @@ class DiffGermlayerAnalysis(BaseModel):
 
 
 class DiffOtherAnalysis(BaseModel):
-    do_diff_protocol: Optional[str] = None
+    do_diff_protocol: Optional[Literal["In vivo teratoma", "In vitro spontaneous differentiation", "In vitro directed differentiation", "Other", "Unknown"]] = None
     end_cell_type_name: Optional[str] = None
     end_cell_type_ontology_id: Optional[str] = None
     marker_analysis: List[MarkerAnalysis] = Field(default_factory=list)

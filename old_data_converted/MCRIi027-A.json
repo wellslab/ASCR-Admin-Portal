@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -299,7 +301,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "False",
         "marker_analysis": [
@@ -321,10 +323,11 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "False",
         "marker_analysis": [
@@ -346,10 +349,11 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "False",
         "marker_analysis": [
@@ -371,7 +375,8 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

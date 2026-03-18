@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Monash Institute of Cognitive and Clinical Neurosciences",
@@ -392,7 +394,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "UN",
+      "s_card_diff_protocol": "Unknown",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

@@ -35,7 +35,9 @@
       "NM_171998.3:c.82_86del(p.Phe28Argfs*9)"
     ],
     "subclone_of": "SCSe001-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -115,7 +117,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "GKO",
+      "alteration_type": "Gene Knock-out",
       "isogenic_purpose": null,
       "summary": "A 5 base pair deletion was introduced to exon 1 of RAB39B to model Parkinson Disease (NM_171998.3:c.82_86del (p.Phe28ArgfsTer9)).",
       "delivery_method": "CRISPR/Cas9",
@@ -354,7 +356,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -376,10 +378,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -401,10 +404,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -426,7 +430,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

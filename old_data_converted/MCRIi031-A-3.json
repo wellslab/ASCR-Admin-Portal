@@ -34,7 +34,9 @@
       "Homozygous: unspecified_reference_WT1:deletion of exons 2 to 10"
     ],
     "subclone_of": "MCRIi031-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -92,7 +94,7 @@
   "publications": [],
   "genomic_alteration": [
     {
-      "alteration_type": "GKO",
+      "alteration_type": "Gene Knock-out",
       "isogenic_purpose": null,
       "summary": "This line contains homozygous deletion of WT1 exons 2 through 10. Loss of WT1 protein expression was observed in gonadal-like cells differentiated from MCRIi031-A-3 cells.",
       "delivery_method": "CRISPR/Cas9",
@@ -291,7 +293,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -313,10 +315,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -338,10 +341,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -363,7 +367,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

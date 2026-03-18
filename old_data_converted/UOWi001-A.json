@@ -6,7 +6,7 @@
       "RB 9-8"
     ],
     "cell_line_alt_name": [
-      "iPSC RB 9\u20138",
+      "iPSC RB 9–8",
       "RB 9-8",
       "RB9-8",
       "HC3"
@@ -33,7 +33,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Wollongong",
@@ -107,7 +109,7 @@
     {
       "doi": "10.3390/cells9092018",
       "pmid": "32887382",
-      "first_author": "Mu\u00f1oz SS",
+      "first_author": "Muñoz SS",
       "last_author": "Ooi L",
       "journal": "Cells",
       "title": "A Simple Differentiation Protocol for Generation of Induced Pluripotent Stem Cell-Derived Basal Forebrain-Like Cholinergic Neurons for Alzheimer's Disease and Frontotemporal Dementia Disease Modeling",
@@ -621,7 +623,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "UN",
+      "s_card_diff_protocol": "Unknown",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

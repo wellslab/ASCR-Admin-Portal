@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": "UOWi003-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Wollongong",

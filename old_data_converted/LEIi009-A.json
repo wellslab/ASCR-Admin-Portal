@@ -35,7 +35,9 @@
       "Heterozygous: NM_015629.3:c.1205C>A(p.Ser402Ter)"
     ],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Lions Eye Institute",
@@ -58,7 +60,7 @@
       "contact_first_name": "Fred",
       "contact_last_name": "Chen",
       "contact_initials": null,
-      "email": "\u00a0fredchen@lei.org.au",
+      "email": " fredchen@lei.org.au",
       "phone_number": null,
       "contact_orcid": null
     }
@@ -629,7 +631,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -669,10 +671,11 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -712,7 +715,8 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

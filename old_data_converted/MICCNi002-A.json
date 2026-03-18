@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Monash Institute of Cognitive and Clinical Neurosciences",
@@ -119,7 +121,7 @@
       "first_author": "Namipashaki A",
       "last_author": "Hawi Z",
       "journal": "Stem cell reports",
-      "title": "Integration of xeno-free single-cell cloning in CRISPR-mediated DNA editing of\u00a0human iPSCs improves homogeneity and methodological efficiency of\u00a0cellular disease modeling",
+      "title": "Integration of xeno-free single-cell cloning in CRISPR-mediated DNA editing of human iPSCs improves homogeneity and methodological efficiency of cellular disease modeling",
       "year": "2023"
     }
   ],
@@ -401,7 +403,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "UN",
+      "s_card_diff_protocol": "Unknown",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

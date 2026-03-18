@@ -29,7 +29,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Victor Chang Cardiac Research Institute",
@@ -312,7 +314,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "IVD",
+      "s_card_diff_protocol": "In vitro directed differentiation",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

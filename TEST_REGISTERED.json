@@ -1,0 +1,558 @@
+{
+  "filename": "TEST_REGISTERED",
+  "location": "registered",
+  "version": 0,
+  "curation_method": null,
+  "last_modified": "2026-03-17T03:30:35.423527",
+  "data": {
+    "general": {
+      "aushpscreg_name": "test",
+      "hpscreg_name": "TEST_REGISTERED",
+      "hpscreg_synonym": [
+        "GENIE 1"
+      ],
+      "cell_line_alt_name": [
+        "GENIE 1"
+      ],
+      "curation_status": "Flagged for further review",
+      "certificate_of_pluripotency_characterisation": false,
+      "description": null,
+      "registered_with_hpscreg": "Not Registered",
+      "publish": false,
+      "embargo_date": null,
+      "cell_type": "human induced pluripotent stem cell (hiPSC)",
+      "frozen": true,
+      "available_third_parties": null,
+      "research_use": true,
+      "clinical_use": false,
+      "commercial_use": false,
+      "availability_notes": null,
+      "status": "Characterised",
+      "biopsy_location_name": null,
+      "biopsy_location_ontology_id": null,
+      "genotype_locus": [],
+      "genotype": [
+        "Patient Control"
+      ],
+      "associated_polymorphism": [],
+      "subclone_of": null,
+      "parent_of": [],
+      "igsn": null,
+      "modified": null
+    },
+    "generator": {
+      "institute": "Australian Institute for Bioengineering and Nanotechnology",
+      "institute_ror": null,
+      "group_name": "Australian Institute for Bioengineering and Nanotechnology",
+      "company_name": null,
+      "contact_first_name": null,
+      "contact_last_name": null,
+      "contact_initials": null,
+      "email": null,
+      "phone_number": null,
+      "contact_orcid": null
+    },
+    "owner": [
+      {
+        "institute": "Australian Institute for Bioengineering and Nanotechnology",
+        "institute_ror": null,
+        "group_name": "Wolvetang",
+        "company_name": null,
+        "contact_first_name": "Ernst",
+        "contact_last_name": "Wolvetang",
+        "contact_initials": null,
+        "email": " e.wolvetang@uq.edu.au",
+        "phone_number": null,
+        "contact_orcid": null
+      }
+    ],
+    "distributor": [],
+    "ethics": [
+      {
+        "submitted_ethics_clearance": "Yes",
+        "ethics_number": "2019002273",
+        "approval_date": "2019-01-01",
+        "institutional_HREC": "The University of Queensland Human Ethics Research Office",
+        "consent_form": null,
+        "consent_for_specific_research": false,
+        "consent_for_future_research": false,
+        "consent_for_global_distribution": false
+      }
+    ],
+    "xrefs": [
+      {
+        "xref_id": null,
+        "db_name": "Cellosaurus",
+        "db_url": "https://www.cellosaurus.org/",
+        "xref_url": "https://www.cellosaurus.org/CVCL_A0LY"
+      },
+      {
+        "xref_id": null,
+        "db_name": "Wikidata",
+        "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+        "xref_url": "https://www.wikidata.org/wiki/Q108819837"
+      },
+      {
+        "xref_id": null,
+        "db_name": "hPSCreg",
+        "db_url": "https://hpscreg.eu/",
+        "xref_url": "https://hpscreg.eu/cell-line/AIBNi001-A"
+      }
+    ],
+    "publications": [
+      {
+        "doi": "10.1016/j.scr.2021.102564",
+        "pmid": "34649201",
+        "first_author": "Hunter ZL",
+        "last_author": "Vadlamudi L",
+        "journal": "Stem cell research",
+        "title": "Generation of induced pluripotent stem cell lines from peripheral blood mononuclear cells of three drug resistant and three drug responsive epilepsy patients",
+        "year": 2021
+      }
+    ],
+    "genomic_alteration": [],
+    "genomic_characterisation": [
+      {
+        "passage_number": null,
+        "karyotyped": "YES",
+        "karyotype": "46,XX",
+        "karyotype_method": "G-banding",
+        "karyotype_method_other": null,
+        "summary": "Karyotyping occurred from passage 9 onwards at a resolution of 300bphs. Fifteen metaphase spreads were analysed.",
+        "karyogram": null,
+        "data_url": null,
+        "data_file": null
+      }
+    ],
+    "additional_genomic_characterisation": {
+      "hla_typing_flag": false,
+      "hla_results": [],
+      "str_analysis_flag": true,
+      "str_results": [],
+      "fingerprinting_analysis_flag": false,
+      "fingerprinting_analysis_results": [],
+      "genome_wide_or_functional_data": false,
+      "summary": null
+    },
+    "screening": {
+      "performed": true,
+      "hiv1": "Negative",
+      "hiv2": "Negative",
+      "hep_b": "Negative",
+      "hep_c": "Negative",
+      "mycoplasma": "Negative",
+      "other": null,
+      "other_result": "Not Done"
+    },
+    "derivation_ipsc": {
+      "passage_number": null,
+      "i_source_cell_type_name": "peripheral blood mononuclear cell",
+      "i_source_cell_type_ontology": "CL:2000001",
+      "i_source_cell_type_additional_info": null,
+      "i_source_cell_origin_name": "blood",
+      "i_source_cell_origin_ontology": "UBERON:0000178",
+      "derivation_year": "2020-01-01",
+      "reason_no_derivation_year": null,
+      "derived_under_xeno_free_conditions": false,
+      "derived_under_gmp": false,
+      "available_as_clinical_grade": false,
+      "i_reprogramming_vector_type": "Not integrated",
+      "clonal_line": null,
+      "selection_criteria_for_clones": null,
+      "integrated_vector": {
+        "int_rep_vector_type": null,
+        "int_rep_virus_type": null,
+        "int_rep_virus_other": null,
+        "int_rep_trans_type": null,
+        "int_rep_trans_type_other": null,
+        "int_rep_vector_other": null,
+        "reprogramming_kit": {
+          "name": null,
+          "supplier": null,
+          "cat_no": null,
+          "file": null,
+          "notes": null,
+          "gene": []
+        },
+        "vector_details": [],
+        "excisable": null,
+        "silenced": null,
+        "vector_detection": {
+          "detected_reprogramming_vector": null,
+          "method_used_immune_marker_staining": null,
+          "method_used_pcr": null,
+          "method_used_rtpcr": null,
+          "method_used_seq": null,
+          "detected_vector_notes": null,
+          "reprogramming_expression_silence_file": null
+        }
+      },
+      "non_integrated_vector": {
+        "non_int_vector_type": "Sendai Virus",
+        "reprogramming_kit": {
+          "name": null,
+          "supplier": null,
+          "cat_no": null,
+          "file": null,
+          "notes": null,
+          "gene": []
+        },
+        "vector_details": [
+          {
+            "name": "[kit] CytoTune-iPS 2.0 Sendai reprogramming kit",
+            "supplier": null,
+            "cat_no": null,
+            "file": null,
+            "notes": null,
+            "gene": []
+          }
+        ],
+        "non_int_other_vector": null,
+        "vector_detection": {
+          "detected_reprogramming_vector": "No",
+          "method_used_immune_marker_staining": false,
+          "method_used_pcr": false,
+          "method_used_rtpcr": false,
+          "method_used_seq": false,
+          "detected_vector_notes": "Loss of viral vector and transgene expression was measured by PCR.",
+          "reprogramming_expression_silence_file": null
+        }
+      },
+      "vector_free_reprogram": {
+        "genes": [],
+        "kit_details": {
+          "name": null,
+          "supplier": null,
+          "cat_no": null,
+          "file": null,
+          "notes": null,
+          "gene": []
+        },
+        "small_molecule_flag": null,
+        "small_molecule_reprogramming": []
+      }
+    },
+    "derivation_esc": null,
+    "culture_conditions": {
+      "co2_concentration": 0.05,
+      "o2_concentration": null,
+      "rho_kinase_used": false,
+      "rho_kinase_used_notes": null,
+      "passage_method": "Enzyme-free cell dissociation",
+      "other_passage_method": null,
+      "feeder_cells_flag": null,
+      "feeder_cell_name": null,
+      "feeder_cell_ontology_id": null,
+      "culture_medium_items": [
+        {
+          "name": "mTeSR Plus",
+          "amount": null,
+          "unit": null,
+          "company": "STEMCELL Technologies",
+          "type": "Base Medium"
+        },
+        {
+          "name": "Matrigel (hESC Qualified)",
+          "amount": null,
+          "unit": null,
+          "company": "Corning",
+          "type": "Base Coat"
+        }
+      ]
+    },
+    "undiff_characterisation": {
+      "epi_pluri_test": false,
+      "epi_pluri_score": null,
+      "epi_pluri_mcpg": false,
+      "epi_pluri_oct4": false,
+      "pluri_test": false,
+      "pluri_test_score": null,
+      "pluri_novelty_score": null,
+      "pluri_test_microarray_url": null,
+      "morphology_file": null,
+      "other": "Immunostaining",
+      "undiff_scorecard": {
+        "self_renewal": null,
+        "endoderm": null,
+        "mesoderm": null,
+        "ectoderm": null,
+        "scorecard_file": null
+      },
+      "marker_analysis": [
+        {
+          "marker_name": {
+            "name": "NANOG",
+            "chromosome": null,
+            "start": null,
+            "end": null,
+            "group": null,
+            "ncbi_id": null,
+            "ncbi_url": null,
+            "ebi_id": null,
+            "ebi_url": null,
+            "ensg_id": null,
+            "ensg_url": null
+          },
+          "result_file": null,
+          "method_name": "Immunostaining",
+          "free_text": null
+        },
+        {
+          "marker_name": {
+            "name": "POU5F1 (OCT-4)",
+            "chromosome": null,
+            "start": null,
+            "end": null,
+            "group": null,
+            "ncbi_id": null,
+            "ncbi_url": null,
+            "ebi_id": null,
+            "ebi_url": null,
+            "ensg_id": null,
+            "ensg_url": null
+          },
+          "result_file": null,
+          "method_name": "Immunostaining",
+          "free_text": null
+        },
+        {
+          "marker_name": {
+            "name": "SOX2",
+            "chromosome": null,
+            "start": null,
+            "end": null,
+            "group": null,
+            "ncbi_id": null,
+            "ncbi_url": null,
+            "ebi_id": null,
+            "ebi_url": null,
+            "ensg_id": null,
+            "ensg_url": null
+          },
+          "result_file": null,
+          "method_name": "Immunostaining",
+          "free_text": null
+        },
+        {
+          "marker_name": {
+            "name": "TRA-1-60",
+            "chromosome": null,
+            "start": null,
+            "end": null,
+            "group": null,
+            "ncbi_id": null,
+            "ncbi_url": null,
+            "ebi_id": null,
+            "ebi_url": null,
+            "ensg_id": null,
+            "ensg_url": null
+          },
+          "result_file": null,
+          "method_name": "Immunostaining",
+          "free_text": null
+        },
+        {
+          "marker_name": {
+            "name": "TRA-1-81",
+            "chromosome": null,
+            "start": null,
+            "end": null,
+            "group": null,
+            "ncbi_id": null,
+            "ncbi_url": null,
+            "ebi_id": null,
+            "ebi_url": null,
+            "ensg_id": null,
+            "ensg_url": null
+          },
+          "result_file": null,
+          "method_name": "Immunostaining",
+          "free_text": null
+        }
+      ]
+    },
+    "differentiated_cell_analysis": {
+      "scorecard_results": {
+        "s_card_diff_protocol": null,
+        "diff_scorecard": {
+          "self_renewal": null,
+          "endoderm": null,
+          "mesoderm": null,
+          "ectoderm": null,
+          "scorecard_file": null
+        }
+      },
+      "diff_germlayer": [
+        {
+          "gl_diff_protocol": "In vitro directed differentiation",
+          "germ_layer": "Endoderm",
+          "show_potency": true,
+          "marker_analysis": [
+            {
+              "marker_name": {
+                "name": "FOXA2",
+                "chromosome": null,
+                "start": null,
+                "end": null,
+                "group": null,
+                "ncbi_id": null,
+                "ncbi_url": null,
+                "ebi_id": null,
+                "ebi_url": null,
+                "ensg_id": null,
+                "ensg_url": null
+              },
+              "result_file": null,
+              "method_name": "RT-PCR",
+              "free_text": null
+            },
+            {
+              "marker_name": {
+                "name": "SOX17",
+                "chromosome": null,
+                "start": null,
+                "end": null,
+                "group": null,
+                "ncbi_id": null,
+                "ncbi_url": null,
+                "ebi_id": null,
+                "ebi_url": null,
+                "ensg_id": null,
+                "ensg_url": null
+              },
+              "result_file": null,
+              "method_name": "RT-PCR",
+              "free_text": null
+            }
+          ],
+          "free_text": null
+        },
+        {
+          "gl_diff_protocol": "In vitro directed differentiation",
+          "germ_layer": "Mesoderm",
+          "show_potency": true,
+          "marker_analysis": [
+            {
+              "marker_name": {
+                "name": "HAND1",
+                "chromosome": null,
+                "start": null,
+                "end": null,
+                "group": null,
+                "ncbi_id": null,
+                "ncbi_url": null,
+                "ebi_id": null,
+                "ebi_url": null,
+                "ensg_id": null,
+                "ensg_url": null
+              },
+              "result_file": null,
+              "method_name": "RT-PCR",
+              "free_text": null
+            },
+            {
+              "marker_name": {
+                "name": "RUNX1",
+                "chromosome": null,
+                "start": null,
+                "end": null,
+                "group": null,
+                "ncbi_id": null,
+                "ncbi_url": null,
+                "ebi_id": null,
+                "ebi_url": null,
+                "ensg_id": null,
+                "ensg_url": null
+              },
+              "result_file": null,
+              "method_name": "RT-PCR",
+              "free_text": null
+            }
+          ],
+          "free_text": null
+        },
+        {
+          "gl_diff_protocol": "In vitro directed differentiation",
+          "germ_layer": "Ectoderm",
+          "show_potency": true,
+          "marker_analysis": [
+            {
+              "marker_name": {
+                "name": "NR2F2",
+                "chromosome": null,
+                "start": null,
+                "end": null,
+                "group": null,
+                "ncbi_id": null,
+                "ncbi_url": null,
+                "ebi_id": null,
+                "ebi_url": null,
+                "ensg_id": null,
+                "ensg_url": null
+              },
+              "result_file": null,
+              "method_name": "RT-PCR",
+              "free_text": null
+            },
+            {
+              "marker_name": {
+                "name": "PAX6",
+                "chromosome": null,
+                "start": null,
+                "end": null,
+                "group": null,
+                "ncbi_id": null,
+                "ncbi_url": null,
+                "ebi_id": null,
+                "ebi_url": null,
+                "ensg_id": null,
+                "ensg_url": null
+              },
+              "result_file": null,
+              "method_name": "RT-PCR",
+              "free_text": null
+            }
+          ],
+          "free_text": null
+        }
+      ],
+      "diff_other": []
+    },
+    "donor": {
+      "age": "35-39",
+      "sex": "Female",
+      "genomic_characterisation": [],
+      "diseases": [
+        {
+          "name": "epilepsy",
+          "free_text": "nan",
+          "omim_url": "nan",
+          "omim_id": "nan",
+          "icd11_url": "https://icd.who.int/browse/2024-01/mms/en#1397288146",
+          "icd11_id": "1397288146.0",
+          "ontology_id": "MONDO:0005027"
+        }
+      ],
+      "disease_phenotypes": [],
+      "non_disease_phenotypes": [],
+      "dcv_carrier": null,
+      "dcv_affected": null,
+      "variants": [],
+      "xrefs": []
+    },
+    "external_cell_line_source": {
+      "name": null,
+      "provider": null,
+      "provider_cat_num": null,
+      "provider_cat_url": null,
+      "lot_number": null,
+      "tissue_of_origin_name": null,
+      "tissue_ontology": null,
+      "cell_type_name": null,
+      "cell_type_ontology": null,
+      "variants": [],
+      "xrefs": [],
+      "diseases": []
+    }
+  }
+}

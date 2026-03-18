@@ -33,7 +33,9 @@
       "[1256G>T]"
     ],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Lions Eye Institute",
@@ -56,7 +58,7 @@
       "contact_first_name": "Fred",
       "contact_last_name": "Chen",
       "contact_initials": null,
-      "email": "\u00a0fredchen@lei.org.au",
+      "email": " fredchen@lei.org.au",
       "phone_number": null,
       "contact_orcid": null
     }
@@ -65,7 +67,7 @@
   "ethics": [
     {
       "submitted_ethics_clearance": "Yes",
-      "ethics_number": "2001\u2013053",
+      "ethics_number": "2001–053",
       "approval_date": "1900-01-01",
       "institutional_HREC": "Sir Charles Gairdner Hospital Human Research Ethics Committee",
       "consent_form": null,
@@ -101,7 +103,7 @@
       "first_author": "Zaw K",
       "last_author": "McLenachan S",
       "journal": "Stem cell research",
-      "title": "Generation of three induced pluripotent stem cell lines from a patient with Usher syndrome caused by biallelic c.949C\u00a0>\u00a0A and c.1256G\u00a0>\u00a0T mutations in the USH2A gene",
+      "title": "Generation of three induced pluripotent stem cell lines from a patient with Usher syndrome caused by biallelic c.949C > A and c.1256G > T mutations in the USH2A gene",
       "year": "2020"
     }
   ],
@@ -645,7 +647,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -685,10 +687,11 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -728,10 +731,11 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -771,7 +775,8 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Genea",
@@ -207,19 +209,22 @@
         "gl_diff_protocol": null,
         "germ_layer": "Endoderm",
         "show_potency": "False",
-        "marker_analysis": []
+        "marker_analysis": [],
+        "free_text": null
       },
       {
         "gl_diff_protocol": null,
         "germ_layer": "Mesoderm",
         "show_potency": "False",
-        "marker_analysis": []
+        "marker_analysis": [],
+        "free_text": null
       },
       {
         "gl_diff_protocol": null,
         "germ_layer": "Ectoderm",
         "show_potency": "False",
-        "marker_analysis": []
+        "marker_analysis": [],
+        "free_text": null
       }
     ],
     "diff_other": []

@@ -35,7 +35,9 @@
       "unspecified_reference_PSEN1:p.Ser290="
     ],
     "subclone_of": "UOWi009-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Wollongong",
@@ -91,13 +93,13 @@
       "first_author": "Simon Maksour",
       "last_author": "Lezanne Ooi",
       "journal": "Frontiers in Cellular Neuroscience",
-      "title": "Alzheimer\u2019s disease induced neurons bearing PSEN1 mutations exhibit reduced excitability.",
+      "title": "Alzheimer’s disease induced neurons bearing PSEN1 mutations exhibit reduced excitability.",
       "year": "2024"
     }
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "IM",
+      "alteration_type": "Isogenic modification",
       "isogenic_purpose": null,
       "summary": "Correction of unspecified_reference_PSEN1:p.Ser290Cys variant present in the parental cell.",
       "delivery_method": "CRISPR/Cas9",
@@ -267,7 +269,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "UN",
+      "s_card_diff_protocol": "Unknown",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

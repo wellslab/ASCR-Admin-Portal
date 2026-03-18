@@ -32,7 +32,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Menzies Institute for Medical Research",
@@ -297,7 +299,8 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
         "gl_diff_protocol": null,
@@ -322,7 +325,8 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
         "gl_diff_protocol": null,
@@ -347,7 +351,8 @@
             "method_name": null,
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

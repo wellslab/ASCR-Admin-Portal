@@ -6,7 +6,7 @@
       "1502-COL2A1p.G1170S"
     ],
     "cell_line_alt_name": [
-      "COL2A1\u00a0p.G1170S",
+      "COL2A1 p.G1170S",
       "1502-COL2A1p.G1170S",
       "1502.3 COL2A1 p.G1170S"
     ],
@@ -36,7 +36,9 @@
       "Heterozygous: unspecified_reference_COL2A1:c.3508GGT>TCA(p.Gly1170Ser)"
     ],
     "subclone_of": "MCRIi019-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -54,7 +56,7 @@
     {
       "institute": "Murdoch Children's Research Institute",
       "institute_ror": null,
-      "group_name": "Lamand\u00e9",
+      "group_name": "Lamandé",
       "company_name": null,
       "contact_first_name": "Matthew",
       "contact_last_name": "Shoulders",
@@ -102,7 +104,7 @@
       "doi": "10.1016/j.scr.2020.101962",
       "pmid": "33002832",
       "first_author": "Kung LHW",
-      "last_author": "Lamand\u00e9 SR",
+      "last_author": "Lamandé SR",
       "journal": "Stem cell research",
       "title": "CRISPR/Cas9 editing to generate a heterozygous COL2A1 p.G1170S human chondrodysplasia iPSC line, MCRIi019-A-2, in a control iPSC line, MCRIi019-A",
       "year": "2020"
@@ -120,7 +122,7 @@
       "doi": "10.1016/j.scr.2021.102515",
       "pmid": "34543885",
       "first_author": "Lilianty J",
-      "last_author": "Lamand\u00e9 SR",
+      "last_author": "Lamandé SR",
       "journal": "Stem cell research",
       "title": "Generation of a heterozygous COL2A1 (p.G1113C) hypochondrogenesis mutation iPSC line, MCRIi019-A-7, using CRISPR/Cas9 gene editing",
       "year": "2021"
@@ -155,7 +157,7 @@
     {
       "doi": "10.1073/pnas.2211510120",
       "pmid": "37126720",
-      "first_author": "Lamand\u00e9 SR",
+      "first_author": "Lamandé SR",
       "last_author": "Bateman JF",
       "journal": "Proceedings of the National Academy of Sciences of the United States of America",
       "title": "Modeling human skeletal development using human pluripotent stem cells",
@@ -164,7 +166,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "IM",
+      "alteration_type": "Isogenic modification",
       "isogenic_purpose": null,
       "summary": "Heterozygous COL2A1 c.3508GGT>TCA (p.Gly1170Ser) variant was introduced to COL2A1 exon 50 to generate a model of Legg-Calve-Perthes Disease.",
       "delivery_method": "CRISPR/Cas9",
@@ -385,7 +387,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -407,10 +409,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -486,10 +489,11 @@
             "method_name": "RT-PCR",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVD",
+        "gl_diff_protocol": "In vitro directed differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -529,7 +533,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

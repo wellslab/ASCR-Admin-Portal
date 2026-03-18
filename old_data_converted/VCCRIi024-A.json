@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Victor Chang Cardiac Research Institute",
@@ -64,7 +66,7 @@
       "submitted_ethics_clearance": "Yes",
       "ethics_number": "HREC/16/SVH/338 SVH File 16/245",
       "approval_date": "1900-01-01",
-      "institutional_HREC": "St Vincent\u2019s Hospital Human Research Ethics Committee",
+      "institutional_HREC": "St Vincent’s Hospital Human Research Ethics Committee",
       "consent_form": null,
       "consent_for_specific_research": "False",
       "consent_for_future_research": "False",
@@ -295,7 +297,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "IVD",
+      "s_card_diff_protocol": "In vitro directed differentiation",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

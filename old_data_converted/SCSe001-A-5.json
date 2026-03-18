@@ -30,7 +30,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": "SCSe001-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Australian Institute for Bioengineering and Nanotechnology",

@@ -7,7 +7,7 @@
       "PB001-SOX9tdTom-TRPV4p.F273L"
     ],
     "cell_line_alt_name": [
-      "TRPV4\u00a0p.F273L",
+      "TRPV4 p.F273L",
       "MCRIi001-A-2-TRPV4 p.F273L",
       "PB001-SOX9tdTom-TRPV4p.F273L",
       "SOX9tdTom-TRPV4 p.F273L"
@@ -38,7 +38,9 @@
       "Heterozygous: unspecified_reference_TRPV4:c.819C>G(p.Phe273Leu)"
     ],
     "subclone_of": "MCRIi001-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -56,7 +58,7 @@
     {
       "institute": "Murdoch Children's Research Institute",
       "institute_ror": null,
-      "group_name": "Lamand\u00e9",
+      "group_name": "Lamandé",
       "company_name": null,
       "contact_first_name": "Matthew",
       "contact_last_name": "Shoulders",
@@ -113,7 +115,7 @@
       "doi": "10.1016/j.scr.2020.101942",
       "pmid": "32771907",
       "first_author": "Nur Patria Y",
-      "last_author": "Lamand\u00e9 SR",
+      "last_author": "Lamandé SR",
       "journal": "Stem cell research",
       "title": "CRISPR/Cas9 gene editing of a SOX9 reporter human iPSC line to produce two TRPV4 patient heterozygous missense mutant iPSC lines, MCRIi001-A-3 (TRPV4 p.F273L) and MCRIi001-A-4 (TRPV4 p.P799L)",
       "year": "2020"
@@ -130,7 +132,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "IM",
+      "alteration_type": "Isogenic modification",
       "isogenic_purpose": null,
       "summary": "Heterozygous c.819C>G (p.Phe273Leu) variant was introduced to TRPV4 to generate a model of Familial Digital Arthropathy Brachydactyly.  Synonymous changes were also introduced.",
       "delivery_method": "CRISPR/Cas9",
@@ -404,7 +406,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVT",
+        "gl_diff_protocol": "In vivo teratoma",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -426,10 +428,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVT",
+        "gl_diff_protocol": "In vivo teratoma",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -451,10 +454,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVT",
+        "gl_diff_protocol": "In vivo teratoma",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -476,7 +480,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

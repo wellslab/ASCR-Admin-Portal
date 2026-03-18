@@ -36,7 +36,9 @@
       "Heterozygous: unspecified_reference_PSEN1:p.Ala246Glu"
     ],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "University of Wollongong",
@@ -101,7 +103,7 @@
     {
       "doi": "10.1016/j.scr.2018.08.006",
       "pmid": "30138848",
-      "first_author": "Mu\u00f1oz SS",
+      "first_author": "Muñoz SS",
       "last_author": "Ooi L",
       "journal": "Stem cell research",
       "title": "Generation and characterization of human induced pluripotent stem cell lines from a familial Alzheimer's disease PSEN1 A246E patient and a non-demented family member bearing wild-type PSEN1",
@@ -110,7 +112,7 @@
     {
       "doi": "10.3390/cells9092018",
       "pmid": "32887382",
-      "first_author": "Mu\u00f1oz SS",
+      "first_author": "Muñoz SS",
       "last_author": "Ooi L",
       "journal": "Cells",
       "title": "A Simple Differentiation Protocol for Generation of Induced Pluripotent Stem Cell-Derived Basal Forebrain-Like Cholinergic Neurons for Alzheimer's Disease and Frontotemporal Dementia Disease Modeling",
@@ -290,7 +292,7 @@
   },
   "differentiated_cell_analysis": {
     "scorecard_results": {
-      "s_card_diff_protocol": "UN",
+      "s_card_diff_protocol": "Unknown",
       "diff_scorecard": {
         "self_renewal": "False",
         "endoderm": "True",

@@ -32,7 +32,9 @@
     ],
     "associated_polymorphism": [],
     "subclone_of": null,
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Prince of Wales Hospital",
@@ -330,7 +332,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVT",
+        "gl_diff_protocol": "In vivo teratoma",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -352,10 +354,11 @@
             "method_name": "nan",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVT",
+        "gl_diff_protocol": "In vivo teratoma",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -377,10 +380,11 @@
             "method_name": "nan",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVT",
+        "gl_diff_protocol": "In vivo teratoma",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -402,7 +406,8 @@
             "method_name": "nan",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []

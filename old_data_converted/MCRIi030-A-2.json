@@ -34,7 +34,9 @@
       "Compound heterozygous: NP_066285.1: deletion across NR2F2 exons 2 and 3, and: NP_066285.1:p.Gly160fs*5"
     ],
     "subclone_of": "MCRIi030-A",
-    "parent_of": []
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
   },
   "generator": {
     "institute": "Murdoch Children's Research Institute",
@@ -102,7 +104,7 @@
   ],
   "genomic_alteration": [
     {
-      "alteration_type": "GKO",
+      "alteration_type": "Gene Knock-out",
       "isogenic_purpose": null,
       "summary": "This line contains compound heterozygous deletions of NR2F2 exons 2-3 (allele 1) and a 7 bp region leading to a frameshift with premature stop codon (NP_066285.1:p.Gly160FS*5) (allele 2).  Absence of NR2F2 (COUP-TFII) protein expression was observed in MCRIi030-A-2 mesodermal embryoid bodies compared to those derived from unmodified (MCRIi030-A) cells and from cells containing only the exon 2/3 deletion (MCRIi030-A-1).",
       "delivery_method": "CRISPR/Cas9",
@@ -301,7 +303,7 @@
     "scorecard_results": null,
     "diff_germlayer": [
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Endoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -341,10 +343,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Mesoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -366,10 +369,11 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       },
       {
-        "gl_diff_protocol": "IVS",
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
         "germ_layer": "Ectoderm",
         "show_potency": "True",
         "marker_analysis": [
@@ -391,7 +395,8 @@
             "method_name": "Immunostaining",
             "free_text": null
           }
-        ]
+        ],
+        "free_text": null
       }
     ],
     "diff_other": []
