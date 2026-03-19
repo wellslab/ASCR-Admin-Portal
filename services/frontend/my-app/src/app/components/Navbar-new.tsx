@@ -116,7 +116,7 @@ const NavbarNew = () => {
   const handleSelectCellLine = (cellLine: CellLineItem) => {
     setShowDropdown(false);
     if (searchInputRef.current) searchInputRef.current.value = '';
-    router.push(`/tools/curation?cellLine=${encodeURIComponent(cellLine.name)}`);
+    router.push(`/tools/editor?cellLine=${encodeURIComponent(cellLine.name)}`);
   };
 
   return (

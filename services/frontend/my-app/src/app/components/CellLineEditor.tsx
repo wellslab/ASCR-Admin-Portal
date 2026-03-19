@@ -1079,7 +1079,16 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
             <Typography
               variant="caption"
               onClick={() => {
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const versionMatch = filename.match(/_v(\d+)(?:\.json)?$/);
+                const record = {
+                  filename,
+                  location,
+                  version: versionMatch ? parseInt(versionMatch[1]) : null,
+                  curation_method: curationMethod ?? null,
+                  last_modified: lastModified,
+                  data,
+                };
+                const blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
+import React, { Suspense, useState, useEffect, useRef, memo, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Box, Typography, TextField, InputAdornment, List, ListItemButton,
   ListItemText, Skeleton, Alert, Popover, Button, Checkbox, FormControlLabel, IconButton,
@@ -283,8 +284,9 @@ const parseValidationErrors = (errorData: any): string[] => {
   });
 };
 
-export default function EditorPage() {
+function EditorPageInner() {
   const theme = useTheme();
+  const searchParams = useSearchParams();
 
   // Cell line list state
   const [groups, setGroups] = useState<CellLineGroup[]>([]);
@@ -312,6 +314,17 @@ export default function EditorPage() {
   };
 
   useEffect(() => { fetchAllCellLines(); }, []);
+
+  // Auto-select cell line from navbar search
+  useEffect(() => {
+    const cellLineName = searchParams.get('cellLine');
+    if (!cellLineName || groups.length === 0) return;
+    // Find matching filename across all groups/versions
+    const allVersions = groups.flatMap(g => g.versions);
+    const match = allVersions.find(v => v.filename === cellLineName)
+      ?? allVersions.find(v => v.filename.startsWith(cellLineName));
+    if (match) fetchCellLineData(match.filename);
+  }, [groups, searchParams]);
 
   const fetchCellLineData = async (filename: string) => {
     setIsLoadingCellLine(true);
@@ -476,16 +489,7 @@ export default function EditorPage() {
         filenames.map(async (filename) => {
           const res = await fetch(getApiUrl(`/cell-line/${filename}`));
           if (!res.ok) return;
-          const result = await res.json();
-          const versionEntry = groups.flatMap(g => g.versions).find(v => v.filename === filename);
-          const record = {
-            filename: result.filename,
-            location: result.location,
-            version: versionEntry?.version ?? null,
-            curation_method: result.curation_method,
-            last_modified: result.last_modified,
-            data: result.data,
-          };
+          const record = await res.json();
           zip.file(`${filename}.json`, JSON.stringify(record, null, 2));
         })
       );
@@ -666,5 +670,13 @@ export default function EditorPage() {
           )}
       </Box>
     </Box>
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense>
+      <EditorPageInner />
+    </Suspense>
   );
 }

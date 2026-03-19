@@ -5,6 +5,7 @@ from datetime import datetime, date
 import os
 import json
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class StorageInterface(ABC):
     """
     
     @abstractmethod
-    def create(self, filename: str, data: Dict[str, Any], location: str = "working") -> Dict[str, Any]:
+    def create(self, filename: str, data: Dict[str, Any], location: str = "working", curation_method: Optional[str] = None) -> Dict[str, Any]:
         """Create a new file in the specified location.
 
         Args:
@@ -75,7 +76,7 @@ class StorageInterface(ABC):
         pass
     
     @abstractmethod
-    def update(self, filename: str, data: Dict[str, Any], location: str = "working") -> Dict[str, Any]:
+    def update(self, filename: str, data: Dict[str, Any], location: str = "working", curation_method: Optional[str] = None) -> Dict[str, Any]:
         """Update an existing file or create a new one in the specified location.
 
         Args:
@@ -296,34 +297,50 @@ class FileStorage(StorageInterface):
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=_json_serializer)
     
-    def create(self, filename: str, data: Dict[str, Any], location: str = "working") -> Dict[str, Any]:
+    def _parse_version_from_filename(self, filename: str) -> Optional[int]:
+        """Extract version number from filename like 'TestCell001_v2'."""
+        match = re.search(r'_v(\d+)$', filename)
+        return int(match.group(1)) if match else None
+
+    def _build_record(self, filename: str, data: Dict[str, Any], location: str, curation_method: Optional[str]) -> Dict[str, Any]:
+        """Wrap scientific data in a StandardRecord envelope."""
+        return {
+            "filename": filename,
+            "location": location,
+            "version": self._parse_version_from_filename(filename),
+            "curation_method": curation_method,
+            "last_modified": datetime.now().isoformat(),
+            "data": data,
+        }
+
+    def create(self, filename: str, data: Dict[str, Any], location: str = "working", curation_method: Optional[str] = None) -> Dict[str, Any]:
         """Create file in specified location"""
         # Validate hpscreg_name exists (basic validation)
         self._extract_hpscreg_name(data)
-        
+
         # Check if file already exists
         if self.exists(filename, location):
             raise FileExistsError(f"File '{filename}' already exists in {location} directory")
-        
+
         # Ensure directory exists
         self._ensure_directory_exists(location)
-        
-        # Save the data to file
+
+        # Save the StandardRecord envelope to file
         filepath = self._get_file_path(location, filename)
-        
+
         try:
-            self._save_json_file(filepath, data)
-            
+            self._save_json_file(filepath, self._build_record(filename, data, location, curation_method))
+
             # Update index
             self._add_to_index(location, filename)
-            
+
             logger.info(f"Created new file '{filename}' in {location}")
             return {
                 "status": "success",
                 "message": f"File '{filename}' created successfully in {location}",
                 "filename": filename
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to create file '{filename}' in {location}: {e}")
             raise Exception(f"Failed to create file: {str(e)}")
@@ -342,39 +359,26 @@ class FileStorage(StorageInterface):
             
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-
-            # Extract metadata stored alongside scientific data
-            curation_method = data.pop("curation_method", None)
-
-            # Get file's last modified time
-            last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)
-
-            return {
-                "data": data,
-                "curation_method": curation_method,
-                "location": location,
-                "filename": filename,
-                "last_modified": last_modified.isoformat()
-            }
+                record = json.load(f)
+            return record
         except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Error reading {location} file {filename}: {e}")
             return None
     
-    def update(self, filename: str, data: Dict[str, Any], location: str = "working") -> Dict[str, Any]:
+    def update(self, filename: str, data: Dict[str, Any], location: str = "working", curation_method: Optional[str] = None) -> Dict[str, Any]:
         """Update file in specified location"""
         # Basic validation
         self._extract_hpscreg_name(data)
-        
+
         # Ensure directory exists
         self._ensure_directory_exists(location)
-        
-        # Save/overwrite the data to file
+
+        # Save/overwrite the StandardRecord envelope to file
         filepath = self._get_file_path(location, filename)
         file_existed = filepath.exists() and self.exists(filename, location)
-        
+
         try:
-            self._save_json_file(filepath, data)
+            self._save_json_file(filepath, self._build_record(filename, data, location, curation_method))
             
             # Update index if this is a new file
             if not file_existed:

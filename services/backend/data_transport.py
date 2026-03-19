@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class DataTransport:
             raise ValueError("Cannot save file without hpscreg_name or aushpscreg_name in general")
         return name
 
-    def save_with_auto_versioning(self, cell_line_data: Dict[str, Any]) -> Dict[str, Any]:
+    def save_with_auto_versioning(self, cell_line_data: Dict[str, Any], curation_method: Optional[str] = None) -> Dict[str, Any]:
         """Create a new working cell line with version number based on registered history.
 
         Version number = number of previously registered copies of this hpscreg_name.
@@ -63,7 +63,7 @@ class DataTransport:
         versioned_filename = self.version_control.create_versioned_filename(base_name, next_version)
 
         try:
-            self.storage.create(versioned_filename, cell_line_data, "working")
+            self.storage.create(versioned_filename, cell_line_data, "working", curation_method=curation_method)
             logger.info(f"Created new working cell line {versioned_filename}")
             return {
                 "status": "success",
@@ -104,7 +104,7 @@ class DataTransport:
                 raise FileNotFoundError(f"Could not read data from {filename}")
 
             # Create in ready
-            self.storage.create(filename, cell_line_data["data"], "ready")
+            self.storage.create(filename, cell_line_data["data"], "ready", curation_method=cell_line_data.get("curation_method"))
 
             # Delete from working
             self.storage.delete(filename, "working")
@@ -150,7 +150,7 @@ class DataTransport:
                 raise FileNotFoundError(f"Could not read data from {filename}")
 
             # Create in registered
-            self.storage.create(filename, cell_line_data["data"], "registered")
+            self.storage.create(filename, cell_line_data["data"], "registered", curation_method=cell_line_data.get("curation_method"))
 
             # Delete from ready
             self.storage.delete(filename, "ready")
@@ -216,8 +216,8 @@ class DataTransport:
                 raise FileNotFoundError(f"Could not read data from {ready_filename}")
             
             # Create in working
-            self.storage.create(ready_filename, cell_line_data["data"], "working")
-            
+            self.storage.create(ready_filename, cell_line_data["data"], "working", curation_method=cell_line_data.get("curation_method"))
+
             # Delete from ready
             self.storage.delete(ready_filename, "ready")
             

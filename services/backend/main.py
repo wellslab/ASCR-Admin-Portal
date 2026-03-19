@@ -394,8 +394,7 @@ async def create_cell_line(
     """
     try:
         cell_line_dict = cell_line_data.model_dump()
-        cell_line_dict["curation_method"] = curation_method
-        return data_transport.save_with_auto_versioning(cell_line_dict)
+        return data_transport.save_with_auto_versioning(cell_line_dict, curation_method=curation_method)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
@@ -418,12 +417,10 @@ async def update_cell_line(
     try:
         cell_line_dict = cell_line_data.model_dump()
         # Preserve existing curation_method if not provided
-        if curation_method is not None:
-            cell_line_dict["curation_method"] = curation_method
-        else:
+        if curation_method is None:
             existing = storage.get(filename, "working")
-            cell_line_dict["curation_method"] = existing.get("curation_method") if existing else None
-        result = storage.update(filename, cell_line_dict, "working")
+            curation_method = existing.get("curation_method") if existing else None
+        result = storage.update(filename, cell_line_dict, "working", curation_method=curation_method)
         result["filename"] = filename
         return result
     except Exception as e:

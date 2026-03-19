@@ -1,12 +1,22 @@
 """
 Core schema migration logic.
 
-Applies the current JSONOutputSchema structure to existing cell line JSON records.
-Missing fields are added with null/[] defaults. Existing values are never overwritten.
+Handles two concerns:
+1. Structural migration: converts old-format cell line files to the StandardRecord
+   envelope (provenance fields + data). This is a one-time conversion for existing records.
+2. Schema migration: applies the current JSONOutputSchema structure to the data field
+   of each record. Missing fields are added with null/[] defaults. Existing values are
+   never overwritten.
+
+To add a new JSONOutputSchema field: edit data_dictionaries/models.py, then run this.
+To add a new StandardRecord provenance field that needs a real value (not null): add
+explicit population logic in _apply_standard_record_envelope() below.
 """
 
 import json
 import logging
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import get_origin, get_args
 import typing
@@ -95,8 +105,47 @@ def apply_schema(model_class: type, existing: dict) -> dict:
     return result
 
 
+def _parse_version(filename_stem: str) -> int | None:
+    match = re.search(r'_v(\d+)$', filename_stem)
+    return int(match.group(1)) if match else None
+
+
+def _apply_standard_record_envelope(existing: dict, filepath: Path, location: str) -> dict:
+    """Ensure the file is in StandardRecord format.
+
+    If the file is in the old format (no 'data' key), wraps it into the StandardRecord
+    envelope and derives provenance fields from context. If it is already in StandardRecord
+    format, leaves provenance fields unchanged.
+
+    To add a new provenance field that requires a real derived value: add population
+    logic here. Fields with acceptable null defaults need no code — they will be absent
+    from old records and can be handled by whatever reads them.
+    """
+    if "data" in existing:
+        # Already StandardRecord format — nothing to convert
+        return existing
+
+    # Old format: provenance fields are absent and curation_method is mixed into the
+    # scientific data. Extract it and wrap everything else as the data payload.
+    stem = filepath.stem
+    curation_method = existing.pop("curation_method", None)
+
+    return {
+        "filename": stem,
+        "location": location,
+        "version": _parse_version(stem),
+        "curation_method": curation_method,
+        "last_modified": datetime.fromtimestamp(filepath.stat().st_mtime).isoformat(),
+        "data": existing,
+    }
+
+
 def migrate_all(dry_run: bool = False) -> dict:
-    """Apply current schema to all cell line records across all locations.
+    """Apply StandardRecord structure and current JSONOutputSchema to all cell line records.
+
+    For each file:
+    - Converts old-format files (no 'data' key) to StandardRecord envelope.
+    - Applies JSONOutputSchema to the 'data' field, adding any missing fields as null/[].
 
     Returns:
         dict with keys: total (int), changed (int), dry_run (bool)
@@ -116,12 +165,18 @@ def migrate_all(dry_run: bool = False) -> dict:
             try:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     existing = json.load(f)
-                updated = apply_schema(JSONOutputSchema, existing)
-                if updated != existing:
+
+                # Step 1: ensure StandardRecord envelope
+                record = _apply_standard_record_envelope(existing, filepath, location)
+
+                # Step 2: apply JSONOutputSchema to the data field
+                record["data"] = apply_schema(JSONOutputSchema, record.get("data", {}))
+
+                if record != existing:
                     changed += 1
                     if not dry_run:
                         with open(filepath, 'w', encoding='utf-8') as f:
-                            json.dump(updated, f, indent=2, ensure_ascii=False)
+                            json.dump(record, f, indent=2, ensure_ascii=False)
                         logger.info(f"Migrated {location}/{filepath.name}")
             except Exception as e:
                 logger.error(f"Error migrating {filepath}: {e}")
