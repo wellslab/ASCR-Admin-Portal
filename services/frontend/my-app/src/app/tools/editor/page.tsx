@@ -12,6 +12,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PublishIcon from '@mui/icons-material/Publish';
 import { useTheme } from '@mui/material/styles';
 import CellLineEditor from '@/app/components/CellLineEditor';
 import { getApiUrl } from '@/lib/api-config';
@@ -40,6 +41,7 @@ interface CellLinePanelProps {
   onSelect: (filename: string) => void;
   onDelete: (filename: string) => void;
   onDeleteSelected: () => void;
+  onSetSelectedToReady: () => void;
   checkedFilenames: Set<string>;
   onToggleCheck: (filename: string) => void;
   onDownloadSelected: () => void;
@@ -47,7 +49,10 @@ interface CellLinePanelProps {
   isDownloading: boolean;
 }
 
-const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, onDelete, onDeleteSelected, checkedFilenames, onToggleCheck, onDownloadSelected, onDownloadAll, isDownloading }: CellLinePanelProps) => {
+const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, onDelete, onDeleteSelected, onSetSelectedToReady, checkedFilenames, onToggleCheck, onDownloadSelected, onDownloadAll, isDownloading }: CellLinePanelProps) => {
+  const selectedWorkingCount = Array.from(checkedFilenames).filter(f =>
+    groups.flatMap(g => g.versions).find(v => v.filename === f)?.location === 'working'
+  ).length;
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState<Set<Location>>(new Set(['working', 'ready', 'registered']));
   const [curationFilter, setCurationFilter] = useState<Set<CurationMethod | 'unset'>>(new Set(['LLM', 'Manual', 'Human Verified', 'unset']));
@@ -236,7 +241,7 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, onDelete, onDe
         )}
       </Box>
 
-      {/* Download / delete buttons */}
+      {/* Download buttons */}
       <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
         <Button
           size="small"
@@ -257,6 +262,21 @@ const CellLinePanel = memo(({ groups, selectedCellLine, onSelect, onDelete, onDe
           sx={{ flex: 1, fontSize: '0.6rem' }}
         >
           All
+        </Button>
+      </Box>
+
+      {/* Action buttons */}
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Button
+          size="small"
+          variant="outlined"
+          color="success"
+          startIcon={<PublishIcon />}
+          disabled={selectedWorkingCount === 0}
+          onClick={onSetSelectedToReady}
+          sx={{ flex: 1, fontSize: '0.6rem' }}
+        >
+          Set Ready ({selectedWorkingCount})
         </Button>
         <Button
           size="small"
@@ -543,6 +563,26 @@ function EditorPageInner() {
     downloadRecords(all);
   }, [groups]);
 
+  const handleSetSelectedToReady = async () => {
+    const workingFilenames = Array.from(checkedFilenames).filter(f =>
+      groups.flatMap(g => g.versions).find(v => v.filename === f)?.location === 'working'
+    );
+    await Promise.all(
+      workingFilenames.map(filename =>
+        fetch(getApiUrl(`/cell-line/${filename}/move-to-ready`), { method: 'POST' })
+      )
+    );
+    setCheckedFilenames(prev => {
+      const next = new Set(prev);
+      workingFilenames.forEach(f => next.delete(f));
+      return next;
+    });
+    if (selectedCellLine && workingFilenames.includes(selectedCellLine)) {
+      setSelectedCellLineLocation('ready');
+    }
+    fetchAllCellLines();
+  };
+
   const handleCreateNewVersion = async (overwrite = false) => {
     if (!selectedCellLine) return;
     const url = getApiUrl(`/registered/cell-line/${selectedCellLine}/create-new-version${overwrite ? '?overwrite=true' : ''}`);
@@ -580,6 +620,7 @@ function EditorPageInner() {
         onSelect={handleSelect}
         onDelete={handleDeleteRequest}
         onDeleteSelected={() => setDeleteSelectedConfirm(true)}
+        onSetSelectedToReady={handleSetSelectedToReady}
         checkedFilenames={checkedFilenames}
         onToggleCheck={handleToggleCheck}
         onDownloadSelected={handleDownloadSelected}
