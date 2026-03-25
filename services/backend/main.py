@@ -13,8 +13,9 @@ from tasks import curate_article_task, redis_client
 from config_manager import config_manager
 from schema_migration import migrate_all
 from task_progress import TaskProgressManager
-from ingestion_monitor import IngestionMonitor
+from ingestion_manager import IngestionManager
 import asyncio
+import datetime
 import zipfile
 import io
 import json
@@ -54,23 +55,30 @@ app = FastAPI(title="ASCR Curation Service", version="1.0.0")
 
 # Background task for ingestion monitoring
 async def monitor_ingestion_log():
-    """Background task that checks ingestion log every 5 minutes"""
+    """Background task that runs every Saturday at 06:00, matching the Friday ingestion schedule."""
     storage = get_storage()
     version_control = get_version_control(storage)
     data_transport = get_data_transport(storage, version_control)
-
-    log_path = Path("data/ingestion_log.csv")
-    monitor = IngestionMonitor(str(log_path), storage, data_transport)
+    manager = IngestionManager("data/run_log.json", storage, data_transport)
 
     while True:
+        now = datetime.datetime.now()
+        # weekday(): Monday=0 … Saturday=5 … Sunday=6
+        days_until_saturday = (5 - now.weekday()) % 7
+        if days_until_saturday == 0 and now.hour >= 6:
+            days_until_saturday = 7  # already past 06:00 today, wait until next Saturday
+        next_run = (now + datetime.timedelta(days=days_until_saturday)).replace(
+            hour=6, minute=0, second=0, microsecond=0
+        )
+        sleep_seconds = (next_run - now).total_seconds()
+        logger.info(f"Ingestion monitor: next automatic run at {next_run.isoformat()}")
+        await asyncio.sleep(sleep_seconds)
+
         try:
-            result = monitor.check_and_process_log()
-            if result.get("moved", 0) > 0:
-                logger.info(f"Ingestion monitor: moved {result['moved']} files to registered")
+            result = manager.process_ready_files()
+            logger.info(f"Ingestion monitor complete: {result}")
         except Exception as e:
             logger.error(f"Error in ingestion monitor: {e}")
-
-        await asyncio.sleep(300)  # Wait 5 minutes
 
 @app.on_event("startup")
 async def startup_event():
@@ -543,18 +551,30 @@ async def check_ingestion_log(
     version_control: VersionControl = Depends(get_version_control),
     data_transport: DataTransport = Depends(get_data_transport)
 ):
-    """
-    Manual trigger to check ingestion log and process any pending registrations.
-    Useful for testing or immediate processing.
-    """
+    """Manual trigger to process the ingestion run log. Called from the Settings page."""
     try:
-        log_path = Path("data/ingestion_log.csv")
-        monitor = IngestionMonitor(str(log_path), storage, data_transport)
-        result = monitor.check_and_process_log()
-        return result
+        manager = IngestionManager("data/run_log.json", storage, data_transport)
+        return manager.process_ready_files()
     except Exception as e:
         logger.error(f"Error checking ingestion log: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to check ingestion log: {str(e)}")
+
+
+@app.get("/ingestion/errors")
+async def get_ingestion_errors(
+    storage: StorageInterface = Depends(get_storage),
+    data_transport: DataTransport = Depends(get_data_transport)
+):
+    """
+    Return working-directory files whose most recent run log entry has status ERROR.
+    Used by the Ingestion Monitor page to list cell lines needing curator attention.
+    """
+    try:
+        manager = IngestionManager("data/run_log.json", storage, data_transport)
+        return {"errors": manager.get_errors()}
+    except Exception as e:
+        logger.error(f"Error fetching ingestion errors: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch ingestion errors: {str(e)}")
 
 @app.get("/settings")
 async def get_settings():

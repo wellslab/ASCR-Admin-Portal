@@ -25,6 +25,11 @@ export default function SettingsPage() {
   const [migrationResult, setMigrationResult] = useState<{ total: number; changed: number } | null>(null);
   const [migrationError, setMigrationError] = useState<string | null>(null);
 
+  // Ingestion log check state
+  const [isCheckingIngestion, setIsCheckingIngestion] = useState(false);
+  const [ingestionResult, setIngestionResult] = useState<{ processed: number; moved_to_registered: number; moved_to_working: number; skipped: number } | null>(null);
+  const [ingestionError, setIngestionError] = useState<string | null>(null);
+
   // Factory reset modal state
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [isDownloadingBackup, setIsDownloadingBackup] = useState(false);
@@ -105,6 +110,25 @@ export default function SettingsPage() {
       setMigrationError('Network error. Please try again.');
     } finally {
       setIsMigrating(false);
+    }
+  };
+
+  const handleCheckIngestionLog = async () => {
+    setIsCheckingIngestion(true);
+    setIngestionResult(null);
+    setIngestionError(null);
+    try {
+      const response = await fetch(getApiUrl('/internal/check-ingestion-log'), { method: 'POST' });
+      if (response.ok) {
+        setIngestionResult(await response.json());
+      } else {
+        const error = await response.json();
+        setIngestionError(error.detail || 'Ingestion check failed');
+      }
+    } catch {
+      setIngestionError('Network error. Please try again.');
+    } finally {
+      setIsCheckingIngestion(false);
     }
   };
 
@@ -319,6 +343,31 @@ export default function SettingsPage() {
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="outlined" onClick={handleMigrateSchema} disabled={isMigrating}>
               {isMigrating ? 'Running...' : 'Run Schema Migration'}
+            </Button>
+          </Box>
+        </Box>
+
+        <Box>
+          <Typography variant="h6" fontWeight={600} color="text.primary" sx={{ mb: 1 }}>
+            Ingestion Log
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Process the ingestion run log now. The system runs this automatically every Saturday, but you can trigger it manually here. Files in the ready directory with a PROD-PASS status will be moved to registered; files with an ERROR status will be returned to working.
+          </Typography>
+          {ingestionResult && (
+            <Alert severity="info" sx={{ mb: 2 }} onClose={() => setIngestionResult(null)}>
+              Check complete — {ingestionResult.moved_to_registered} moved to registered, {ingestionResult.moved_to_working} returned to working, {ingestionResult.skipped} skipped ({ingestionResult.processed} total ready files).
+            </Alert>
+          )}
+          {ingestionError && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setIngestionError(null)}>
+              {ingestionError}
+            </Alert>
+          )}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="outlined" onClick={handleCheckIngestionLog} disabled={isCheckingIngestion}>
+              {isCheckingIngestion ? 'Checking...' : 'Check Ingestion Log Now'}
             </Button>
           </Box>
         </Box>

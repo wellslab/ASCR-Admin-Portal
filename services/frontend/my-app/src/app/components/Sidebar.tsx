@@ -7,6 +7,7 @@ import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 
 const SIDEBAR_WIDTH = 220;
 
@@ -29,6 +30,7 @@ const navSections: NavSection[] = [
       { label: 'Editor', path: '/tools/editor', icon: <EditOutlinedIcon fontSize="small" /> },
       { label: 'Import', path: '/tools/import', icon: <FileUploadOutlinedIcon fontSize="small" /> },
       { label: 'Version Control', path: '/tools/version-control', icon: <CompareArrowsIcon fontSize="small" /> },
+      { label: 'Ingestion Monitor', path: '/tools/ingestion-monitor', icon: <MonitorHeartOutlinedIcon fontSize="small" /> },
     ],
   },
 ];
