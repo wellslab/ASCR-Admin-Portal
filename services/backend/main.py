@@ -12,7 +12,7 @@ from models import StartAICurationRequest, TaskCompletionNotification
 from data_dictionaries.models import JSONOutputSchema
 from tasks import curate_article_task, redis_client
 from config_manager import config_manager
-from schema_migration import migrate_all
+from schema_migration import migrate_all, migrate_registered_structure
 from task_progress import TaskProgressManager
 from ingestion_manager import IngestionManager
 import asyncio
@@ -89,6 +89,9 @@ async def monitor_ingestion_log():
 @app.on_event("startup")
 async def startup_event():
     """Start background tasks on app startup"""
+    result = migrate_registered_structure()
+    if result["migrated"]:
+        logger.info(f"Startup: migrated {result['migrated']} registered file(s) to subdirectory structure")
     asyncio.create_task(monitor_ingestion_log())
     logger.info("Started ingestion monitor background task")
 
@@ -667,11 +670,19 @@ async def download_backup():
 
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for location in ["working", "ready", "registered"]:
+            for location in ["working", "ready"]:
                 loc_dir = data_dir / location
                 if loc_dir.exists():
                     for json_file in loc_dir.glob("*.json"):
                         zf.write(json_file, f"{location}/{json_file.name}")
+            # Registered files live in per-base-name subdirectories
+            registered_dir = data_dir / "registered"
+            if registered_dir.exists():
+                for json_file in registered_dir.rglob("*.json"):
+                    if json_file.name == "index.json":
+                        continue
+                    arc_path = json_file.relative_to(data_dir)
+                    zf.write(json_file, str(arc_path))
         zip_data = zip_buffer.getvalue()
 
         from datetime import datetime
@@ -695,13 +706,22 @@ async def purge_all_data():
     try:
         data_dir = FileStorage.get_data_dir()
 
-        for location in ["working", "ready", "registered"]:
+        import shutil
+        for location in ["working", "ready"]:
             loc_dir = data_dir / location
             if loc_dir.exists():
                 for json_file in loc_dir.glob("*.json"):
                     json_file.unlink()
                 with open(loc_dir / "index.json", 'w') as f:
                     json.dump({}, f)
+        # Registered: remove all base_name subdirectories, then reset index
+        registered_dir = data_dir / "registered"
+        if registered_dir.exists():
+            for item in registered_dir.iterdir():
+                if item.is_dir():
+                    shutil.rmtree(item)
+            with open(registered_dir / "index.json", 'w') as f:
+                json.dump({}, f)
 
         return {"status": "success", "message": "All data purged"}
     except Exception as e:

@@ -213,7 +213,16 @@ class FileStorage(StorageInterface):
         raise ValueError("Cannot save file without hpscreg_name")
     
     def _get_file_path(self, location: str, filename: str) -> Path:
-        """Get file path for given location and filename"""
+        """Get file path for given location and filename.
+
+        Registered files are stored in per-base-name subdirectories:
+            registered/{base_name}/{filename}.json
+        Working and ready files remain flat:
+            working/{filename}.json
+        """
+        if location == "registered":
+            base_name = self._extract_base_name_from_filename(filename)
+            return self.get_data_dir() / location / base_name / f"{filename}.json"
         return self.get_data_dir() / location / f"{filename}.json"
 
     def _get_index_path(self, location: str) -> Path:
@@ -221,7 +230,7 @@ class FileStorage(StorageInterface):
         return self.get_data_dir() / location / "index.json"
 
     def _ensure_directory_exists(self, location: str):
-        """Ensure directory exists"""
+        """Ensure top-level location directory exists (used for index.json)."""
         (self.get_data_dir() / location).mkdir(parents=True, exist_ok=True)
     
     def _load_index(self, location: str) -> Dict[str, List[str]]:
@@ -322,11 +331,9 @@ class FileStorage(StorageInterface):
         if self.exists(filename, location):
             raise FileExistsError(f"File '{filename}' already exists in {location} directory")
 
-        # Ensure directory exists
-        self._ensure_directory_exists(location)
-
-        # Save the StandardRecord envelope to file
+        # Resolve path and ensure parent directory exists (handles registered subdirs)
         filepath = self._get_file_path(location, filename)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
 
         try:
             self._save_json_file(filepath, self._build_record(filename, data, location, curation_method))
@@ -370,11 +377,9 @@ class FileStorage(StorageInterface):
         # Basic validation
         self._extract_hpscreg_name(data)
 
-        # Ensure directory exists
-        self._ensure_directory_exists(location)
-
-        # Save/overwrite the StandardRecord envelope to file
+        # Resolve path and ensure parent directory exists (handles registered subdirs)
         filepath = self._get_file_path(location, filename)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
         file_existed = filepath.exists() and self.exists(filename, location)
 
         try:
@@ -407,11 +412,15 @@ class FileStorage(StorageInterface):
         filepath = self._get_file_path(location, filename)
         
         try:
-            filepath.unlink()  # Delete the file
-            
+            filepath.unlink()
+
+            # For registered, remove the base_name subdir if it is now empty
+            if location == "registered" and filepath.parent.exists() and not any(filepath.parent.iterdir()):
+                filepath.parent.rmdir()
+
             # Remove from index
             self._remove_from_index(location, filename)
-            
+
             logger.info(f"Successfully deleted {filename} from {location}")
             return {
                 "status": "success",

@@ -140,12 +140,47 @@ def _apply_standard_record_envelope(existing: dict, filepath: Path, location: st
     }
 
 
+def migrate_registered_structure() -> dict:
+    """Move any flat files in registered/ into per-base-name subdirectories.
+
+    This is a one-time structural migration. Files already in subdirectories are
+    left untouched. Safe to call on every startup — it is a no-op once complete.
+
+    Returns:
+        dict with key: migrated (int)
+    """
+    data_dir = FileStorage.get_data_dir()
+    registered_dir = data_dir / "registered"
+    if not registered_dir.exists():
+        return {"migrated": 0}
+
+    migrated = 0
+    for filepath in list(registered_dir.glob("*.json")):
+        if filepath.name == "index.json":
+            continue
+        stem = filepath.stem
+        base_name = stem.split("_v")[0] if "_v" in stem else stem
+        subdir = registered_dir / base_name
+        subdir.mkdir(exist_ok=True)
+        filepath.rename(subdir / filepath.name)
+        migrated += 1
+        logger.info(f"Moved {stem} → registered/{base_name}/{filepath.name}")
+
+    if migrated:
+        logger.info(f"Structural migration complete: {migrated} file(s) moved to subdirectories")
+
+    return {"migrated": migrated}
+
+
 def migrate_all(dry_run: bool = False) -> dict:
     """Apply StandardRecord structure and current JSONOutputSchema to all cell line records.
 
     For each file:
     - Converts old-format files (no 'data' key) to StandardRecord envelope.
     - Applies JSONOutputSchema to the 'data' field, adding any missing fields as null/[].
+
+    Registered files are read from per-base-name subdirectories (registered/{base_name}/*.json).
+    Working and ready files are read from their flat location directories.
 
     Returns:
         dict with keys: total (int), changed (int), dry_run (bool)
@@ -158,7 +193,11 @@ def migrate_all(dry_run: bool = False) -> dict:
         location_dir = data_dir / location
         if not location_dir.exists():
             continue
-        for filepath in sorted(location_dir.glob("*.json")):
+
+        # Registered files live in subdirectories; working/ready are flat
+        pattern = "*/*.json" if location == "registered" else "*.json"
+
+        for filepath in sorted(location_dir.glob(pattern)):
             if filepath.name == "index.json":
                 continue
             total += 1
