@@ -7,7 +7,7 @@ import os
 import utils
 from storage import StorageInterface, FileStorage
 from version_control import VersionControl
-from data_transport import DataTransport
+from data_transport import DataTransport, WorkingVersionConflict, ReadyVersionConflict
 from models import StartAICurationRequest, TaskCompletionNotification
 from data_dictionaries.models import JSONOutputSchema
 from tasks import curate_article_task, redis_client
@@ -344,6 +344,39 @@ async def move_cell_line_to_working(filename: str, data_transport: DataTransport
     except Exception as e:
         logger.error(f"Error moving {filename} to working: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
+
+@app.post("/registered/cell-line/{filename}/create-new-version")
+async def create_new_version_from_registered(
+    filename: str,
+    overwrite: bool = Query(default=False),
+    data_transport: DataTransport = Depends(get_data_transport)
+):
+    """
+    Create a new working version from a registered cell line.
+    Pass overwrite=true to replace an existing working copy with the registered data.
+    Returns 409 with conflict_type='working' if a working copy exists and overwrite=false.
+    Returns 409 with conflict_type='ready' if a ready copy exists (cannot overwrite).
+    """
+    try:
+        return data_transport.create_new_version_from_registered(filename, overwrite=overwrite)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except WorkingVersionConflict as e:
+        raise HTTPException(status_code=409, detail={
+            "conflict_type": "working",
+            "existing_filename": e.existing_filename,
+            "message": f"A working copy '{e.existing_filename}' already exists for this cell line.",
+        })
+    except ReadyVersionConflict as e:
+        raise HTTPException(status_code=409, detail={
+            "conflict_type": "ready",
+            "existing_filename": e.existing_filename,
+            "message": f"A ready copy '{e.existing_filename}' exists and cannot be overwritten.",
+        })
+    except Exception as e:
+        logger.error(f"Error creating new version from {filename}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/cell-line/{base_name}/versions")
 async def get_cell_line_versions(

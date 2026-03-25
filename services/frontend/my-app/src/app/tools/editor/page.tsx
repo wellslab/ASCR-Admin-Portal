@@ -447,6 +447,7 @@ function EditorPageInner() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false);
+  const [overwriteDialog, setOverwriteDialog] = useState<{ existingFilename: string } | null>(null);
 
   const handleDeleteRequest = useCallback((filename: string) => {
     setDeleteConfirm(filename);
@@ -542,6 +543,32 @@ function EditorPageInner() {
     downloadRecords(all);
   }, [groups]);
 
+  const handleCreateNewVersion = async (overwrite = false) => {
+    if (!selectedCellLine) return;
+    const url = getApiUrl(`/registered/cell-line/${selectedCellLine}/create-new-version${overwrite ? '?overwrite=true' : ''}`);
+    try {
+      const response = await fetch(url, { method: 'POST' });
+      if (response.ok) {
+        const result = await response.json();
+        setOverwriteDialog(null);
+        await fetchAllCellLines();
+        fetchCellLineData(result.filename);
+      } else if (response.status === 409) {
+        const error = await response.json();
+        if (error.detail.conflict_type === 'working') {
+          setOverwriteDialog({ existingFilename: error.detail.existing_filename });
+        } else {
+          setFetchError(error.detail.message);
+        }
+      } else {
+        const error = await response.json();
+        setFetchError(error.detail || 'Failed to create new version');
+      }
+    } catch {
+      setFetchError('Network error — could not reach the backend.');
+    }
+  };
+
   const handleSelect = useCallback((filename: string) => fetchCellLineData(filename), []);
 
   return (
@@ -568,6 +595,19 @@ function EditorPageInner() {
         <DialogActions>
           <Button onClick={() => setDeleteConfirm(null)}>Cancel</Button>
           <Button color="error" variant="contained" onClick={handleDeleteConfirm}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={Boolean(overwriteDialog)} onClose={() => setOverwriteDialog(null)}>
+        <DialogTitle>Working version already exists</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            A working version (<strong>{overwriteDialog?.existingFilename}</strong>) already exists for this cell line. Do you want to overwrite it with the registered version&apos;s data?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOverwriteDialog(null)}>Cancel</Button>
+          <Button variant="contained" color="warning" onClick={() => handleCreateNewVersion(true)}>Overwrite</Button>
         </DialogActions>
       </Dialog>
 
@@ -617,6 +657,7 @@ function EditorPageInner() {
               onClearErrors={() => setValidationErrors([])}
               curationMethod={curationMethod}
               onCurationMethodChange={setCurationMethod}
+              onCreateNewVersion={selectedCellLineLocation === 'registered' ? () => handleCreateNewVersion() : undefined}
             />
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, flex: 1 }}>

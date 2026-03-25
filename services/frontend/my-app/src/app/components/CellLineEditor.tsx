@@ -628,9 +628,10 @@ interface CellLineEditorProps {
   onClearErrors?: () => void;
   curationMethod?: string | null;
   onCurationMethodChange?: (method: string) => void;
+  onCreateNewVersion?: () => void;
 }
 
-const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, onSave, onCreate, onDiscard, onStatusChange, validationErrors = [], onClearErrors, curationMethod, onCurationMethodChange }: CellLineEditorProps) => {
+const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, onSave, onCreate, onDiscard, onStatusChange, validationErrors = [], onClearErrors, curationMethod, onCurationMethodChange, onCreateNewVersion }: CellLineEditorProps) => {
   const theme = useTheme();
   const formRef = useRef<HTMLFormElement>(null);
   const versionMatch = filename.match(/_v(\d+)(?:\.json)?$/);
@@ -931,14 +932,22 @@ const CellLineEditor = ({ data, cellLineName, filename, lastModified, location, 
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
             {isReadOnly ? (
-              <Typography variant="caption" sx={{
-                px: 1.5, py: 0.5, borderRadius: 1,
-                border: `1px solid ${theme.palette.success.main}`,
-                color: 'success.main',
-                fontWeight: 600, fontSize: '0.7rem',
-              }}>
-                Registered
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="caption" sx={{
+                  px: 1.5, py: 0.5, borderRadius: 1,
+                  border: `1px solid ${theme.palette.success.main}`,
+                  color: 'success.main',
+                  fontWeight: 600, fontSize: '0.7rem',
+                }}>
+                  Registered
+                </Typography>
+                {onCreateNewVersion && (
+                  <Button size="small" variant="outlined" onClick={onCreateNewVersion}
+                    sx={{ fontSize: '0.7rem', py: 0.5, px: 1.25, whiteSpace: 'nowrap' }}>
+                    New version
+                  </Button>
+                )}
+              </Box>
             ) : (
             <FormControlLabel
               control={

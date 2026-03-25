@@ -4,6 +4,18 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class WorkingVersionConflict(Exception):
+    def __init__(self, existing_filename: str):
+        self.existing_filename = existing_filename
+        super().__init__(f"Working version '{existing_filename}' already exists")
+
+
+class ReadyVersionConflict(Exception):
+    def __init__(self, existing_filename: str):
+        self.existing_filename = existing_filename
+        super().__init__(f"Ready version '{existing_filename}' already exists")
+
+
 class DataTransport:
     """Orchestrates changing the state of cell line records between working, queued and registered states.
 
@@ -234,3 +246,48 @@ class DataTransport:
             logger.error(f"Error moving {ready_filename} to working: {e}")
             # Re-raise to let caller handle appropriately
             raise
+
+    def create_new_version_from_registered(self, filename: str, overwrite: bool = False) -> Dict[str, Any]:
+        """Create a new working version from a registered cell line.
+
+        Copies the registered cell line's data into a new working file with the next version number.
+        If a working copy already exists and overwrite=True, that copy is overwritten with the
+        registered data instead. A ready copy always blocks the operation (cannot overwrite).
+
+        Raises:
+            FileNotFoundError: If the file does not exist in registered.
+            WorkingVersionConflict: If a working copy exists and overwrite=False.
+            ReadyVersionConflict: If a ready copy exists (overwrite not offered).
+        """
+        registered_record = self.storage.get(filename, "registered")
+        if not registered_record:
+            raise FileNotFoundError(f"File '{filename}' not found in registered directory")
+
+        data = registered_record["data"]
+        curation_method = registered_record.get("curation_method")
+        base_name = self._extract_hpscreg_name(data)
+
+        # Ready copy blocks unconditionally
+        ready_files = self.storage.get_files_for_base_name(base_name, "ready")
+        if ready_files:
+            raise ReadyVersionConflict(ready_files[0])
+
+        # Working copy conflict — offer overwrite
+        working_files = self.storage.get_files_for_base_name(base_name, "working")
+        if working_files:
+            if not overwrite:
+                raise WorkingVersionConflict(working_files[0])
+            working_filename = working_files[0]
+            self.storage.update(working_filename, data, "working", curation_method=curation_method)
+            logger.info(f"Overwrote working copy {working_filename} with data from registered {filename}")
+            return {
+                "status": "success",
+                "filename": working_filename,
+                "action": "overwritten",
+                "message": f"Working copy overwritten with registered version data",
+            }
+
+        # No conflicts — create next version
+        result = self.save_with_auto_versioning(data, curation_method=curation_method)
+        result["action"] = "created"
+        return result
