@@ -3,6 +3,7 @@ from fastapi.responses import Response
 from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
 import utils
 from storage import StorageInterface, FileStorage
 from version_control import VersionControl
@@ -53,13 +54,18 @@ def get_data_transport(
 
 app = FastAPI(title="ASCR Curation Service", version="1.0.0")
 
+def get_run_log_path() -> str:
+    """Return the ingestion run log path. Override with RUN_LOG_PATH env var."""
+    return os.environ.get("RUN_LOG_PATH", "data/run_log.json")
+
+
 # Background task for ingestion monitoring
 async def monitor_ingestion_log():
     """Background task that runs every Saturday at 06:00, matching the Friday ingestion schedule."""
     storage = get_storage()
     version_control = get_version_control(storage)
     data_transport = get_data_transport(storage, version_control)
-    manager = IngestionManager("data/run_log.json", storage, data_transport)
+    manager = IngestionManager(get_run_log_path(), storage, data_transport)
 
     while True:
         now = datetime.datetime.now()
@@ -553,7 +559,7 @@ async def check_ingestion_log(
 ):
     """Manual trigger to process the ingestion run log. Called from the Settings page."""
     try:
-        manager = IngestionManager("data/run_log.json", storage, data_transport)
+        manager = IngestionManager(get_run_log_path(), storage, data_transport)
         return manager.process_ready_files()
     except Exception as e:
         logger.error(f"Error checking ingestion log: {str(e)}")
@@ -570,7 +576,7 @@ async def get_ingestion_errors(
     Used by the Ingestion Monitor page to list cell lines needing curator attention.
     """
     try:
-        manager = IngestionManager("data/run_log.json", storage, data_transport)
+        manager = IngestionManager(get_run_log_path(), storage, data_transport)
         return {"errors": manager.get_errors()}
     except Exception as e:
         logger.error(f"Error fetching ingestion errors: {e}")
