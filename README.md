@@ -4,7 +4,7 @@ A web application for curating and staging cell line records before submission t
 
 ## Documentation
 
-Full documentation is published at: **https://stefanmirandadev.github.io/ASCR-Admin-Portal-Fast-API/**
+Documentation is served by the `docs` container at **http://localhost:8080** when the application is running. It is accessible from the sidebar in the UI.
 
 ## Architecture
 
@@ -25,6 +25,7 @@ Frontend (Next.js 15)
 |---------|------|---------|
 | Frontend | 3001 | Next.js UI |
 | Backend | 8001 | FastAPI REST API + Celery worker |
+| Docs | 8080 | MkDocs documentation |
 | Redis | 6380 | Task queue and caching |
 
 ## Quick Start
@@ -42,6 +43,7 @@ cd ASCR-Curation-Portal
 Access points:
 - **Application**: http://localhost:3001
 - **API docs**: http://localhost:8001/docs
+- **Documentation**: http://localhost:8080
 
 ## Configuration
 
@@ -119,4 +121,4 @@ There is no database. Each versioned file is named `{base_name}_v{n}.json`.
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-See the [Deployment Guide](https://stefanmirandadev.github.io/ASCR-Admin-Portal-Fast-API/prod_deployment_guide/) in the documentation for full instructions.
+See the Deployment Guide in the documentation (http://localhost:8080) for full instructions.
