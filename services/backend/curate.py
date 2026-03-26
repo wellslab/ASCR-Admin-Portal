@@ -224,11 +224,10 @@ async def _curate_one(pdf_info: PDFInfo, curation_agent: Any, cell_line_id: str)
         curation_data = result.final_output.model_dump() if result and result.final_output else None
         if curation_data:
             return {"cell_line_id": cell_line_id, "curation_data": curation_data, "curation_time": time.time() - start}
-        logger.warning(f"No curation result for {cell_line_id}")
-        return None
+        raise ValueError(f"No curation result returned for {cell_line_id}")
     except Exception as e:
         logger.error(f"Curation failed for {cell_line_id}: {e}", exc_info=True)
-        return None
+        raise
 
 
 async def _normalize_one(normalization_agent: Any, cell_line_id: str, curated: Dict[str, Any], vocab_context: VocabularyContext) -> Optional[Dict[str, Any]]:
@@ -257,11 +256,10 @@ async def _normalize_one(normalization_agent: Any, cell_line_id: str, curated: D
                     "normalization_seconds": time.time() - start,
                 },
             }
-        logger.warning(f"No normalization result for {cell_line_id}")
-        return None
+        raise ValueError(f"No normalization result returned for {cell_line_id}")
     except Exception as e:
         logger.error(f"Normalization failed for {cell_line_id}: {e}", exc_info=True)
-        return None
+        raise
 
 
 async def process_single_cell_line(
@@ -272,19 +270,21 @@ async def process_single_cell_line(
     vocab_context: VocabularyContext,
     progress_cb,
 ) -> Optional[Dict[str, Any]]:
-    """Full pipeline for one cell line: curate → normalize. Calls progress_cb(name, stage, status) at each transition."""
+    """Full pipeline for one cell line: curate → normalize. Calls progress_cb(name, stage, status, error_message) at each transition."""
     try:
         progress_cb(cell_line_id, "curating", "processing")
-        curated = await _curate_one(pdf_info, curation_agent, cell_line_id)
-        if not curated:
-            progress_cb(cell_line_id, "curating", "failed")
+        try:
+            curated = await _curate_one(pdf_info, curation_agent, cell_line_id)
+        except Exception as e:
+            progress_cb(cell_line_id, "curating", "failed", str(e))
             return None
         progress_cb(cell_line_id, "curating", "completed")
 
         progress_cb(cell_line_id, "normalizing", "processing")
-        normalized = await _normalize_one(normalization_agent, cell_line_id, curated, vocab_context)
-        if not normalized:
-            progress_cb(cell_line_id, "normalizing", "failed")
+        try:
+            normalized = await _normalize_one(normalization_agent, cell_line_id, curated, vocab_context)
+        except Exception as e:
+            progress_cb(cell_line_id, "normalizing", "failed", str(e))
             return None
         progress_cb(cell_line_id, "normalizing", "completed")
 

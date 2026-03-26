@@ -36,9 +36,13 @@ const CellLinePipelineCard = ({ cl, theme }: { cl: any; theme: any }) => {
     { key: 'normalizing', label: 'Nor' },
   ];
 
-  const getStageIcon = (status: string) => {
+  const getStageIcon = (status: string, errorMessage?: string) => {
     if (status === 'completed') return <CheckCircleIcon sx={{ fontSize: 11, color: theme.palette.text.secondary }} />;
-    if (status === 'failed') return <ErrorIcon sx={{ fontSize: 11, color: theme.palette.error.main }} />;
+    if (status === 'failed') return (
+      <Tooltip title={errorMessage || 'Failed'} placement="top">
+        <ErrorIcon sx={{ fontSize: 11, color: theme.palette.error.main, cursor: 'help' }} />
+      </Tooltip>
+    );
     if (status === 'processing') return <BlurOnOutlinedIcon sx={{ fontSize: 11, color: theme.palette.text.secondary }} />;
     return <Box sx={{ width: 11, height: 11, borderRadius: '50%', border: `1px solid ${theme.palette.grey[300]}` }} />;
   };
@@ -50,7 +54,7 @@ const CellLinePipelineCard = ({ cl, theme }: { cl: any; theme: any }) => {
       </Typography>
       {pipelineStages.map(({ key, label }) => (
         <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-          {getStageIcon(cl[key] || 'pending')}
+          {getStageIcon(cl[key] || 'pending', cl[`${key}_error`])}
           <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.disabled }}>
             {label}
           </Typography>
@@ -69,7 +73,11 @@ const StageItem = ({ stage, theme }: { stage: any; theme: any }) => {
     if (stage.status === 'completed') {
       return <CheckCircleIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />;
     } else if (stage.status === 'failed') {
-      return <ErrorIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />;
+      return (
+        <Tooltip title={stage.message || 'Failed'} placement="top">
+          <ErrorIcon sx={{ fontSize: 18, color: theme.palette.error.main, cursor: 'help' }} />
+        </Tooltip>
+      );
     } else if (stage.status === 'processing') {
       return <BlurOnOutlinedIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />;
     } else {

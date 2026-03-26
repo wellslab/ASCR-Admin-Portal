@@ -263,8 +263,10 @@ def curate_article_task(self: Task, filename: str, file_data: bytes):
                 for cl in cell_lines
             }
 
-            def update_cell_line_progress(name: str, stage: str, status: str):
+            def update_cell_line_progress(name: str, stage: str, status: str, error_message: str = None):
                 cell_line_states[name][stage] = status
+                if error_message:
+                    cell_line_states[name][f"{stage}_error"] = error_message
                 progress.update_stage(
                     task_id, "processing", "processing",
                     f"Processing {len(cell_lines)} cell line{'' if len(cell_lines) == 1 else 's'}...",
