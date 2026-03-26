@@ -6,7 +6,7 @@ import redis
 import os
 import time
 from datetime import datetime, date
-from typing import Dict, Any
+from typing import Dict, Any, List
 import httpx
 from celery import Task
 import curate
