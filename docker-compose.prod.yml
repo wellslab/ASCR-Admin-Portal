@@ -46,6 +46,14 @@ services:
     depends_on:
       - redis
 
+  docs:
+    image: squidfunk/mkdocs-material
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./documentation:/docs
+      - ./services/backend:/services/backend
+
   redis:
     image: redis:7-alpine
     volumes:
