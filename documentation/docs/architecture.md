@@ -185,4 +185,4 @@ The backend reads configuration from two sources, in priority order:
 
 The most important configuration value is `OPENAI_API_KEY`, which the curation pipeline requires. It can be set either through the Settings page or as an environment variable before starting the services.
 
-For deployment configuration, see [Deployment](deployment.md).
+For deployment configuration, see [Deployment](prod_deployment_guide.md).
