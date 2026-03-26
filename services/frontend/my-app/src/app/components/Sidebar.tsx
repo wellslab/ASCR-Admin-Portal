@@ -129,7 +129,7 @@ const Sidebar = () => {
       {/* Documentation link */}
       <List dense disablePadding sx={{ mb: 1 }}>
         <ListItemButton
-          onClick={() => window.open('http://localhost:8080', '_blank')}
+          onClick={() => window.open(`${window.location.protocol}//${window.location.hostname}:8080`, '_blank')}
           sx={{ mx: 1, borderRadius: 1, '&:hover': { backgroundColor: theme.palette.action.hover } }}
         >
           <ListItemIcon sx={{ minWidth: 36, color: theme.palette.text.secondary }}>
