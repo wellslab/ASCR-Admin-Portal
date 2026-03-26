@@ -1,0 +1,39 @@
+{
+    "AIBNi001-A": {
+        "v0": {
+            "ingest_runs": [{
+                    "date": "2026-03-23",
+                    "status": "ERROR"
+                }, {
+                    "date": "2026-03-24",
+                    "status": "DEV-PASS"
+                }, {
+                    "date": "2026-03-25",
+                    "status": "PROD-PASS"
+                }]
+        },
+        "v1": {
+            "ingest_runs": [{
+                "date": "2026-03-24",
+                "status": "DEV-PASS"
+            }, {
+                "date": "2026-03-25",
+                "status": "PROD-PASS"
+            }]
+        }
+    },
+    "AIBNi001-B": {
+        "v0": {
+            "ingest_runs": [{
+                "date": "2026-03-23",
+                "status": "ERROR"
+            }]
+        }
+    }
+}
+
+
+
+
+
+

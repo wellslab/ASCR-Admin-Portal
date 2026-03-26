@@ -54,17 +54,33 @@ plugins:
 # Navigation
 nav:
   - Home: index.md
-  - Deployment:
-    - Production Deployment: prod_deployment_guide.md
-  - Features:
-    - Settings Page: features/settings-page.md
+  - Architecture: architecture.md
+  - Frontend:
+    - Ingestion Manager: frontend/ingestion-manager.md
+    - Cell Line Editor: frontend/cell-line-editor.md
+    - Settings Page: frontend/settings-page.md
+    - Task History: frontend/task-history.md
+  - Modules:
+    - Storage: modules/storage.md
+    - File Manager: modules/file-manager.md
+    - AI Curation: modules/ai-curation.md
+    - Ingestion Monitor: modules/ingestion-monitor.md
+    - Validation: modules/validation.md
+  - API Reference:
+    - Storage: reference/storage.md
+    - File Manager: reference/file-manager.md
+    - AI Curation: reference/ai-curation.md
+    - Ingestion Monitor: reference/ingestion-monitor.md
+    - Validation: reference/validation.md
+  - Spec Sheets:
+    - Cell Line Editor: spec-sheets/editor_component_spec.md
+    - Version Control: spec-sheets/three-status-version-control-spec.md
+    - Validation System: spec-sheets/validation-system-spec.md
   - Tests:
     - Overview: tests/index.md
     - Validation: tests/validation.md
-  - Modules:
-    - Storage: modules/storage.md
-    - Version control: modules/version_control.md
-    - Data transport: modules/data_transport.md
+  - Deployment: prod_deployment_guide.md
+  - FAQ: faq.md
 
 # Markdown extensions
 markdown_extensions:

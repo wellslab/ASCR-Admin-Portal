@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Tuple, Optional
 import asyncio
 import io
 from dataclasses import dataclass
+from pathlib import Path
 from openai import AsyncOpenAI
 from pdf2image import convert_from_bytes
 import logging
@@ -15,6 +16,8 @@ from pydantic import BaseModel, ValidationError
 from agents import Agent, trace, Runner
 from data_dictionaries.models import JSONOutputSchema
 from config_manager import config_manager
+
+_AI_ASSETS = Path(__file__).parent / "ai_assets"
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +33,8 @@ class PDFInfo:
 
 def load_controlled_vocabulary() -> VocabularyContext:
     """Load the controlled vocabulary from the ASCR ontology file"""
-    ontology_path = "/app/contexts/ASCR_ONTOLOGY.json"
-    
-    # Try local path if Docker path doesn't exist
-    if not os.path.exists(ontology_path):
-        ontology_path = "services/curation_service/contexts/ASCR_ONTOLOGY.json"
-    
+    ontology_path = _AI_ASSETS / "ASCR_ONTOLOGY.json"
+
     try:
         with open(ontology_path, 'r') as f:
             ontology_data = json.loads(f.read())
@@ -88,7 +87,7 @@ async def validate_and_upload_pdf(filename: str, file_data: bytes) -> PDFInfo:
     return PDFInfo(file_id=pdf.id, filename=filename, client=client)
 
 def start_identification_agent():
-    with open("prompts/identification_prompt.md", "r") as f:
+    with open(_AI_ASSETS / "identification_prompt.md", "r") as f:
         prompt = f.read()
 
     model = config_manager.get("SELECTED_MODEL", "gpt-4.1-mini")
@@ -103,7 +102,7 @@ def start_identification_agent():
     return CellLineIdentificationAgent
 
 def start_curation_agent():
-    with open("prompts/curation_prompt.md", "r") as f:
+    with open(_AI_ASSETS / "curation_prompt.md", "r") as f:
         cell_line_curation_prompt = f.read()
 
     with open("curation_instructions/llm_curation_instructions.md") as f:
@@ -124,7 +123,7 @@ def start_curation_agent():
     return CellLineCurationAgent
 
 def start_normalisation_agent():
-    with open("prompts/normalisation_prompt.md", "r") as f:
+    with open(_AI_ASSETS / "normalisation_prompt.md", "r") as f:
         prompt = f.read()
 
     model = config_manager.get("SELECTED_MODEL", "gpt-4.1-mini")

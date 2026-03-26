@@ -10,7 +10,6 @@ from typing import Dict, Any
 import httpx
 from celery import Task
 import curate
-import utils
 import asyncio
 import logging
 from validation import CellLineValidation
@@ -180,6 +179,30 @@ def _save_cell_lines(validated_results: list) -> Dict[str, Any]:
         "total_saved": total_saved,
         "files_saved": saved_files,
         "save_errors": save_errors
+    }
+
+
+def queue_curation_tasks(files: List[Dict[str, str]], curate_task_func) -> Dict[str, Any]:
+    """Decode base64 file data and dispatch one Celery curation task per file."""
+    import base64
+    if not files:
+        raise ValueError("No files provided for curation.")
+
+    tasks = []
+    for uploaded_file in files:
+        try:
+            pdf_bytes = base64.b64decode(uploaded_file["file_data"])
+            task = curate_task_func.apply_async(args=[uploaded_file["filename"], pdf_bytes])
+            tasks.append({"filename": uploaded_file["filename"], "task_id": task.id})
+        except Exception as e:
+            logger.error(f"Failed to queue curation for {uploaded_file['filename']}: {str(e)}")
+            raise Exception(f"Failed to queue {uploaded_file['filename']}: {str(e)}")
+
+    return {
+        "status": "queued",
+        "total_files": len(files),
+        "tasks": tasks,
+        "message": "Curation tasks queued; track progress via Celery backend.",
     }
 
 

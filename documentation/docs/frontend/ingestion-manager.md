@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Ingestion Manager is a backend module that processes the external ingestion system's run log and moves cell line files between states accordingly. It replaces the earlier sketch in `ingestion_monitor.py`.
+The Ingestion Manager is a backend module that processes the ASCR registry ingestion system's run log and moves cell line files between states accordingly.
 
-The external ingestion system picks up cell line files from the `ready/` directory and pipes them into the main registry database. After each ingestion run it writes a JSON log file (`run_log.json`) at a configured path. The Ingestion Manager reads this file and resolves the outcome for each cell line that is currently waiting in `ready/`.
+The ASCR registry ingestion system picks up cell line files from the `ready/` directory and ingests them into the ASCR registry database. After each ingestion run it writes a JSON log file (`run_log.json`) at a configured path. The Ingestion Manager reads this file and resolves the outcome for each cell line that is currently waiting in `ready/`.
 
 ---
 
@@ -60,7 +60,7 @@ For each file in the `ready/` directory:
 
 ## Scheduling
 
-The external ingestion process runs every Friday. The Ingestion Manager therefore runs automatically every Saturday at 06:00 local server time. This gives the ingestion system time to complete and write its log before the manager processes it.
+The ASCR registry ingestion process runs every Friday. The Ingestion Manager therefore runs automatically every Saturday at 06:00 local server time. This gives the ASCR registry ingestion system time to complete and write its log before the manager processes it.
 
 On application startup, the background task calculates the time until the next Saturday 06:00 and sleeps until then. Subsequent runs repeat on a 7-day cycle.
 
@@ -134,6 +134,6 @@ A new page accessible from the sidebar under the Explore section. It is styled s
 
 ## What This Module Does Not Handle
 
-- Error message detail from the ingestion system. The run log does not currently include error messages; only the status code is present.
+- Error message detail from the ASCR registry ingestion system. The run log does not currently include error messages; only the status code is present.
 - Retry logic. Once a cell line is moved back to `working/`, the curator amends it and manually sets it to `ready/` via the existing workflow.
 - Partial ingestion status. `DEV-PASS` entries are treated the same as no-result — the file stays in `ready/` until a `PROD-PASS` or `ERROR` is recorded.

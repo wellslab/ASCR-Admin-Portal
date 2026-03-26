@@ -32,14 +32,9 @@ class TestIngestionManager:
         return FileStorage()
 
     @pytest.fixture
-    def version_control(self, storage):
-        from version_control import VersionControl
-        return VersionControl(storage)
-
-    @pytest.fixture
-    def data_transport(self, storage, version_control):
-        from data_transport import DataTransport
-        return DataTransport(storage, version_control)
+    def file_manager(self, storage):
+        from file_manager import FileManager
+        return FileManager(storage)
 
     @pytest.fixture
     def run_log_path(self, temp_dir):
@@ -47,9 +42,9 @@ class TestIngestionManager:
         return str(Path(temp_dir) / "run_log.json")
 
     @pytest.fixture
-    def manager(self, run_log_path, storage, data_transport):
+    def manager(self, run_log_path, storage, file_manager):
         from ingestion_manager import IngestionManager
-        return IngestionManager(run_log_path, storage, data_transport)
+        return IngestionManager(run_log_path, storage, file_manager)
 
     @pytest.fixture
     def sample_cell_line(self):

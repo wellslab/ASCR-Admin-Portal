@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from typing import Optional
 from storage import StorageInterface
-from data_transport import DataTransport
+from file_manager import FileManager
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,10 @@ class IngestionManager:
     - Anything else          → leave in ready (not yet ingested at production level)
     """
 
-    def __init__(self, run_log_path: str, storage: StorageInterface, data_transport: DataTransport):
+    def __init__(self, run_log_path: str, storage: StorageInterface, file_manager: FileManager):
         self.run_log_path = Path(run_log_path)
         self.storage = storage
-        self.data_transport = data_transport
+        self.file_manager = file_manager
 
     def _load_run_log(self) -> dict:
         if not self.run_log_path.exists():
@@ -79,7 +79,7 @@ class IngestionManager:
 
             if status == "PROD-PASS":
                 try:
-                    self.data_transport.move_to_registered(filename)
+                    self.file_manager.move_to_registered(filename)
                     moved_to_registered += 1
                     logger.info(f"Moved {filename} to registered (PROD-PASS)")
                 except Exception as e:
@@ -88,7 +88,7 @@ class IngestionManager:
 
             elif status == "ERROR":
                 try:
-                    self.data_transport.move_to_working(filename)
+                    self.file_manager.move_to_working(filename)
                     moved_to_working += 1
                     logger.info(f"Moved {filename} back to working (ERROR)")
                 except Exception as e:

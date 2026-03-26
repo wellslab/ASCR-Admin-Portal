@@ -4,13 +4,13 @@ from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import os
-import utils
 from storage import StorageInterface, FileStorage
-from version_control import VersionControl
-from data_transport import DataTransport, WorkingVersionConflict, ReadyVersionConflict
-from models import StartAICurationRequest, TaskCompletionNotification
+from file_manager import FileManager, WorkingVersionConflict, ReadyVersionConflict
+from api_models import StartAICurationRequest, TaskCompletionNotification
 from data_dictionaries.models import JSONOutputSchema
-from tasks import curate_article_task, redis_client
+from tasks import curate_article_task, redis_client, queue_curation_tasks
+from validation import get_frontend_schema, generate_empty_form
+from websocket import websocket_manager, broadcast_task_completion, broadcast_task_progress
 from config_manager import config_manager
 from schema_migration import migrate_all, migrate_registered_structure
 from task_progress import TaskProgressManager
@@ -35,22 +35,9 @@ def get_storage() -> StorageInterface:
     """
     return FileStorage()
 
-def get_version_control(storage: StorageInterface = Depends(get_storage)) -> VersionControl:
-    """
-    Dependency injection for version control.
-    Pure versioning logic with no file operations.
-    """
-    return VersionControl(storage)
-
-def get_data_transport(
-    storage: StorageInterface = Depends(get_storage),
-    version_control: VersionControl = Depends(get_version_control)
-) -> DataTransport:
-    """
-    Dependency injection for data transport.
-    Orchestrates storage and version control for complex workflows.
-    """
-    return DataTransport(storage, version_control)
+def get_file_manager(storage: StorageInterface = Depends(get_storage)) -> FileManager:
+    """Dependency injection for file manager. Handles all state transitions and versioning."""
+    return FileManager(storage)
 
 app = FastAPI(title="ASCR Curation Service", version="1.0.0")
 
@@ -63,9 +50,8 @@ def get_run_log_path() -> str:
 async def monitor_ingestion_log():
     """Background task that runs every Saturday at 06:00, matching the Friday ingestion schedule."""
     storage = get_storage()
-    version_control = get_version_control(storage)
-    data_transport = get_data_transport(storage, version_control)
-    manager = IngestionManager(get_run_log_path(), storage, data_transport)
+    file_manager = get_file_manager(storage)
+    manager = IngestionManager(get_run_log_path(), storage, file_manager)
 
     while True:
         now = datetime.datetime.now()
@@ -117,7 +103,7 @@ async def get_cellline_schema():
     This schema is used by the frontend editor component.
     """
     try:
-        return utils.get_frontend_schema(JSONOutputSchema)
+        return get_frontend_schema(JSONOutputSchema)
     except Exception as e:
         logger.error(f"Error generating schema: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Schema generation failed: {str(e)}")
@@ -131,7 +117,7 @@ async def get_empty_cellline_form(hpscreg_name: str = "", cell_type: str = ""):
     irrelevant derivation section.
     """
     try:
-        return utils.generate_empty_form(JSONOutputSchema, hpscreg_name, cell_type)
+        return generate_empty_form(JSONOutputSchema, hpscreg_name, cell_type)
     except Exception as e:
         logger.error(f"Error generating empty form: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Empty form generation failed: {str(e)}")
@@ -154,7 +140,7 @@ async def start_ai_curation(request: StartAICurationRequest):
 
         # Convert Pydantic request to dict format for utils function
         files = [{"filename": f.filename, "file_data": f.file_data} for f in request.files]
-        return utils.queue_curation_tasks(files, curate_article_task) # Starts Celery curation tasks
+        return queue_curation_tasks(files, curate_article_task)
     except HTTPException:
         raise
     except ValueError as e:
@@ -187,7 +173,7 @@ async def get_stats(storage: StorageInterface = Depends(get_storage)):
 @app.get("/cell-lines/grouped")
 async def get_cell_lines_grouped(
     storage: StorageInterface = Depends(get_storage),
-    version_control: VersionControl = Depends(get_version_control)
+    file_manager: FileManager = Depends(get_file_manager)
 ):
     """
     Get all cell lines grouped by base name, with each version's filename and location.
@@ -201,7 +187,7 @@ async def get_cell_lines_grouped(
                 if base_name not in groups:
                     groups[base_name] = []
                 for filename in filenames:
-                    version = version_control.parse_version_from_filename(filename)
+                    version = file_manager.parse_version_from_filename(filename)
                     file_data = storage.get(filename, location)
                     curation_method = file_data.get("curation_method") if file_data else None
                     groups[base_name].append({
@@ -306,13 +292,13 @@ async def get_cell_line(filename: str, storage: StorageInterface = Depends(get_s
     return result
 
 @app.post("/cell-line/{filename}/move-to-ready")
-async def move_cell_line_to_ready(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
+async def move_cell_line_to_ready(filename: str, file_manager: FileManager = Depends(get_file_manager)):
     """
     Move a cell line file from working to ready directory.
     File already has version assigned, so this is a simple status change.
     """
     try:
-        return data_transport.move_to_ready(filename)
+        return file_manager.move_to_ready(filename)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -320,12 +306,12 @@ async def move_cell_line_to_ready(filename: str, data_transport: DataTransport =
         raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
 
 @app.post("/cell-line/{filename}/move-to-registered")
-async def move_cell_line_to_registered(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
+async def move_cell_line_to_registered(filename: str, file_manager: FileManager = Depends(get_file_manager)):
     """
     Move a cell line file from ready to registered directory.
     """
     try:
-        return data_transport.move_to_registered(filename)
+        return file_manager.move_to_registered(filename)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -333,12 +319,12 @@ async def move_cell_line_to_registered(filename: str, data_transport: DataTransp
         raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
 
 @app.post("/cell-line/{filename}/move-to-working")
-async def move_cell_line_to_working(filename: str, data_transport: DataTransport = Depends(get_data_transport)):
+async def move_cell_line_to_working(filename: str, file_manager: FileManager = Depends(get_file_manager)):
     """
     Move a cell line file from ready to working directory.
     """
     try:
-        return data_transport.move_to_working(filename)
+        return file_manager.move_to_working(filename)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
@@ -352,7 +338,7 @@ async def move_cell_line_to_working(filename: str, data_transport: DataTransport
 async def create_new_version_from_registered(
     filename: str,
     overwrite: bool = Query(default=False),
-    data_transport: DataTransport = Depends(get_data_transport)
+    file_manager: FileManager = Depends(get_file_manager)
 ):
     """
     Create a new working version from a registered cell line.
@@ -361,7 +347,7 @@ async def create_new_version_from_registered(
     Returns 409 with conflict_type='ready' if a ready copy exists (cannot overwrite).
     """
     try:
-        return data_transport.create_new_version_from_registered(filename, overwrite=overwrite)
+        return file_manager.create_new_version_from_registered(filename, overwrite=overwrite)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except WorkingVersionConflict as e:
@@ -384,7 +370,7 @@ async def create_new_version_from_registered(
 @app.get("/cell-line/{base_name}/versions")
 async def get_cell_line_versions(
     base_name: str,
-    version_control: VersionControl = Depends(get_version_control),
+    file_manager: FileManager = Depends(get_file_manager),
     storage: StorageInterface = Depends(get_storage)
 ):
     """
@@ -392,20 +378,18 @@ async def get_cell_line_versions(
     Returns versions from working, ready, and registered directories with location info.
     """
     try:
-        # Collect versions from all directories
         all_versions = []
 
         for location in ["working", "ready", "registered"]:
             versions = storage.get_files_for_base_name(base_name, location)
             for version_file in versions:
-                version_num = version_control.parse_version_from_filename(version_file)
+                version_num = file_manager.parse_version_from_filename(version_file)
                 all_versions.append({
                     "filename": version_file,
                     "version": version_num,
                     "location": location
                 })
 
-        # Sort by version number
         all_versions.sort(key=lambda x: x.get("version", -1))
 
         return {
@@ -417,25 +401,11 @@ async def get_cell_line_versions(
         logger.error(f"Error getting versions for {base_name}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get versions: {str(e)}")
 
-@app.get("/cell-line/{base_name}/latest")
-async def get_latest_cell_line_version(base_name: str, version_control: VersionControl = Depends(get_version_control)):
-    """
-    Get the latest version of a cell line.
-    Returns the highest version number with full cell line data.
-    """
-    try:
-        return version_control.get_latest_version_data(base_name)
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error getting latest version for {base_name}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get latest version: {str(e)}")
-
 @app.post("/working/cell-line")
 async def create_cell_line(
     cell_line_data: JSONOutputSchema,
     curation_method: Optional[str] = Query(default="Manual"),
-    data_transport: DataTransport = Depends(get_data_transport)
+    file_manager: FileManager = Depends(get_file_manager)
 ):
     """
     Create a new cell line file in the working directory.
@@ -444,7 +414,7 @@ async def create_cell_line(
     """
     try:
         cell_line_dict = cell_line_data.model_dump()
-        return data_transport.save_with_auto_versioning(cell_line_dict, curation_method=curation_method)
+        return file_manager.save_with_auto_versioning(cell_line_dict, curation_method=curation_method)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
@@ -499,14 +469,14 @@ async def delete_cell_line(payload: dict, storage: StorageInterface = Depends(ge
 @app.post("/internal/broadcast-task-completion")
 async def broadcast_task_completion_endpoint(notification: TaskCompletionNotification):
     """Internal endpoint for Celery tasks to broadcast completion"""
-    await utils.broadcast_task_completion(notification.model_dump())
+    await broadcast_task_completion(notification.model_dump())
     return {"status": "broadcasted"}
 
 
 @app.post("/internal/broadcast-task-progress")
 async def broadcast_task_progress_endpoint(progress_data: dict):
     """Internal endpoint for Celery tasks to broadcast progress updates"""
-    await utils.broadcast_task_progress(progress_data)
+    await broadcast_task_progress(progress_data)
     return {"status": "broadcasted"}
 
 
@@ -590,12 +560,11 @@ async def delete_task(task_id: str):
 @app.post("/internal/check-ingestion-log")
 async def check_ingestion_log(
     storage: StorageInterface = Depends(get_storage),
-    version_control: VersionControl = Depends(get_version_control),
-    data_transport: DataTransport = Depends(get_data_transport)
+    file_manager: FileManager = Depends(get_file_manager)
 ):
     """Manual trigger to process the ingestion run log. Called from the Settings page."""
     try:
-        manager = IngestionManager(get_run_log_path(), storage, data_transport)
+        manager = IngestionManager(get_run_log_path(), storage, file_manager)
         return manager.process_ready_files()
     except Exception as e:
         logger.error(f"Error checking ingestion log: {str(e)}")
@@ -605,14 +574,14 @@ async def check_ingestion_log(
 @app.get("/ingestion/errors")
 async def get_ingestion_errors(
     storage: StorageInterface = Depends(get_storage),
-    data_transport: DataTransport = Depends(get_data_transport)
+    file_manager: FileManager = Depends(get_file_manager)
 ):
     """
     Return working-directory files whose most recent run log entry has status ERROR.
     Used by the Ingestion Monitor page to list cell lines needing curator attention.
     """
     try:
-        manager = IngestionManager(get_run_log_path(), storage, data_transport)
+        manager = IngestionManager(get_run_log_path(), storage, file_manager)
         return {"errors": manager.get_errors()}
     except Exception as e:
         logger.error(f"Error fetching ingestion errors: {e}")
@@ -733,14 +702,12 @@ async def purge_all_data():
 @app.websocket("/ws/task-updates")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time task completion updates"""
-    await utils.websocket_manager.connect(websocket)
+    await websocket_manager.connect(websocket)
     try:
         while True:
-            # Keep connection alive by waiting for messages
-            # Frontend can send ping/pong to maintain connection
             await websocket.receive_text()
     except WebSocketDisconnect:
-        utils.websocket_manager.disconnect(websocket)
+        websocket_manager.disconnect(websocket)
 
 if __name__ == "__main__":
     import uvicorn
