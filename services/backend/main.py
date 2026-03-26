@@ -181,12 +181,16 @@ async def get_cell_lines_grouped(
     """
     try:
         groups: dict = {}
+        seen_filenames: set = set()
         for location in ["working", "ready", "registered"]:
             index = storage.list_files_grouped(location)
             for base_name, filenames in index.items():
                 if base_name not in groups:
                     groups[base_name] = []
                 for filename in filenames:
+                    if filename in seen_filenames:
+                        continue
+                    seen_filenames.add(filename)
                     version = file_manager.parse_version_from_filename(filename)
                     file_data = storage.get(filename, location)
                     curation_method = file_data.get("curation_method") if file_data else None
