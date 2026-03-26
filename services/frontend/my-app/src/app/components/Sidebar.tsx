@@ -8,6 +8,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 
 const SIDEBAR_WIDTH = 220;
 
@@ -70,6 +71,7 @@ const Sidebar = () => {
         Applications
       </Typography>
 
+      {/* Nav sections */}
       {navSections.map((section) => (
         <Box key={section.title} sx={{ mb: 2 }}>
           <Typography
@@ -121,6 +123,24 @@ const Sidebar = () => {
           </List>
         </Box>
       ))}
+
+      <Box sx={{ flex: 1 }} />
+
+      {/* Documentation link */}
+      <List dense disablePadding sx={{ mb: 1 }}>
+        <ListItemButton
+          onClick={() => window.open('http://localhost:8080', '_blank')}
+          sx={{ mx: 1, borderRadius: 1, '&:hover': { backgroundColor: theme.palette.action.hover } }}
+        >
+          <ListItemIcon sx={{ minWidth: 36, color: theme.palette.text.secondary }}>
+            <MenuBookOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Documentation"
+            primaryTypographyProps={{ variant: 'body2', color: theme.palette.text.secondary }}
+          />
+        </ListItemButton>
+      </List>
     </Box>
   );
 };
