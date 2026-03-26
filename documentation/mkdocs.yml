@@ -1,5 +1,6 @@
 site_name: ASCR Admin Portal Documentation
 site_description: Documentation for modules and APIs in the ASCR Admin Portal
+site_url: https://stefanmirandadev.github.io/ASCR-Admin-Portal-Fast-API/
 
 # Theme configuration
 theme:
