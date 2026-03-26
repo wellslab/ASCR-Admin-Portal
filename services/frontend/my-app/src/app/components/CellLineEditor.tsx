@@ -115,6 +115,7 @@ const FieldEditor = ({ fieldName, value, inputName, fieldSchema }: FieldEditorPr
             },
           }}
         >
+          <MenuItem value=""><em>— not set</em></MenuItem>
           {fieldSchema.choices.map((choice: string) => (
             <MenuItem key={choice} value={choice}>{choice}</MenuItem>
           ))}
