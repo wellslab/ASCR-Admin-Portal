@@ -47,7 +47,9 @@ services:
       - redis
 
   docs:
-    image: squidfunk/mkdocs-material
+    build:
+      context: ./documentation
+      dockerfile: Dockerfile
     ports:
       - "8080:8000"
     volumes:
