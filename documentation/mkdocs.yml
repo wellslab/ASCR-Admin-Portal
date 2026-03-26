@@ -35,7 +35,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [../services/backend]  # Add path to your Python modules
+          paths: [../services/backend, /services/backend]
           options:
             docstring_style: google
             show_source: true

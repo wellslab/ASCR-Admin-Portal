@@ -46,6 +46,14 @@ services:
       - redis
     command: ["celery", "-A", "tasks", "worker", "--loglevel=info", "--pool=solo"]
 
+  docs:
+    image: squidfunk/mkdocs-material
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./documentation:/docs
+      - ./services/backend:/services/backend
+
   redis:
     image: redis:7-alpine
     ports:
