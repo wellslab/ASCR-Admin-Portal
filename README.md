@@ -117,8 +117,16 @@ There is no database. Each versioned file is named `{base_name}_v{n}.json`.
 
 ## Production Deployment
 
+For the initial deployment on the prod server:
+
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d
+```
+
+After pushing changes to master, run `update.sh` on the prod server to pull the latest code and rebuild the containers:
+
+```bash
+./update.sh
 ```
 
 See the Deployment Guide in the documentation (http://localhost:8080) for full instructions.
