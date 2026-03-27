@@ -26,8 +26,10 @@ services:
       - backend_data:/app/data
       - ./data_dictionaries:/app/data_dictionaries
       - ./curation_instructions:/app/curation_instructions
+      - ./config:/app/config
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - CONFIG_PATH=/app/config/config.json
     depends_on:
       - redis
 
@@ -40,8 +42,10 @@ services:
       - backend_data:/app/data
       - ./data_dictionaries:/app/data_dictionaries
       - ./curation_instructions:/app/curation_instructions
+      - ./config:/app/config
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - CONFIG_PATH=/app/config/config.json
     depends_on:
       - redis
     command: ["celery", "-A", "tasks", "worker", "--loglevel=info", "--pool=solo"]

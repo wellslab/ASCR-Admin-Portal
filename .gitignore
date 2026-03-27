@@ -152,5 +152,6 @@ dmypy.json
 *.p12
 secrets.json
 
-# Runtime configuration
+# Runtime configuration (contains secrets — use config/config.example.json as template)
 services/backend/config.json
+config/config.json

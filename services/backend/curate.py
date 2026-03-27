@@ -1,19 +1,17 @@
-import openai
 import json
 import os
 import time
-from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
 import asyncio
 import io
+import typing
 from dataclasses import dataclass
 from pathlib import Path
 from openai import AsyncOpenAI
-from pdf2image import convert_from_bytes
 import logging
-import base64
+from openpyxl import load_workbook
 from pydantic import BaseModel, ValidationError
-from agents import Agent, trace, Runner
+from agents import Agent, Runner
 from data_dictionaries.models import JSONOutputSchema
 from config_manager import config_manager
 
@@ -22,26 +20,112 @@ _AI_ASSETS = Path(__file__).parent / "ai_assets"
 logger = logging.getLogger(__name__)
 
 @dataclass
-class VocabularyContext:
-    controlled_vocabularies: Dict[str, Any]
-
-@dataclass
 class PDFInfo:
     file_id: str
     filename: str
     client: AsyncOpenAI
 
-def load_controlled_vocabulary() -> VocabularyContext:
-    """Load the controlled vocabulary from the ASCR ontology file"""
-    ontology_path = _AI_ASSETS / "ASCR_ONTOLOGY.json"
 
-    try:
-        with open(ontology_path, 'r') as f:
-            ontology_data = json.loads(f.read())
-        return VocabularyContext(controlled_vocabularies=ontology_data["controlled_vocabularies"])
-    except (FileNotFoundError, KeyError, json.JSONDecodeError) as e:
-        print(f"Warning: Could not load controlled vocabulary: {e}")
-        return VocabularyContext(controlled_vocabularies={})
+def _literal_values(annotation) -> list | None:
+    """Return Literal values if annotation is/wraps a Literal, else None."""
+    origin = typing.get_origin(annotation)
+    args = typing.get_args(annotation)
+    if origin is typing.Literal:
+        return list(args)
+    if origin is typing.Union:  # Optional[Literal[...]]
+        for arg in args:
+            if typing.get_origin(arg) is typing.Literal:
+                return list(typing.get_args(arg))
+    if origin is list and args:  # List[Literal[...]]
+        if typing.get_origin(args[0]) is typing.Literal:
+            return list(typing.get_args(args[0]))
+    return None
+
+
+def _nested_model(annotation) -> type | None:
+    """Return the Pydantic BaseModel class buried in an annotation, if any."""
+    origin = typing.get_origin(annotation)
+    args = typing.get_args(annotation)
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return annotation
+    if origin is typing.Union:
+        for arg in args:
+            if isinstance(arg, type) and issubclass(arg, BaseModel):
+                return arg
+    if origin is list and args:
+        if isinstance(args[0], type) and issubclass(args[0], BaseModel):
+            return args[0]
+    return None
+
+
+def load_llm_curation_instructions() -> str:
+    """Read per-field curation instructions from the data dictionary Excel file.
+    Returns a markdown string for fields where llm_curate = YES.
+    Path is read from DATA_DICT_PATH in config (Settings page).
+    """
+    raw_path = config_manager.get("DATA_DICT_PATH")
+    if not raw_path:
+        raise FileNotFoundError("DATA_DICT_PATH is not configured. Set it in Settings.")
+    path = Path(raw_path)
+    if not path.is_absolute():
+        path = Path(__file__).parent / path
+    if not path.exists():
+        raise FileNotFoundError(f"Data dictionary file not found: {path}. Update DATA_DICT_PATH in Settings.")
+
+    wb = load_workbook(path, read_only=True, data_only=True)
+    ws = wb["data_dictionary"]
+
+    by_class: dict = {}
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        class_name, field_name, key, llm_curate, llm_instructions = (
+            row[0], row[1], row[5], row[13], row[14]
+        )
+        if not class_name or not field_name:
+            continue
+        if key and str(key).upper() in ("PK", "FK"):
+            continue
+        if not llm_curate or str(llm_curate).upper() != "YES":
+            continue
+        if not llm_instructions:
+            continue
+        by_class.setdefault(class_name, []).append((field_name, llm_instructions))
+    wb.close()
+
+    lines = [
+        "# LLM Curation Instructions\n",
+        "Fields marked for LLM curation in the data dictionary.\n",
+        "Use `null` for any field where the value is unknown, not reported, or not found in the article.\n",
+    ]
+    for class_name, fields in by_class.items():
+        lines += [f"\n## {class_name}\n", "| Field | Instruction |", "|-------|-------------|"]
+        lines += [f"| `{f}` | {instr} |" for f, instr in fields]
+    return "\n".join(lines)
+
+
+def get_enum_constraints_json() -> str:
+    """
+    Extract all Literal field constraints from JSONOutputSchema and nested models.
+    Returns a JSON string: {"ModelName.field_name": ["allowed", "values"], ...}
+    Used to provide the normalisation agent with up-to-date controlled vocabularies.
+    """
+    def _collect(model_class: type, visited: set) -> dict:
+        if model_class in visited:
+            return {}
+        visited.add(model_class)
+        result = {}
+        for field_name, field_info in model_class.model_fields.items():
+            annotation = field_info.annotation
+            literals = _literal_values(annotation)
+            if literals is not None:
+                result[f"{model_class.__name__}.{field_name}"] = literals
+            else:
+                nested = _nested_model(annotation)
+                if nested:
+                    result.update(_collect(nested, visited))
+        return result
+
+    constraints = _collect(JSONOutputSchema, set())
+    return json.dumps(constraints, indent=2)
 
 async def validate_and_upload_pdf(filename: str, file_data: bytes) -> PDFInfo:
     """
@@ -105,9 +189,7 @@ def start_curation_agent():
     with open(_AI_ASSETS / "curation_prompt.md", "r") as f:
         cell_line_curation_prompt = f.read()
 
-    with open("curation_instructions/llm_curation_instructions.md") as f:
-        llm_curation_instructions = f.read()
-
+    llm_curation_instructions = load_llm_curation_instructions()
     curation_prompt_combined = cell_line_curation_prompt + '\n\n' + llm_curation_instructions
 
     model = config_manager.get("SELECTED_MODEL", "gpt-4.1-mini")
@@ -230,7 +312,7 @@ async def _curate_one(pdf_info: PDFInfo, curation_agent: Any, cell_line_id: str)
         raise
 
 
-async def _normalize_one(normalization_agent: Any, cell_line_id: str, curated: Dict[str, Any], vocab_context: VocabularyContext) -> Optional[Dict[str, Any]]:
+async def _normalize_one(normalization_agent: Any, cell_line_id: str, curated: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Normalize a single curated cell line. Returns result dict or None on failure."""
     curation_data = curated["curation_data"]
     metadata_list = curation_data if isinstance(curation_data, list) else [curation_data]
@@ -238,13 +320,14 @@ async def _normalize_one(normalization_agent: Any, cell_line_id: str, curated: D
     try:
         # Use first metadata object (standard case)
         metadata_obj = metadata_list[0]
+        enum_constraints = get_enum_constraints_json()
         normalization_input = [
             {
                 "role": "user",
-                "content": [{"type": "input_text", "text": f"Normalize this cell line metadata for {cell_line_id}: {metadata_obj}"}],
+                "content": [{"type": "input_text", "text": f"Controlled vocabulary constraints:\n{enum_constraints}\n\nNormalize this cell line metadata for {cell_line_id}: {metadata_obj}"}],
             }
         ]
-        result = await asyncio.to_thread(Runner.run_sync, normalization_agent, normalization_input, context=vocab_context)
+        result = await asyncio.to_thread(Runner.run_sync, normalization_agent, normalization_input)
         normalized_data = result.final_output.model_dump() if result and result.final_output else None
         if normalized_data:
             return {
@@ -267,7 +350,6 @@ async def process_single_cell_line(
     curation_agent: Any,
     normalization_agent: Any,
     cell_line_id: str,
-    vocab_context: VocabularyContext,
     progress_cb,
 ) -> Optional[Dict[str, Any]]:
     """Full pipeline for one cell line: curate → normalize. Calls progress_cb(name, stage, status, error_message) at each transition."""
@@ -282,7 +364,7 @@ async def process_single_cell_line(
 
         progress_cb(cell_line_id, "normalizing", "processing")
         try:
-            normalized = await _normalize_one(normalization_agent, cell_line_id, curated, vocab_context)
+            normalized = await _normalize_one(normalization_agent, cell_line_id, curated)
         except Exception as e:
             progress_cb(cell_line_id, "normalizing", "failed", str(e))
             return None
@@ -302,157 +384,14 @@ async def run_parallel_pipeline(
     progress_cb,
 ) -> List[Dict[str, Any]]:
     """Run curate+normalize for all cell lines concurrently via asyncio.gather."""
-    vocab_context = load_controlled_vocabulary()
-    logger.info(f"Controlled vocabulary loaded with {len(vocab_context.controlled_vocabularies)} categories")
     tasks = [
-        process_single_cell_line(pdf_info, curation_agent, normalization_agent, cl, vocab_context, progress_cb)
+        process_single_cell_line(pdf_info, curation_agent, normalization_agent, cl, progress_cb)
         for cl in cell_lines
     ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     return [r for r in results if r is not None and not isinstance(r, Exception)]
 
 
-async def curate_cell_lines(pdf_info: PDFInfo, curation_agent: Any, cell_lines: List[str]) -> List[Dict[str, Any]]:
-    """
-    Run curation on each identified cell line.
-    
-    Args:
-        pdf_info: PDF information including file_id
-        curation_agent: Agent for curating cell line metadata
-        cell_lines: List of cell line IDs to curate
-        
-    Returns:
-        List of curation results with cell_line_id and curation_data
-    """
-    logger.info("STAGE 2: Running Curation Agent...")
-    curation_results = []
-    
-    for i, cell_line_id in enumerate(cell_lines, 1):
-        logger.info(f"Processing cell line {i}/{len(cell_lines)}: {cell_line_id}")
-        curation_start = time.time()
-        
-        try:
-            curation_input = [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_file",
-                            "file_id": pdf_info.file_id,
-                        },
-                        {
-                            "type": "input_text", 
-                            "text": f"For the cell line named {cell_line_id}, run metadata curation on the given file using your instructions.",
-                        },
-                    ],
-                }
-            ]
-            
-            curation_result = await asyncio.to_thread(
-                Runner.run_sync,
-                curation_agent,
-                curation_input
-            )
-            curation_time = time.time() - curation_start
-            
-            logger.info(f"Curation completed for {cell_line_id} in {curation_time:.2f}s")
-            logger.info(f"Curation result: {curation_result.final_output if curation_result else 'None'}")
-            
-            # Extract final output from RunResult and convert to dict for JSON serialization
-            curation_data = curation_result.final_output.model_dump() if curation_result and curation_result.final_output else None
-            
-            if curation_data:
-                curation_results.append({
-                    "cell_line_id": cell_line_id,
-                    "curation_data": curation_data,
-                    "curation_time": curation_time
-                })
-                logger.info(f"Added curation result for {cell_line_id}")
-            else:
-                logger.warning(f"No curation result for {cell_line_id}")
-                
-        except Exception as e:
-            logger.error(f"Curation failed for {cell_line_id}: {str(e)}", exc_info=True)
-            continue
-    
-    return curation_results
-
-async def normalize_metadata(curation_results: List[Dict[str, Any]], normalization_agent: Any) -> List[Dict[str, Any]]:
-    """
-    Run normalization on curated metadata.
-    
-    Args:
-        curation_results: List of curation results from previous stage
-        normalization_agent: Agent for normalizing metadata
-        
-    Returns:
-        List of normalized results
-    """
-    logger.info("STAGE 3: Running Normalization Agent...")
-    vocab_context = load_controlled_vocabulary()
-    logger.info(f"Controlled vocabulary loaded with {len(vocab_context.controlled_vocabularies)} categories")
-    
-    normalized_results = []
-    
-    for curation_result in curation_results:
-        cell_line_id = curation_result["cell_line_id"]
-        curation_data = curation_result["curation_data"]
-        curation_time = curation_result["curation_time"]
-        
-        logger.info(f"Normalizing metadata for {cell_line_id}")
-        normalization_start = time.time()
-        
-        try:
-            # Process each cell line metadata object
-            cell_line_metadata_list = curation_data if isinstance(curation_data, list) else [curation_data]
-            
-            for j, cell_line_metadata_object in enumerate(cell_line_metadata_list):
-                logger.info(f"Normalizing metadata object {j+1}/{len(cell_line_metadata_list)} for {cell_line_id}")
-                
-                normalization_input = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "input_text",
-                                "text": f"Normalize this cell line metadata for {cell_line_id}: {cell_line_metadata_object}",
-                            }
-                        ],
-                    }
-                ]
-                
-                normalisation_result = await asyncio.to_thread(
-                    Runner.run_sync,
-                    normalization_agent,
-                    normalization_input,
-                    context=vocab_context
-                )
-                normalization_time = time.time() - normalization_start
-                
-                logger.info(f"Normalization completed for {cell_line_id} object {j+1} in {normalization_time:.2f}s")
-                
-                # Extract final output from RunResult and convert to dict for JSON serialization
-                normalized_data = normalisation_result.final_output.model_dump() if normalisation_result and normalisation_result.final_output else None
-                
-                if normalized_data:
-                    normalized_results.append({
-                        "cell_line_id": cell_line_id,
-                        "metadata_object_index": j,
-                        "normalized_data": normalized_data,
-                        "processing_times": {
-                            "curation_seconds": curation_time,
-                            "normalization_seconds": normalization_time
-                        }
-                    })
-                    logger.info(f"Added normalized result for {cell_line_id}")
-                else:
-                    logger.warning(f"No normalization result for {cell_line_id} object {j+1}")
-                    
-        except Exception as e:
-            logger.error(f"Normalization failed for {cell_line_id}: {str(e)}", exc_info=True)
-            continue
-    
-    return normalized_results
 
 async def validate_cell_lines(normalized_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
