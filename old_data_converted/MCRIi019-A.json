@@ -1,0 +1,537 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "MCRIi019-A",
+    "hpscreg_synonym": [
+      "1502",
+      "MCRIAi001-A"
+    ],
+    "cell_line_alt_name": [
+      "1502",
+      "1502.3"
+    ],
+    "curation_status": "Flagged for further review",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": null,
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
+  },
+  "generator": {
+    "institute": "Murdoch Children's Research Institute",
+    "institute_ror": null,
+    "group_name": "Murdoch Children's Research Institute",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "Murdoch Children's Research Institute",
+      "institute_ror": null,
+      "group_name": "Lamandé",
+      "company_name": null,
+      "contact_first_name": "Matthew",
+      "contact_last_name": "Shoulders",
+      "contact_initials": null,
+      "email": " mshoulde@mit.edu",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "33118",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "Royal Children's Hospital Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_A9XY"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q102114510"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/MCRIi019-A"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1016/j.scr.2020.101962",
+      "pmid": "33002832",
+      "first_author": "Kung LHW",
+      "last_author": "Lamandé SR",
+      "journal": "Stem cell research",
+      "title": "CRISPR/Cas9 editing to generate a heterozygous COL2A1 p.G1170S human chondrodysplasia iPSC line, MCRIi019-A-2, in a control iPSC line, MCRIi019-A",
+      "year": "2020"
+    },
+    {
+      "doi": "10.1016/j.scr.2020.102118",
+      "pmid": "33316599",
+      "first_author": "Kung LHW",
+      "last_author": "Bateman JF",
+      "journal": "Stem cell research",
+      "title": "Generation of a miR-26b stem-loop knockout human iPSC line, MCRIi019-A-1, using CRISPR/Cas9 editing",
+      "year": "2020"
+    },
+    {
+      "doi": "10.1016/j.scr.2021.102515",
+      "pmid": "34543885",
+      "first_author": "Lilianty J",
+      "last_author": "Lamandé SR",
+      "journal": "Stem cell research",
+      "title": "Generation of a heterozygous COL2A1 (p.G1113C) hypochondrogenesis mutation iPSC line, MCRIi019-A-7, using CRISPR/Cas9 gene editing",
+      "year": "2021"
+    },
+    {
+      "doi": "10.17816/ptors101679",
+      "pmid": null,
+      "first_author": "Shabaldin Nikita A.",
+      "last_author": "Shabaldin Andrei V.",
+      "journal": "Pediatric Traumatology, Orthopaedics and Reconstructive Surgery",
+      "title": null,
+      "year": "2022"
+    },
+    {
+      "doi": "10.1016/j.scr.2023.103020",
+      "pmid": "36682125",
+      "first_author": "Yammine KM",
+      "last_author": "Shoulders MD",
+      "journal": "Stem cell research",
+      "title": "Using CRISPR/Cas9 to generate a heterozygous COL2A1 p.R719C iPSC line (MCRIi019-A-6) model of human precocious osteoarthritis",
+      "year": "2023"
+    },
+    {
+      "doi": "10.1016/j.tibtech.2022.07.011",
+      "pmid": "35995600",
+      "first_author": "Li ZA",
+      "last_author": "Lin H",
+      "journal": "Trends in biotechnology",
+      "title": "Synovial joint-on-a-chip for modeling arthritis: progress, pitfalls, and potential",
+      "year": "2023"
+    },
+    {
+      "doi": "10.3390/ijms25021014",
+      "pmid": "38256087",
+      "first_author": "Bombieri C",
+      "last_author": "Romanelli MG",
+      "journal": "International journal of molecular sciences",
+      "title": "Advanced Cellular Models for Rare Disease Study: Exploring Neural, Muscle and Skeletal Organoids",
+      "year": "2024"
+    },
+    {
+      "doi": "10.1016/j.semcdb.2021.11.024",
+      "pmid": "34949507",
+      "first_author": "Humphreys PA",
+      "last_author": "Kimber SJ",
+      "journal": "Seminars in cell & developmental biology",
+      "title": "Developmental principles informing human pluripotent stem cell differentiation to cartilage and bone",
+      "year": "2022"
+    },
+    {
+      "doi": "10.1073/pnas.2211510120",
+      "pmid": "37126720",
+      "first_author": "Lamandé SR",
+      "last_author": "Bateman JF",
+      "journal": "Proceedings of the National Academy of Sciences of the United States of America",
+      "title": "Modeling human skeletal development using human pluripotent stem cells",
+      "year": "2023"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": "10",
+      "karyotyped": "YES",
+      "karyotype": "arr(1-22,X)x2",
+      "karyotype_method": "Molecular karyotyping by SNP array",
+      "karyotype_method_other": null,
+      "summary": "Molecular karyotyping by SNP array (Illumina Infinium GSA-24; resolution 0.5 Mb).",
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": null,
+  "screening": {
+    "performed": "True",
+    "hiv1": "Not Done",
+    "hiv2": "Not Done",
+    "hep_b": "Not Done",
+    "hep_c": "Not Done",
+    "mycoplasma": "Negative",
+    "other": null,
+    "other_result": "Not Done"
+  },
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "fibroblast",
+    "i_source_cell_type_ontology": "CL:0000057",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": "skin of body",
+    "i_source_cell_origin_ontology": "UBERON:0002097",
+    "derivation_year": "2019-01-01",
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": null,
+    "derived_under_gmp": null,
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": null,
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "Matrigel",
+        "amount": null,
+        "unit": null,
+        "company": "Corning",
+        "type": "Base Coat"
+      },
+      {
+        "name": "Essential 8 Medium",
+        "amount": null,
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Base Medium"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "Flow cytometry",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "OCT3/4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA-1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": null,
+    "diff_germlayer": [
+      {
+        "gl_diff_protocol": "In vitro directed differentiation",
+        "germ_layer": "Endoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "SOX17",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      },
+      {
+        "gl_diff_protocol": "In vitro directed differentiation",
+        "germ_layer": "Mesoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "COL2A1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "FOXC2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "MEOX1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "SOX9",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "RT-PCR",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      },
+      {
+        "gl_diff_protocol": "In vitro directed differentiation",
+        "germ_layer": "Ectoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "NES",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "PAX6",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      }
+    ],
+    "diff_other": []
+  },
+  "donor": null,
+  "external_cell_line_source": {
+    "name": "WS1",
+    "provider": "American Type Culture Collection",
+    "provider_cat_num": "CRL-1502",
+    "provider_cat_url": "https://www.atcc.org/products/crl-1502",
+    "lot_number": null,
+    "tissue_of_origin_name": "skin of body",
+    "tissue_ontology": "UBERON:0002097",
+    "cell_type_name": "fibroblast",
+    "cell_type_ontology": "CL:0000057",
+    "variants": [],
+    "xrefs": [
+      {
+        "xref_id": "CRL-1502",
+        "db_name": null,
+        "db_url": null,
+        "xref_url": "https://www.atcc.org/products/crl-1502"
+      }
+    ],
+    "diseases": []
+  },
+  "biopsy_location_ontology_id": "FMA:7163"
+}

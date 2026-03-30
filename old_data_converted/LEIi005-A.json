@@ -1,0 +1,327 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "LEIi005-A",
+    "hpscreg_synonym": [],
+    "cell_line_alt_name": [],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "False",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": null,
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
+  },
+  "generator": {
+    "institute": "Lions Eye Institute",
+    "institute_ror": null,
+    "group_name": "Lions Eye Institute",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Unknown",
+      "ethics_number": "RA/4/1/7916",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "University of Western Australia Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "BioSamples",
+      "db_url": "https://www.ebi.ac.uk/biosamples/",
+      "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA4675564"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_VE62"
+    },
+    {
+      "xref_id": null,
+      "db_name": "CLO",
+      "db_url": "https://www.ebi.ac.uk/ols4/ontologies/clo",
+      "xref_url": "http://purl.obolibrary.org/obo/CLO_0101984"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q54902439"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/LEIi005-A"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1002/mgg3.1489",
+      "pmid": "32931148",
+      "first_author": "Zhang X",
+      "last_author": "Chen FK",
+      "journal": "Molecular genetics & genomic medicine",
+      "title": "Characterization of CRB1 splicing in retinal organoids derived from a patient with adult-onset rod-cone dystrophy caused by the c.1892A>G and c.2548G>A variants",
+      "year": "2020"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": "45",
+      "karyotyped": "YES",
+      "karyotype": "46+XX",
+      "karyotype_method": "Other",
+      "karyotype_method_other": null,
+      "summary": null,
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": {
+    "hla_typing_flag": "False",
+    "hla_results": [],
+    "str_analysis_flag": "True",
+    "str_results": [],
+    "fingerprinting_analysis_flag": "False",
+    "fingerprinting_analysis_results": [],
+    "genome_wide_or_functional_data": "False",
+    "summary": null
+  },
+  "screening": null,
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "fibroblast",
+    "i_source_cell_type_ontology": "CL:0000057",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": null,
+    "i_source_cell_origin_ontology": null,
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "True",
+    "derived_under_gmp": "True",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": {
+      "non_int_vector_type": "Episomal",
+      "reprogramming_kit": null,
+      "vector_details": [],
+      "non_int_other_vector": null,
+      "vector_detection": {
+        "detected_reprogramming_vector": "No",
+        "method_used_immune_marker_staining": "False",
+        "method_used_pcr": "False",
+        "method_used_rtpcr": "False",
+        "method_used_seq": "False",
+        "detected_vector_notes": null,
+        "reprogramming_expression_silence_file": null
+      }
+    },
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": "0.2",
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": []
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": null,
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-3",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SOX2",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "RT-PCR",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": null,
+  "donor": {
+    "age": "Unknown",
+    "sex": "Female",
+    "genomic_characterisation": [],
+    "diseases": [
+      {
+        "name": "retinitis pigmentosa",
+        "free_text": "nan",
+        "omim_url": "https://omim.org/entry/268000",
+        "omim_id": "# 268000",
+        "icd11_url": "nan",
+        "icd11_id": "nan",
+        "ontology_id": "MONDO:0019200"
+      }
+    ],
+    "disease_phenotypes": [],
+    "non_disease_phenotypes": [],
+    "dcv_carrier": null,
+    "dcv_affected": null,
+    "variants": [],
+    "xrefs": [
+      {
+        "xref_id": "SAMEA4675565",
+        "db_name": null,
+        "db_url": null,
+        "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA4675565"
+      }
+    ]
+  },
+  "external_cell_line_source": null
+}

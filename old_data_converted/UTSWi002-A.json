@@ -1,0 +1,61 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "UTSWi002-A",
+    "hpscreg_synonym": [],
+    "cell_line_alt_name": [],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "False",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": null,
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
+  },
+  "generator": null,
+  "owner": [],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Unknown",
+      "ethics_number": "Holding Entry-UTSWi002-A",
+      "approval_date": null,
+      "institutional_HREC": "Holding Entry",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [],
+  "publications": [],
+  "genomic_alteration": [],
+  "genomic_characterisation": [],
+  "additional_genomic_characterisation": null,
+  "screening": null,
+  "derivation_ipsc": null,
+  "derivation_esc": null,
+  "culture_conditions": null,
+  "undiff_characterisation": null,
+  "differentiated_cell_analysis": null,
+  "donor": null,
+  "external_cell_line_source": null
+}

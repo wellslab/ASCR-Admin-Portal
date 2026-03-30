@@ -1,0 +1,430 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "MCRIi024-A",
+    "hpscreg_synonym": [],
+    "cell_line_alt_name": [
+      "ACTA1.1u"
+    ],
+    "curation_status": "Flagged for further review",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [
+      "ACTA1"
+    ],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [
+      "Heterozygous: unspecified_reference_ACTA1:c.443G>A(p.Gly148Asp)"
+    ],
+    "subclone_of": null,
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
+  },
+  "generator": {
+    "institute": "Murdoch Children's Research Institute",
+    "institute_ror": null,
+    "group_name": "Murdoch Children's Research Institute",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "Murdoch Children's Research Institute",
+      "institute_ror": null,
+      "group_name": "North",
+      "company_name": null,
+      "contact_first_name": "Kathryn",
+      "contact_last_name": "North",
+      "contact_initials": null,
+      "email": " Kathryn.north@mcri.edu.au",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "38192",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "Royal Children's Hospital Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_A0LG"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q108820865"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/MCRIi024-A"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1016/j.scr.2021.102429",
+      "pmid": "34157503",
+      "first_author": "Houweling PJ",
+      "last_author": "North KN",
+      "journal": "Stem cell research",
+      "title": "Generating an iPSC line (with isogenic control) from the PBMCs of an ACTA1 (p.Gly148Asp) nemaline myopathy patient",
+      "year": "2021"
+    }
+  ],
+  "genomic_alteration": [],
+  "genomic_characterisation": [
+    {
+      "passage_number": null,
+      "karyotyped": "YES",
+      "karyotype": "arr(1-22)x2,(XY)x1",
+      "karyotype_method": "Molecular karyotyping by SNP array",
+      "karyotype_method_other": null,
+      "summary": "Molecular karyotyping by SNP array (Illumina Infinium GSA-24; resolution 0.5 Mb).",
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": null,
+  "screening": {
+    "performed": "True",
+    "hiv1": "Not Done",
+    "hiv2": "Not Done",
+    "hep_b": "Not Done",
+    "hep_c": "Not Done",
+    "mycoplasma": "Negative",
+    "other": null,
+    "other_result": "Not Done"
+  },
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "peripheral blood mononuclear cell",
+    "i_source_cell_type_ontology": "CL:2000001",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": "blood",
+    "i_source_cell_origin_ontology": "UBERON:0000178",
+    "derivation_year": "2020-01-01",
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "False",
+    "derived_under_gmp": "False",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "Matrigel",
+        "amount": null,
+        "unit": null,
+        "company": "Corning",
+        "type": "Base Coat"
+      },
+      {
+        "name": "Essential 8 Medium",
+        "amount": null,
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Base Medium"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "Immunostaining",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "OCT3/4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "TRA-1-60",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": null,
+    "diff_germlayer": [
+      {
+        "gl_diff_protocol": "In vitro directed differentiation",
+        "germ_layer": "Mesoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "FOXC2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "ddPCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "MEOX1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "ddPCR",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      },
+      {
+        "gl_diff_protocol": "In vitro directed differentiation",
+        "germ_layer": "Endoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "SOX17",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "ddPCR",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      },
+      {
+        "gl_diff_protocol": "In vitro directed differentiation",
+        "germ_layer": "Ectoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "NES",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "ddPCR",
+            "free_text": null
+          },
+          {
+            "marker_name": {
+              "name": "PAX6",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "ddPCR",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      }
+    ],
+    "diff_other": []
+  },
+  "donor": {
+    "age": "5-9",
+    "sex": "Male",
+    "genomic_characterisation": [],
+    "diseases": [
+      {
+        "name": "nemaline myopathy",
+        "free_text": "nan",
+        "omim_url": "nan",
+        "omim_id": "nan",
+        "icd11_url": "https://icd.who.int/browse/2024-01/mms/en#1996502540",
+        "icd11_id": "1996502540.0",
+        "ontology_id": "MONDO:0018958"
+      }
+    ],
+    "disease_phenotypes": [],
+    "non_disease_phenotypes": [],
+    "dcv_carrier": null,
+    "dcv_affected": null,
+    "variants": [],
+    "xrefs": []
+  },
+  "external_cell_line_source": null,
+  "biopsy_location_ontology_id": "FMA:9670"
+}

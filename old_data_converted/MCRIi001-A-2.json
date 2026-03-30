@@ -1,0 +1,528 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "MCRIi001-A-2",
+    "hpscreg_synonym": [
+      "MCRIi001-A-SOX9tdTom",
+      "PB001-SOX9tdTom"
+    ],
+    "cell_line_alt_name": [],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "True",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [
+      "SOX9"
+    ],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [
+      "tm(SOX9t/+:SOX9-T2A-tdTomato)"
+    ],
+    "subclone_of": "MCRIi001-A",
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
+  },
+  "generator": {
+    "institute": "Murdoch Children's Research Institute",
+    "institute_ror": null,
+    "group_name": "Murdoch Children's Research Institute",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [
+    {
+      "institute": "Murdoch Children's Research Institute",
+      "institute_ror": null,
+      "group_name": "Lamandé",
+      "company_name": null,
+      "contact_first_name": "Matthew",
+      "contact_last_name": "Shoulders",
+      "contact_initials": null,
+      "email": " mshoulde@mit.edu",
+      "phone_number": null,
+      "contact_orcid": null
+    }
+  ],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Yes",
+      "ethics_number": "35121A",
+      "approval_date": "1900-01-01",
+      "institutional_HREC": "Royal Children's Hospital Human Research Ethics Committee",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "BioSamples",
+      "db_url": "https://www.ebi.ac.uk/biosamples/",
+      "xref_url": "https://www.ebi.ac.uk/biosamples/samples/SAMEA5873308"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_WU54"
+    },
+    {
+      "xref_id": null,
+      "db_name": "CLO",
+      "db_url": "https://www.ebi.ac.uk/ols4/ontologies/clo",
+      "xref_url": "http://purl.obolibrary.org/obo/CLO_0102771"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Wikidata",
+      "db_url": "https://www.wikidata.org/wiki/Wikidata:Main_Page",
+      "xref_url": "https://www.wikidata.org/wiki/Q95986993"
+    },
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/MCRIi001-A-2"
+    }
+  ],
+  "publications": [
+    {
+      "doi": "10.1016/j.scr.2020.101843",
+      "pmid": "32446218",
+      "first_author": "Lilianty J",
+      "last_author": "Lamandé SR",
+      "journal": "Stem cell research",
+      "title": "Generation of a heterozygous COL2A1 (p.R989C) spondyloepiphyseal dysplasia congenita mutation iPSC line, MCRIi001-B, using CRISPR/Cas9 gene editing",
+      "year": "2020"
+    },
+    {
+      "doi": "10.1016/j.scr.2024.103313",
+      "pmid": "38277710",
+      "first_author": "Houweling PJ",
+      "last_author": "North KN",
+      "journal": "Stem cell research",
+      "title": "Generation of a human ACTA1-tdTomato reporter iPSC line using CRISPR/Cas9 editing",
+      "year": "2024"
+    },
+    {
+      "doi": "10.1016/j.semcdb.2021.11.024",
+      "pmid": "34949507",
+      "first_author": "Humphreys PA",
+      "last_author": "Kimber SJ",
+      "journal": "Seminars in cell & developmental biology",
+      "title": "Developmental principles informing human pluripotent stem cell differentiation to cartilage and bone",
+      "year": "2022"
+    },
+    {
+      "doi": "10.1016/j.csbj.2020.09.025",
+      "pmid": "33101611",
+      "first_author": "Plant AL",
+      "last_author": "Stinson J",
+      "journal": "Computational and structural biotechnology journal",
+      "title": "Probing pluripotency gene regulatory networks with quantitative live cell imaging",
+      "year": "2020"
+    },
+    {
+      "doi": "10.1016/j.scr.2019.101689",
+      "pmid": "31884373",
+      "first_author": "Nur Patria Y",
+      "last_author": "Lamandé SR",
+      "journal": "Stem cell research",
+      "title": "Generation of a SOX9-tdTomato reporter human iPSC line, MCRIi001-A-2, using CRISPR/Cas9 editing",
+      "year": "2020"
+    },
+    {
+      "doi": "10.1073/pnas.2211510120",
+      "pmid": "37126720",
+      "first_author": "Lamandé SR",
+      "last_author": "Bateman JF",
+      "journal": "Proceedings of the National Academy of Sciences of the United States of America",
+      "title": "Modeling human skeletal development using human pluripotent stem cells",
+      "year": "2023"
+    },
+    {
+      "doi": "10.1016/j.scr.2020.101942",
+      "pmid": "32771907",
+      "first_author": "Nur Patria Y",
+      "last_author": "Lamandé SR",
+      "journal": "Stem cell research",
+      "title": "CRISPR/Cas9 gene editing of a SOX9 reporter human iPSC line to produce two TRPV4 patient heterozygous missense mutant iPSC lines, MCRIi001-A-3 (TRPV4 p.F273L) and MCRIi001-A-4 (TRPV4 p.P799L)",
+      "year": "2020"
+    }
+  ],
+  "genomic_alteration": [
+    {
+      "alteration_type": "Transgene Expression",
+      "isogenic_purpose": null,
+      "summary": "Td-Tomato fluorescence reporter gene insertion downstream of SOX9 gene",
+      "delivery_method": "crispr",
+      "variation_details": {
+        "zygosity": null,
+        "gene": {
+          "name": "sox9",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": "http://www.ncbi.nlm.nih.gov/gene/SOX9",
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "cytoband": null,
+        "genotype": null,
+        "genomic_coord": null,
+        "coding_coord": null,
+        "rna_coord": null,
+        "protein_coord": null,
+        "summary": null,
+        "xrefs": [],
+        "disease": []
+      }
+    },
+    {
+      "alteration_type": "Gene Knock-in",
+      "isogenic_purpose": null,
+      "summary": "Heterozygous insertion of a tdTomato reporter gene with upstream T2A sequence at the stop codon of SOX9 exon 3.",
+      "delivery_method": "CRISPR/Cas9",
+      "variation_details": {
+        "zygosity": null,
+        "gene": null,
+        "cytoband": "17q24.3",
+        "genotype": "tm(SOX9t/+:SOX9-T2A-tdTomato)",
+        "genomic_coord": null,
+        "coding_coord": null,
+        "rna_coord": null,
+        "protein_coord": null,
+        "summary": null,
+        "xrefs": [],
+        "disease": []
+      }
+    }
+  ],
+  "genomic_characterisation": [
+    {
+      "passage_number": "2",
+      "karyotyped": "YES",
+      "karyotype": "Molcular karyotype arr(1-22)x2(XY)x1",
+      "karyotype_method": "Molecular karyotyping by SNP array",
+      "karyotype_method_other": null,
+      "summary": null,
+      "karyogram": null,
+      "data_url": null,
+      "data_file": null
+    }
+  ],
+  "additional_genomic_characterisation": {
+    "hla_typing_flag": "False",
+    "hla_results": [],
+    "str_analysis_flag": "False",
+    "str_results": [],
+    "fingerprinting_analysis_flag": "False",
+    "fingerprinting_analysis_results": [],
+    "genome_wide_or_functional_data": "False",
+    "summary": null
+  },
+  "screening": {
+    "performed": "True",
+    "hiv1": "Not Done",
+    "hiv2": "Not Done",
+    "hep_b": "Not Done",
+    "hep_c": "Not Done",
+    "mycoplasma": "Negative",
+    "other": null,
+    "other_result": "Not Done"
+  },
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": "erythroblast",
+    "i_source_cell_type_ontology": "CL:0000765",
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": "blood",
+    "i_source_cell_origin_ontology": "UBERON:0000178",
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "False",
+    "derived_under_gmp": "False",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "None",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": "0.05",
+    "o2_concentration": "0.95",
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Enzyme-free cell dissociation",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": [
+      {
+        "name": "KnockOut DMEM/F-12",
+        "amount": null,
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Base Medium"
+      },
+      {
+        "name": "KnockOut Serum Replacement",
+        "amount": "20.0",
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Serum"
+      },
+      {
+        "name": "GlutaMAX",
+        "amount": "2.0",
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Supplement"
+      },
+      {
+        "name": "Non-Essential Amino Acids",
+        "amount": "1.0",
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Supplement"
+      },
+      {
+        "name": "2-mercaptoethanol",
+        "amount": "0.1",
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Supplement"
+      },
+      {
+        "name": "Fibroblast growth factor 2, Peprotech",
+        "amount": "50.0",
+        "unit": null,
+        "company": "Thermo Fisher Scientific Inc.",
+        "type": "Supplement"
+      }
+    ]
+  },
+  "undiff_characterisation": {
+    "epi_pluri_test": "False",
+    "epi_pluri_score": null,
+    "epi_pluri_mcpg": "False",
+    "epi_pluri_oct4": "False",
+    "pluri_test": "False",
+    "pluri_test_score": null,
+    "pluri_novelty_score": null,
+    "pluri_test_microarray_url": null,
+    "morphology_file": null,
+    "other": "Flow cytometry",
+    "undiff_scorecard": null,
+    "marker_analysis": [
+      {
+        "marker_name": {
+          "name": "NANOG",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "POU5F1 (OCT-4)",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Immunostaining",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "CD9",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "EPCAM",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      },
+      {
+        "marker_name": {
+          "name": "SSEA-4",
+          "chromosome": null,
+          "start": null,
+          "end": null,
+          "group": null,
+          "ncbi_id": null,
+          "ncbi_url": null,
+          "ebi_id": null,
+          "ebi_url": null,
+          "ensg_id": null,
+          "ensg_url": null
+        },
+        "result_file": null,
+        "method_name": "Flow cytometry",
+        "free_text": null
+      }
+    ]
+  },
+  "differentiated_cell_analysis": {
+    "scorecard_results": null,
+    "diff_germlayer": [
+      {
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
+        "germ_layer": "Endoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "HNF4A",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      },
+      {
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
+        "germ_layer": "Mesoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "COL2A1",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      },
+      {
+        "gl_diff_protocol": "In vitro spontaneous differentiation",
+        "germ_layer": "Ectoderm",
+        "show_potency": "True",
+        "marker_analysis": [
+          {
+            "marker_name": {
+              "name": "MAP2",
+              "chromosome": null,
+              "start": null,
+              "end": null,
+              "group": null,
+              "ncbi_id": null,
+              "ncbi_url": null,
+              "ebi_id": null,
+              "ebi_url": null,
+              "ensg_id": null,
+              "ensg_url": null
+            },
+            "result_file": null,
+            "method_name": "Immunostaining",
+            "free_text": null
+          }
+        ],
+        "free_text": null
+      }
+    ],
+    "diff_other": []
+  },
+  "donor": null,
+  "external_cell_line_source": null,
+  "biopsy_location_ontology_id": "FMA:9670"
+}

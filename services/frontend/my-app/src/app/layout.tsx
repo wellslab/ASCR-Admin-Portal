@@ -1,0 +1,38 @@
+import type { Metadata } from "next";
+import { Roboto_Mono } from "next/font/google";
+import "./globals.css";
+import PrelineScriptWrapper from './components/PrelineScriptWrapper';
+import AppLayout from './components/AppLayout';
+import { SidebarProvider } from './components/SidebarContext';
+import ThemeProvider from './components/ThemeProvider';
+
+const robotoMono = Roboto_Mono({
+  variable: "--font-roboto-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "ASCR Admin Portal",
+  description: "Australian Stem Cell Registry Admin Portal",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${robotoMono.variable} antialiased`}
+      >
+        <ThemeProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+        </ThemeProvider>
+        <PrelineScriptWrapper />
+      </body>
+    </html>
+  );
+}

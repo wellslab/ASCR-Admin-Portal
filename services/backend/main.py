@@ -1,0 +1,718 @@
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query
+from fastapi.responses import Response
+from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
+import logging
+import os
+from storage import StorageInterface, FileStorage
+from file_manager import FileManager, WorkingVersionConflict, ReadyVersionConflict
+from api_models import StartAICurationRequest, TaskCompletionNotification
+from data_dictionaries.models import JSONOutputSchema
+from tasks import curate_article_task, redis_client, queue_curation_tasks
+from validation import get_frontend_schema, generate_empty_form
+from websocket import websocket_manager, broadcast_task_completion, broadcast_task_progress
+from config_manager import config_manager
+from schema_migration import migrate_all, migrate_registered_structure
+from task_progress import TaskProgressManager
+from ingestion_manager import IngestionManager
+import asyncio
+import datetime
+import zipfile
+import io
+import json
+from pathlib import Path
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Dependency injection functions
+def get_storage() -> StorageInterface:
+    """
+    Dependency injection for storage interface.
+    This is the ONLY place where we specify which storage implementation to use.
+    To switch to S3, just change this function!
+    """
+    return FileStorage()
+
+def get_file_manager(storage: StorageInterface = Depends(get_storage)) -> FileManager:
+    """Dependency injection for file manager. Handles all state transitions and versioning."""
+    return FileManager(storage)
+
+app = FastAPI(title="ASCR Curation Service", version="1.0.0")
+
+def get_run_log_path() -> str:
+    """Return the ingestion run log path. Override with RUN_LOG_PATH env var."""
+    return os.environ.get("RUN_LOG_PATH", "data/run_log.json")
+
+
+# Background task for ingestion monitoring
+async def monitor_ingestion_log():
+    """Background task that runs every Saturday at 06:00, matching the Friday ingestion schedule."""
+    storage = get_storage()
+    file_manager = get_file_manager(storage)
+    manager = IngestionManager(get_run_log_path(), storage, file_manager)
+
+    while True:
+        now = datetime.datetime.now()
+        # weekday(): Monday=0 … Saturday=5 … Sunday=6
+        days_until_saturday = (5 - now.weekday()) % 7
+        if days_until_saturday == 0 and now.hour >= 6:
+            days_until_saturday = 7  # already past 06:00 today, wait until next Saturday
+        next_run = (now + datetime.timedelta(days=days_until_saturday)).replace(
+            hour=6, minute=0, second=0, microsecond=0
+        )
+        sleep_seconds = (next_run - now).total_seconds()
+        logger.info(f"Ingestion monitor: next automatic run at {next_run.isoformat()}")
+        await asyncio.sleep(sleep_seconds)
+
+        try:
+            result = manager.process_ready_files()
+            logger.info(f"Ingestion monitor complete: {result}")
+        except Exception as e:
+            logger.error(f"Error in ingestion monitor: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on app startup"""
+    result = migrate_registered_structure()
+    if result["migrated"]:
+        logger.info(f"Startup: migrated {result['migrated']} registered file(s) to subdirectory structure")
+    asyncio.create_task(monitor_ingestion_log())
+    logger.info("Started ingestion monitor background task")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001",
+                   "http://172.26.129.138:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Endpoints
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "curation_service"}
+
+@app.get("/cellline-schema")
+async def get_cellline_schema():
+    """
+    Generate schema for cell line data structure based on Pydantic models.
+    This schema is used by the frontend editor component.
+    """
+    try:
+        return get_frontend_schema(JSONOutputSchema)
+    except Exception as e:
+        logger.error(f"Error generating schema: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Schema generation failed: {str(e)}")
+
+@app.get("/get-empty-form")
+async def get_empty_cellline_form(hpscreg_name: str = "", cell_type: str = ""):
+    """
+    Return an empty form structure based on JSONOutputSchema model.
+    Each section has one instance with null values for all string fields.
+    If cell_type is provided, pre-populates general.cell_type and omits the
+    irrelevant derivation section.
+    """
+    try:
+        return generate_empty_form(JSONOutputSchema, hpscreg_name, cell_type)
+    except Exception as e:
+        logger.error(f"Error generating empty form: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Empty form generation failed: {str(e)}")
+
+
+@app.post("/start-ai-curation")
+async def start_ai_curation(request: StartAICurationRequest):
+    """
+    Queue AI curation tasks for one or more uploaded articles.
+    Each file is dispatched to an independent Celery task.
+    """
+    try:
+        # Check if API key is configured
+        api_key = config_manager.get("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(
+                status_code=400,
+                detail="OpenAI API key not configured. Please set it in Settings before starting curation."
+            )
+
+        # Convert Pydantic request to dict format for utils function
+        files = [{"filename": f.filename, "file_data": f.file_data} for f in request.files]
+        return queue_curation_tasks(files, curate_article_task)
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error queuing curation tasks: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/stats")
+async def get_stats(storage: StorageInterface = Depends(get_storage)):
+    """
+    Get statistics about cell lines across all directories.
+    Returns counts for total, working, ready, and registered cell lines.
+    """
+    try:
+        working_files = storage.list_files("working")
+        ready_files = storage.list_files("ready")
+        registered_files = storage.list_files("registered")
+
+        return {
+            "total_cell_lines": len(working_files) + len(ready_files) + len(registered_files),
+            "working_count": len(working_files),
+            "ready_count": len(ready_files),
+            "registered_count": len(registered_files)
+        }
+    except Exception as e:
+        logger.error(f"Error getting stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get stats: {str(e)}")
+
+@app.get("/cell-lines/grouped")
+async def get_cell_lines_grouped(
+    storage: StorageInterface = Depends(get_storage),
+    file_manager: FileManager = Depends(get_file_manager)
+):
+    """
+    Get all cell lines grouped by base name, with each version's filename and location.
+    Aggregates index.json files from working, ready, and registered directories.
+    """
+    try:
+        groups: dict = {}
+        seen_filenames: set = set()
+        for location in ["working", "ready", "registered"]:
+            index = storage.list_files_grouped(location)
+            for base_name, filenames in index.items():
+                if base_name not in groups:
+                    groups[base_name] = []
+                for filename in filenames:
+                    if filename in seen_filenames:
+                        continue
+                    seen_filenames.add(filename)
+                    version = file_manager.parse_version_from_filename(filename)
+                    file_data = storage.get(filename, location)
+                    curation_method = file_data.get("curation_method") if file_data else None
+                    groups[base_name].append({
+                        "filename": filename,
+                        "location": location,
+                        "version": version,
+                        "curation_method": curation_method,
+                    })
+
+        result = []
+        for base_name in sorted(groups.keys()):
+            versions = sorted(groups[base_name], key=lambda x: x.get("version") if x.get("version") is not None else -1)
+            result.append({"base_name": base_name, "versions": versions})
+
+        return {"groups": result}
+    except Exception as e:
+        logger.error(f"Error getting grouped cell lines: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get grouped cell lines: {str(e)}")
+
+
+@app.get("/get-all-cell-lines")
+async def get_all_cell_lines(storage: StorageInterface = Depends(get_storage)):
+    """
+    Get list of all cell line names from working, ready, and registered directories.
+    Returns deduplicated list with location info for quick search.
+    """
+    try:
+        working_files = storage.list_files("working")
+        ready_files = storage.list_files("ready")
+        registered_files = storage.list_files("registered")
+
+        # Build list with location info
+        all_cell_lines = []
+        seen = set()
+
+        for filename in working_files:
+            if filename not in seen:
+                all_cell_lines.append({"name": filename, "location": "working"})
+                seen.add(filename)
+
+        for filename in ready_files:
+            if filename not in seen:
+                all_cell_lines.append({"name": filename, "location": "ready"})
+                seen.add(filename)
+
+        for filename in registered_files:
+            if filename not in seen:
+                all_cell_lines.append({"name": filename, "location": "registered"})
+                seen.add(filename)
+
+        return {"cell_lines": all_cell_lines}
+    except Exception as e:
+        logger.error(f"Error getting all cell lines: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get all cell lines: {str(e)}")
+
+@app.get("/working/files")
+async def get_working_files(storage: StorageInterface = Depends(get_storage)):
+    """
+    Get list of cell line files in the working directory.
+    """
+    try:
+        return {"files": storage.list_files("working")}
+    except Exception as e:
+        logger.error(f"Error getting working files: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get working files: {str(e)}")
+
+@app.get("/ready/files")
+async def get_ready_files(storage: StorageInterface = Depends(get_storage)):
+    """
+    Get list of cell line files in the ready directory.
+    """
+    try:
+        return {"files": storage.list_files("ready")}
+    except Exception as e:
+        logger.error(f"Error getting ready files: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get ready files: {str(e)}")
+
+@app.get("/registered/files")
+async def get_registered_files(storage: StorageInterface = Depends(get_storage)):
+    """
+    Get list of cell line files in the registered directory.
+    """
+    try:
+        return {"files": storage.list_files("registered")}
+    except Exception as e:
+        logger.error(f"Error getting registered files: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get registered files: {str(e)}")
+
+@app.get("/cell-line/{filename}")
+async def get_cell_line(filename: str, storage: StorageInterface = Depends(get_storage)):
+    """
+    Retrieve a specific cell line JSON file by filename.
+    Searches in order: working, ready, registered.
+    """
+    result = storage.get(filename, "working")
+    if result is None:
+        result = storage.get(filename, "ready")
+    if result is None:
+        result = storage.get(filename, "registered")
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Cell line file '{filename}' not found in any directory")
+    return result
+
+@app.post("/cell-line/{filename}/move-to-ready")
+async def move_cell_line_to_ready(filename: str, file_manager: FileManager = Depends(get_file_manager)):
+    """
+    Move a cell line file from working to ready directory.
+    File already has version assigned, so this is a simple status change.
+    """
+    try:
+        return file_manager.move_to_ready(filename)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error moving {filename} to ready: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
+
+@app.post("/cell-line/{filename}/move-to-registered")
+async def move_cell_line_to_registered(filename: str, file_manager: FileManager = Depends(get_file_manager)):
+    """
+    Move a cell line file from ready to registered directory.
+    """
+    try:
+        return file_manager.move_to_registered(filename)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error moving {filename} to registered: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
+
+@app.post("/cell-line/{filename}/move-to-working")
+async def move_cell_line_to_working(filename: str, file_manager: FileManager = Depends(get_file_manager)):
+    """
+    Move a cell line file from ready to working directory.
+    """
+    try:
+        return file_manager.move_to_working(filename)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        # File already exists in destination - conflict error
+        raise HTTPException(status_code=409, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error moving {filename} to working: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to move file: {str(e)}")
+
+@app.post("/registered/cell-line/{filename}/create-new-version")
+async def create_new_version_from_registered(
+    filename: str,
+    overwrite: bool = Query(default=False),
+    file_manager: FileManager = Depends(get_file_manager)
+):
+    """
+    Create a new working version from a registered cell line.
+    Pass overwrite=true to replace an existing working copy with the registered data.
+    Returns 409 with conflict_type='working' if a working copy exists and overwrite=false.
+    Returns 409 with conflict_type='ready' if a ready copy exists (cannot overwrite).
+    """
+    try:
+        return file_manager.create_new_version_from_registered(filename, overwrite=overwrite)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except WorkingVersionConflict as e:
+        raise HTTPException(status_code=409, detail={
+            "conflict_type": "working",
+            "existing_filename": e.existing_filename,
+            "message": f"A working copy '{e.existing_filename}' already exists for this cell line.",
+        })
+    except ReadyVersionConflict as e:
+        raise HTTPException(status_code=409, detail={
+            "conflict_type": "ready",
+            "existing_filename": e.existing_filename,
+            "message": f"A ready copy '{e.existing_filename}' exists and cannot be overwritten.",
+        })
+    except Exception as e:
+        logger.error(f"Error creating new version from {filename}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/cell-line/{base_name}/versions")
+async def get_cell_line_versions(
+    base_name: str,
+    file_manager: FileManager = Depends(get_file_manager),
+    storage: StorageInterface = Depends(get_storage)
+):
+    """
+    Get all versions for a given cell line base name across all directories.
+    Returns versions from working, ready, and registered directories with location info.
+    """
+    try:
+        all_versions = []
+
+        for location in ["working", "ready", "registered"]:
+            versions = storage.get_files_for_base_name(base_name, location)
+            for version_file in versions:
+                version_num = file_manager.parse_version_from_filename(version_file)
+                all_versions.append({
+                    "filename": version_file,
+                    "version": version_num,
+                    "location": location
+                })
+
+        all_versions.sort(key=lambda x: x.get("version", -1))
+
+        return {
+            "base_name": base_name,
+            "versions": all_versions,
+            "count": len(all_versions)
+        }
+    except Exception as e:
+        logger.error(f"Error getting versions for {base_name}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get versions: {str(e)}")
+
+@app.post("/working/cell-line")
+async def create_cell_line(
+    cell_line_data: JSONOutputSchema,
+    curation_method: Optional[str] = Query(default="Manual"),
+    file_manager: FileManager = Depends(get_file_manager)
+):
+    """
+    Create a new cell line file in the working directory.
+    Version number is based on the number of previously registered copies.
+    Returns 409 if a working or ready copy with the same hpscreg_name already exists.
+    """
+    try:
+        cell_line_dict = cell_line_data.model_dump()
+        return file_manager.save_with_auto_versioning(cell_line_dict, curation_method=curation_method)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating cell line: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create cell line file: {str(e)}")
+
+@app.put("/working/cell-line/{filename}")
+async def update_cell_line(
+    filename: str,
+    cell_line_data: JSONOutputSchema,
+    curation_method: Optional[str] = Query(default=None),
+    storage: StorageInterface = Depends(get_storage)
+):
+    """
+    Update an existing working cell line in place. Does not change version number.
+    Returns 404 if the file does not exist in the working directory.
+    """
+    if not storage.exists(filename, "working"):
+        raise HTTPException(status_code=404, detail=f"Cell line '{filename}' not found in working directory")
+    try:
+        cell_line_dict = cell_line_data.model_dump()
+        # Preserve existing curation_method if not provided
+        if curation_method is None:
+            existing = storage.get(filename, "working")
+            curation_method = existing.get("curation_method") if existing else None
+        result = storage.update(filename, cell_line_dict, "working", curation_method=curation_method)
+        result["filename"] = filename
+        return result
+    except Exception as e:
+        logger.error(f"Error updating cell line {filename}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update cell line file: {str(e)}")
+
+@app.delete("/working/cell-line")
+async def delete_cell_line(payload: dict, storage: StorageInterface = Depends(get_storage)):
+    """
+    Delete a cell line file from the working directory only.
+    Requires payload: {"filename": "cell_line_name"}
+    """
+    try:
+        # Validate payload contains filename
+        if "filename" not in payload or not payload["filename"]:
+            raise HTTPException(status_code=400, detail="Missing required field 'filename' in request payload")
+        
+        filename = payload["filename"]
+        return storage.delete(filename, "working")
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error deleting cell line {payload.get('filename', 'unknown')}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete cell line file: {str(e)}")
+
+@app.post("/internal/broadcast-task-completion")
+async def broadcast_task_completion_endpoint(notification: TaskCompletionNotification):
+    """Internal endpoint for Celery tasks to broadcast completion"""
+    await broadcast_task_completion(notification.model_dump())
+    return {"status": "broadcasted"}
+
+
+@app.post("/internal/broadcast-task-progress")
+async def broadcast_task_progress_endpoint(progress_data: dict):
+    """Internal endpoint for Celery tasks to broadcast progress updates"""
+    await broadcast_task_progress(progress_data)
+    return {"status": "broadcasted"}
+
+
+@app.get("/tasks")
+async def get_task_history(limit: int = 50):
+    """
+    Get recent task history with detailed progress stages.
+    Returns tasks sorted by most recent first.
+    """
+    try:
+        progress_manager = TaskProgressManager(redis_client)
+        tasks = progress_manager.get_all_tasks(limit)
+        return {"tasks": tasks, "count": len(tasks)}
+    except Exception as e:
+        logger.error(f"Error getting task history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get task history: {str(e)}")
+
+
+@app.post("/tasks/{task_id}/retry")
+async def retry_task(task_id: str):
+    """
+    Retry a failed task by queueing it again with the original file data.
+    """
+    try:
+        progress_manager = TaskProgressManager(redis_client)
+
+        # Get original task info
+        task = progress_manager.get_task(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+
+        # Get original file data
+        file_data = progress_manager.get_file_data(task_id)
+        if not file_data:
+            raise HTTPException(status_code=410, detail="Original file data no longer available. Please re-upload the file.")
+
+        # Queue a new task with the original file
+        filename = task["filename"]
+        new_task = curate_article_task.apply_async(args=[filename, file_data])
+
+        logger.info(f"Retrying task {task_id} as new task {new_task.id}")
+
+        return {
+            "status": "queued",
+            "original_task_id": task_id,
+            "new_task_id": new_task.id,
+            "filename": filename,
+            "message": "Task queued for retry"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrying task {task_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retry task: {str(e)}")
+
+
+@app.delete("/tasks/{task_id}")
+async def delete_task(task_id: str):
+    """
+    Delete a task from the task history.
+    Removes the task and all associated data from Redis.
+    """
+    try:
+        progress_manager = TaskProgressManager(redis_client)
+        deleted = progress_manager.delete_task(task_id)
+
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+
+        return {
+            "status": "success",
+            "task_id": task_id,
+            "message": "Task deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting task {task_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete task: {str(e)}")
+
+@app.post("/internal/check-ingestion-log")
+async def check_ingestion_log(
+    storage: StorageInterface = Depends(get_storage),
+    file_manager: FileManager = Depends(get_file_manager)
+):
+    """Manual trigger to process the ingestion run log. Called from the Settings page."""
+    try:
+        manager = IngestionManager(get_run_log_path(), storage, file_manager)
+        return manager.process_ready_files()
+    except Exception as e:
+        logger.error(f"Error checking ingestion log: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to check ingestion log: {str(e)}")
+
+
+@app.get("/ingestion/errors")
+async def get_ingestion_errors(
+    storage: StorageInterface = Depends(get_storage),
+    file_manager: FileManager = Depends(get_file_manager)
+):
+    """
+    Return working-directory files whose most recent run log entry has status ERROR.
+    Used by the Ingestion Monitor page to list cell lines needing curator attention.
+    """
+    try:
+        manager = IngestionManager(get_run_log_path(), storage, file_manager)
+        return {"errors": manager.get_errors()}
+    except Exception as e:
+        logger.error(f"Error fetching ingestion errors: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch ingestion errors: {str(e)}")
+
+@app.get("/settings")
+async def get_settings():
+    """
+    Get all user-configurable settings.
+    API keys are masked for security.
+    """
+    try:
+        settings = config_manager.get_all_settings()
+        return {"settings": settings}
+    except Exception as e:
+        logger.error(f"Error getting settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get settings: {str(e)}")
+
+@app.post("/settings")
+async def update_settings(settings: dict):
+    """
+    Update application settings.
+    Only updates non-empty values.
+    """
+    try:
+        logger.info(f"Received settings update request: {list(settings.keys())}")
+        config_manager.update_settings(settings)
+        logger.info(f"Settings updated successfully. New config: {config_manager.get_all_settings()}")
+        return {"status": "success", "message": "Settings updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update settings: {str(e)}")
+
+@app.post("/admin/migrate-schema")
+async def run_schema_migration():
+    """
+    Apply the current JSONOutputSchema to all cell line records.
+    Adds any missing fields with null/[] defaults. Existing values are never overwritten.
+    """
+    try:
+        result = migrate_all(dry_run=False)
+        return result
+    except Exception as e:
+        logger.error(f"Schema migration failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
+@app.get("/admin/download-backup")
+async def download_backup():
+    """
+    Download all cell line data as a zip. Does not delete anything.
+    """
+    try:
+        data_dir = FileStorage.get_data_dir()
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for location in ["working", "ready"]:
+                loc_dir = data_dir / location
+                if loc_dir.exists():
+                    for json_file in loc_dir.glob("*.json"):
+                        zf.write(json_file, f"{location}/{json_file.name}")
+            # Registered files live in per-base-name subdirectories
+            registered_dir = data_dir / "registered"
+            if registered_dir.exists():
+                for json_file in registered_dir.rglob("*.json"):
+                    if json_file.name == "index.json":
+                        continue
+                    arc_path = json_file.relative_to(data_dir)
+                    zf.write(json_file, str(arc_path))
+        zip_data = zip_buffer.getvalue()
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        return Response(
+            content=zip_data,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename=ascr_backup_{timestamp}.zip"}
+        )
+    except Exception as e:
+        logger.error(f"Backup download failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Backup failed: {str(e)}")
+
+
+@app.post("/admin/purge-all-data")
+async def purge_all_data():
+    """
+    Delete all cell line data from working, ready, and registered directories.
+    Resets each index.json to an empty dict.
+    """
+    try:
+        data_dir = FileStorage.get_data_dir()
+
+        import shutil
+        for location in ["working", "ready"]:
+            loc_dir = data_dir / location
+            if loc_dir.exists():
+                for json_file in loc_dir.glob("*.json"):
+                    json_file.unlink()
+                with open(loc_dir / "index.json", 'w') as f:
+                    json.dump({}, f)
+        # Registered: remove all base_name subdirectories, then reset index
+        registered_dir = data_dir / "registered"
+        if registered_dir.exists():
+            for item in registered_dir.iterdir():
+                if item.is_dir():
+                    shutil.rmtree(item)
+            with open(registered_dir / "index.json", 'w') as f:
+                json.dump({}, f)
+
+        return {"status": "success", "message": "All data purged"}
+    except Exception as e:
+        logger.error(f"Purge all data failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Purge failed: {str(e)}")
+
+
+
+@app.websocket("/ws/task-updates")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time task completion updates"""
+    await websocket_manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(websocket)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

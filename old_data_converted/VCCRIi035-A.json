@@ -1,0 +1,118 @@
+{
+  "general": {
+    "aushpscreg_name": null,
+    "hpscreg_name": "VCCRIi035-A",
+    "hpscreg_synonym": [
+      "4372 - SI"
+    ],
+    "cell_line_alt_name": [
+      "4372 - SI"
+    ],
+    "curation_status": "Not yet reviewed by Australian Stem Cell Registry",
+    "certificate_of_pluripotency_characterisation": "False",
+    "description": null,
+    "registered_with_hpscreg": "Not Registered",
+    "publish": "False",
+    "embargo_date": null,
+    "cell_type": "human induced pluripotent stem cell (hiPSC)",
+    "frozen": "False",
+    "available_third_parties": null,
+    "research_use": "True",
+    "clinical_use": "False",
+    "commercial_use": "False",
+    "availability_notes": null,
+    "status": "Characterised",
+    "biopsy_location_name": null,
+    "biopsy_location_ontology_id": null,
+    "genotype_locus": [],
+    "genotype": [
+      "Patient Control"
+    ],
+    "associated_polymorphism": [],
+    "subclone_of": null,
+    "parent_of": [],
+    "igsn": null,
+    "modified": null
+  },
+  "generator": {
+    "institute": "Victor Chang Cardiac Research Institute",
+    "institute_ror": null,
+    "group_name": "Victor Chang Cardiac Research Institute",
+    "company_name": null,
+    "contact_first_name": null,
+    "contact_last_name": null,
+    "contact_initials": null,
+    "email": null,
+    "phone_number": null,
+    "contact_orcid": null
+  },
+  "owner": [],
+  "distributor": [],
+  "ethics": [
+    {
+      "submitted_ethics_clearance": "Unknown",
+      "ethics_number": "Holding Entry-VCCRIi035-A",
+      "approval_date": null,
+      "institutional_HREC": "Holding Entry",
+      "consent_form": null,
+      "consent_for_specific_research": "False",
+      "consent_for_future_research": "False",
+      "consent_for_global_distribution": "False"
+    }
+  ],
+  "xrefs": [
+    {
+      "xref_id": null,
+      "db_name": "hPSCreg",
+      "db_url": "https://hpscreg.eu/",
+      "xref_url": "https://hpscreg.eu/cell-line/VCCRIi035-A"
+    },
+    {
+      "xref_id": null,
+      "db_name": "Cellosaurus",
+      "db_url": "https://www.cellosaurus.org/",
+      "xref_url": "https://www.cellosaurus.org/CVCL_E7WU"
+    }
+  ],
+  "publications": [],
+  "genomic_alteration": [],
+  "genomic_characterisation": [],
+  "additional_genomic_characterisation": null,
+  "screening": null,
+  "derivation_ipsc": {
+    "passage_number": null,
+    "i_source_cell_type_name": null,
+    "i_source_cell_type_ontology": null,
+    "i_source_cell_type_additional_info": null,
+    "i_source_cell_origin_name": null,
+    "i_source_cell_origin_ontology": null,
+    "derivation_year": null,
+    "reason_no_derivation_year": null,
+    "derived_under_xeno_free_conditions": "False",
+    "derived_under_gmp": "False",
+    "available_as_clinical_grade": "False",
+    "i_reprogramming_vector_type": "Not integrated",
+    "clonal_line": null,
+    "selection_criteria_for_clones": null,
+    "integrated_vector": null,
+    "non_integrated_vector": null,
+    "vector_free_reprogram": null
+  },
+  "derivation_esc": null,
+  "culture_conditions": {
+    "co2_concentration": null,
+    "o2_concentration": null,
+    "rho_kinase_used": "False",
+    "rho_kinase_used_notes": null,
+    "passage_method": "Not specified",
+    "other_passage_method": null,
+    "feeder_cells_flag": null,
+    "feeder_cell_name": null,
+    "feeder_cell_ontology_id": null,
+    "culture_medium_items": []
+  },
+  "undiff_characterisation": null,
+  "differentiated_cell_analysis": null,
+  "donor": null,
+  "external_cell_line_source": null
+}
