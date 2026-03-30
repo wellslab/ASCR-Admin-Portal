@@ -59,23 +59,50 @@ export default function ImportPage() {
         // Unwrap export format: { filename, location, data: {...}, curation_method, ... }
         const body = parsed.data ?? parsed;
         const curationMethod = parsed.curation_method ?? 'Manual';
-        const response = await fetch(getApiUrl(`/working/cell-line?curation_method=${encodeURIComponent(curationMethod)}`), {
+        const targetLocation: string = parsed.location ?? 'working';
+
+        // Step 1: always create in working first
+        const createResponse = await fetch(getApiUrl(`/working/cell-line?curation_method=${encodeURIComponent(curationMethod)}`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
 
-        if (response.ok) {
-          const result = await response.json();
-          accumulated.push({ filename: file.name, status: 'success', message: `Saved as ${result.filename}` });
-        } else if (response.status === 422) {
-          const errorData = await response.json();
-          const errors = parseValidationErrors(errorData);
-          accumulated.push({ filename: file.name, status: 'error', message: errors[0] || 'Validation failed' });
-        } else {
-          const errorData = await response.json();
-          accumulated.push({ filename: file.name, status: 'error', message: errorData.detail || 'Import failed' });
+        if (!createResponse.ok) {
+          if (createResponse.status === 422) {
+            const errorData = await createResponse.json();
+            const errors = parseValidationErrors(errorData);
+            accumulated.push({ filename: file.name, status: 'error', message: errors[0] || 'Validation failed' });
+          } else {
+            const errorData = await createResponse.json();
+            accumulated.push({ filename: file.name, status: 'error', message: errorData.detail || 'Import failed' });
+          }
+          continue;
         }
+
+        const created = await createResponse.json();
+        const createdFilename = created.filename;
+
+        // Step 2: move to target location if not working
+        if (targetLocation === 'ready' || targetLocation === 'registered') {
+          const toReadyResponse = await fetch(getApiUrl(`/cell-line/${encodeURIComponent(createdFilename)}/move-to-ready`), { method: 'POST' });
+          if (!toReadyResponse.ok) {
+            const errorData = await toReadyResponse.json();
+            accumulated.push({ filename: file.name, status: 'error', message: `Created but failed to move to ready: ${errorData.detail || ''}` });
+            continue;
+          }
+        }
+
+        if (targetLocation === 'registered') {
+          const toRegResponse = await fetch(getApiUrl(`/cell-line/${encodeURIComponent(createdFilename)}/move-to-registered`), { method: 'POST' });
+          if (!toRegResponse.ok) {
+            const errorData = await toRegResponse.json();
+            accumulated.push({ filename: file.name, status: 'error', message: `Created but failed to move to registered: ${errorData.detail || ''}` });
+            continue;
+          }
+        }
+
+        accumulated.push({ filename: file.name, status: 'success', message: `Saved as ${createdFilename} → ${targetLocation}` });
       } catch (err) {
         accumulated.push({
           filename: file.name,
@@ -189,7 +216,7 @@ export default function ImportPage() {
           >
             {isImporting
               ? 'Importing...'
-              : `Import ${files.length > 0 ? `${files.length} file${files.length !== 1 ? 's' : ''} ` : ''}as Working Copies`}
+              : `Import ${files.length > 0 ? `${files.length} file${files.length !== 1 ? 's' : ''}` : ''}`}
           </Button>
         </Box>
       </Card>
